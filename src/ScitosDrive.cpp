@@ -19,7 +19,7 @@
 
 #include <scitos_mira/ScitosDrive.hpp>
 
-ScitosDrive::ScitosDrive() : Node("scitos_drive"), authority_("/", "scitos_drive", mira::Authority::ANONYMOUS){ 
+ScitosDrive::ScitosDrive() : Node("scitos_drive"), authority_("/", "Drive", mira::Authority::ANONYMOUS){ 
 	// Create ROS publishers
 	bumper_pub_ 		= this->create_publisher<scitos_msgs::msg::BumperStatus>("/bumper", 20);
 	drive_status_pub_ 	= this->create_publisher<scitos_msgs::msg::DriveStatus>("/drive_status", 20);

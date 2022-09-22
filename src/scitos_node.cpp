@@ -23,6 +23,7 @@
 
 /// ROS
 #include "rclcpp/rclcpp.hpp"
+#include "scitos_mira/ScitosCharger.hpp"
 #include "scitos_mira/ScitosDrive.hpp"
 
 /*class RosLogSink : public mira::LogSink {
@@ -97,8 +98,10 @@ int main(int argc, char **argv) {
 	s.spin();
 	return 0;*/
 
-	//auto node = std::make_shared<ScitosDrive>();
-	//rclcpp::spin_some(node);
-	//rclcpp::shutdown();
-  	return 0;
+	auto node1 = std::make_shared<ScitosDrive>();
+	rclcpp::spin_some(node1);
+	auto node2 = std::make_shared<ScitosCharger>();
+	rclcpp::spin_some(node2);
+	rclcpp::shutdown();
+	return 0;
 }

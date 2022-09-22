@@ -21,6 +21,7 @@ find_package(tf2_geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(scitos_msgs REQUIRED)
 
 ## Find system libraries
@@ -41,6 +42,7 @@ include(CMakeLists.mira)
 MIRA_REQUIRE_PACKAGE(SCITOS)
 
 add_executable(${PROJECT_NAME}
+  src/ScitosCharger.cpp
   src/ScitosDrive.cpp
   src/scitos_node.cpp
 )
@@ -52,6 +54,7 @@ ament_target_dependencies(${PROJECT_NAME}
   std_msgs
   geometry_msgs
   nav_msgs
+  sensor_msgs
   scitos_msgs
 )
 target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
