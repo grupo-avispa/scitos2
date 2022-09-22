@@ -1,0 +1,4 @@
+# This service requests change the force applied to the motors in percent.
+
+uint16 force        # Force applied in percent.
+---
