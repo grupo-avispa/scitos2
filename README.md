@@ -11,7 +11,7 @@ This package provides messages and services relating to Metralabs Scitos robot b
 * [BarrierStatus](msg/BarrierStatus.msg): Describes the current state of the barrier.
 * [BumperStatus](msg/BumperStatus.msg): Describes the current state of the bumper.
 * [BatteryState](msg/BatteryState.msg): **THIS MESSAGE IS DEPRECATED AS OF GALACTIC, use sensor_msgs/BatteryState instead**
-* [ChargerStatus](msg/ChargerStatus.msg): **THIS MESSAGE IS DEPRECATED AS OF GALACTIC, use sensor_msgs/BatteryState instead**
+* [ChargerStatus](msg/ChargerStatus.msg): Describes the current state of the charger.
 * [DriveStatus](msg/DriveStatus.msg): Describes the current hardware state.
 * [EmergencyStopStatus](msg/EmergencyStopStatus.msg): Describes the current state of the emergency stop button.
 
