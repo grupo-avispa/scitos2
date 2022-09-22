@@ -1,0 +1,65 @@
+<root>
+	<!-- Type of robot [SCITOS-2013, SCITOS-A5, SCITOS-G5, SCITOS-G6, SCITOS-G6-small, SCITOS-G3] -->
+	<var robot="SCITOS-2013" />
+
+	<!-- Type of the CAN bus [PCAN, MLCAN] -->
+	<var canType="MLCAN" />
+	<!-- CAN bus device (default=[PCAN: /dev/pcan32, MLCAN:/dev/ttyUSB2]) -->
+	<var canDevice="/dev/ttyUSB2" />
+
+	<!-- Type of mounted front laser [SickS300, LeuzeRS4, Hokuyo-URG-04LX, LZRU901] -->
+	<var frontLaser="SickS300" />
+	<!-- Device of the front laser (default=/dev/ttyUSB0) -->
+	<var frontLaserDevice="/dev/ttyUSB0" />
+	<!-- The laser ignore interval file name. Optional-->
+	<var frontLaserIgnoreIntervals="CLARC-IgnoreIntervals-SickS300.xml"/>
+
+	<!-- Type of mounted back laser [none, SickS300, LeuzeRS4, Hokuyo-URG-04LX, LZRU901] -->
+	<var rearLaser="none" />
+	<!-- Device of the rear laser (default=/dev/ttyUSB1) -->
+	<var rearLaserDevice="/dev/ttyUSB1" />
+	<!-- The laser ignore interval file name. Optional -->
+	<var rearLaserIgnoreIntervals="file_to_ignoreintervals.xml"/>
+	<var rearLaserXYZ="-0.287 0.0 0.4"/>
+	<var rearLaserRPY="0 0 180"/>
+
+	<!-- Is there a safety field configured for the robot -->
+	<var safetyZone="true" />
+	<var maxSafetyZoneVelocity="0.3" />
+
+	<!-- Does the robot have a magnetic safety sensor -->
+	<var magneticSensor="true" />
+
+	<!-- Does the robot have sonar -->
+	<var sonar="false" />
+
+	<!-- Body type for G6 robots [normal, tray] -->
+	<var bodyType="normal" />
+
+	<!-- Cover type for A5 and G5 robots [2008, 2011, 2012]
+	     2008 = Older robots with cover with stabilizers
+	     2011 = Older robots with cover without stabilizers
+	     2012 = Newer robots with more field of view for the laser. -->
+	<var coverType="2012" />
+	<!-- Does this robot have a cover / case? For SCITOS-2013 robots -->
+	<var cover="true" />
+
+	<!-- Cover color r g b -->
+	<var color="0.8 0.8 0.8" />
+
+	<!-- Only for G5 robots. Does the robot have a human machine interface (display) -->
+	<var hmi="false" />
+	<!-- Does the robot have a SCITOS head -->
+	<var head="false" />	
+	<!-- Does the robot have a head mounted camera? For SCITOS-2013 robots -->
+	<var cameraHeadConfig="none" />
+
+	<!-- Robot specific odometry correction factors -->
+	<var useOdometryCorrection="false" />
+	<var wheelBaseCorrectionFactor="1.0" />
+	<var wheelDiameterCorrectionFactor="1.0" />
+	<var averageWheelDiameterCorrectionFactor="1.0" />
+
+	<!-- The configuration file for the robot. Optional -->
+	<var robotConfigFile="CLARC.xml"/>
+</root>
