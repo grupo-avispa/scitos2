@@ -44,6 +44,7 @@ MIRA_REQUIRE_PACKAGE(SCITOS)
 add_executable(${PROJECT_NAME}
   src/ScitosCharger.cpp
   src/ScitosDrive.cpp
+  src/ScitosModule.cpp
   src/scitos_node.cpp
 )
 ament_target_dependencies(${PROJECT_NAME}

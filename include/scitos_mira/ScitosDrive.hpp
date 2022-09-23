@@ -35,11 +35,13 @@
 #include "scitos_msgs/srv/reset_odometry.hpp"
 #include "scitos_msgs/srv/suspend_bumper.hpp"
 
+#include "scitos_mira/ScitosModule.hpp"
+
 /**
  * @brief Module for interfacing all related to drive: odometry, motor controller, state etc.
  * 
  */
-class ScitosDrive : public rclcpp::Node{
+class ScitosDrive : public ScitosModule{
 	public:
 		ScitosDrive();
 
@@ -63,8 +65,6 @@ class ScitosDrive : public rclcpp::Node{
 								std::shared_ptr<scitos_msgs::srv::SuspendBumper::Response> response);
 
 	private:
-		mira::Authority authority_;
-
 		rclcpp::Publisher<scitos_msgs::msg::BumperStatus>::SharedPtr bumper_pub_;
 		rclcpp::Publisher<scitos_msgs::msg::DriveStatus>::SharedPtr drive_status_pub_;
 		rclcpp::Publisher<scitos_msgs::msg::EmergencyStopStatus>::SharedPtr emergency_stop_pub_;
@@ -82,8 +82,6 @@ class ScitosDrive : public rclcpp::Node{
 
 		scitos_msgs::msg::EmergencyStopStatus emergency_stop_;
 		std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
-
-		bool set_mira_param(std::string param_name, std::string value);
 };
 
 #endif // SCITOS_MIRA__SCITOS_DRIVE_HPP_

@@ -24,11 +24,13 @@
 #include "scitos_msgs/msg/charger_status.hpp"
 #include "scitos_msgs/srv/save_persistent_errors.hpp"
 
+#include "scitos_mira/ScitosModule.hpp"
+
 /**
  * @brief Module for interfacing all the charger topics, service and params.
  * 
  */
-class ScitosCharger : public rclcpp::Node{
+class ScitosCharger : public ScitosModule{
 	public:
 		ScitosCharger();
 
@@ -39,14 +41,10 @@ class ScitosCharger : public rclcpp::Node{
 								std::shared_ptr<scitos_msgs::srv::SavePersistentErrors::Response> response);
 
 	private:
-		mira::Authority authority_;
-
 		rclcpp::Publisher<sensor_msgs::msg::BatteryState>::SharedPtr battery_pub_;
 		rclcpp::Publisher<scitos_msgs::msg::ChargerStatus>::SharedPtr charger_pub_;
 
 		rclcpp::Service<scitos_msgs::srv::SavePersistentErrors>::SharedPtr save_persistent_errors_service_;
-
-		bool set_mira_param(std::string param_name, std::string value);
 };
 
 #endif // SCITOS_MIRA__SCITOS_CHARGER_HPP_

@@ -19,7 +19,7 @@
 
 #include "scitos_mira/ScitosDrive.hpp"
 
-ScitosDrive::ScitosDrive() : Node("scitos_drive"), authority_("/", "Drive", mira::Authority::ANONYMOUS){
+ScitosDrive::ScitosDrive() : ScitosModule("Drive"){
 	// Create ROS publishers
 	bumper_pub_ 		= this->create_publisher<scitos_msgs::msg::BumperStatus>("/bumper", 20);
 	drive_status_pub_ 	= this->create_publisher<scitos_msgs::msg::DriveStatus>("/drive_status", 20);
@@ -152,12 +152,7 @@ bool ScitosDrive::emergency_stop(const std::shared_ptr<scitos_msgs::srv::Emergen
 	emergency_stop_pub_->publish(emergency_stop_);
 
 	// Call mira service
-	mira::RPCFuture<void> rpc = authority_.callService<void>("/robot/Robot", std::string("emergencyStop"));
-	rpc.timedWait(mira::Duration::seconds(1));
-	rpc.get();
-	RCLCPP_DEBUG(this->get_logger(), "Emergency stop: %i", true);
-
-	return true;
+	return call_mira_service("emergencyStop");
 }
 
 bool ScitosDrive::enable_motors(const std::shared_ptr<scitos_msgs::srv::EnableMotors::Request> request,
@@ -179,46 +174,17 @@ bool ScitosDrive::reset_motor_stop(const std::shared_ptr<scitos_msgs::srv::Reset
 	emergency_stop_pub_->publish(emergency_stop_);
 
 	// Call mira service
-	mira::RPCFuture<void> rpc = authority_.callService<void>("/robot/Robot", std::string("resetMotorStop"));
-	rpc.timedWait(mira::Duration::seconds(1));
-	rpc.get(); 
-	RCLCPP_DEBUG(this->get_logger(), "Reset motor stop: %i", true);
-
-	return true;
+	return call_mira_service("resetMotorStop");
 }
 
 bool ScitosDrive::reset_odometry(const std::shared_ptr<scitos_msgs::srv::ResetOdometry::Request> request,
 								std::shared_ptr<scitos_msgs::srv::ResetOdometry::Response> response){
 	// Call mira service
-	mira::RPCFuture<void> rpc = authority_.callService<void>("/robot/Robot", std::string("resetOdometry"));
-	rpc.timedWait(mira::Duration::seconds(1));
-	rpc.get();
-	RCLCPP_DEBUG(this->get_logger(), "Reset odometry: %i", true);
-
-	return true;
+	return call_mira_service("resetOdometry");
 }
 
 bool ScitosDrive::suspend_bumper(const std::shared_ptr<scitos_msgs::srv::SuspendBumper::Request> request,
 								std::shared_ptr<scitos_msgs::srv::SuspendBumper::Response> response){
 	// Call mira service
-	mira::RPCFuture<void> rpc = authority_.callService<void>("/robot/Robot", std::string("suspendBumper"));
-	rpc.timedWait(mira::Duration::seconds(1));
-	rpc.get();
-	RCLCPP_DEBUG(this->get_logger(), "Suspend bumer: %i", true);
-
-	return true;
+	return call_mira_service("suspendBumper");
 }
-
-bool ScitosDrive::set_mira_param(std::string param_name, std::string value){
-	mira::RPCFuture<void> rpc = authority_.callService<void>("/robot/Robot#builtin", std::string("setProperty"), param_name, value); 
-	rpc.timedWait(mira::Duration::seconds(1));
-	try {
-		rpc.get(); 
-	}catch (mira::XRPC& e){
-		RCLCPP_WARN(this->get_logger(), "Mira RPC error caught when setting parameter: %s", e.what() );
-		return false;
-	}
-	return true; 
-}
-
-
