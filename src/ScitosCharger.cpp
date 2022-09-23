@@ -12,7 +12,7 @@
 // C++
 #include <limits>
 
-#include <scitos_mira/ScitosCharger.hpp>
+#include "scitos_mira/ScitosCharger.hpp"
 
 ScitosCharger::ScitosCharger() : Node("scitos_charger"), authority_("/", "Charger", mira::Authority::ANONYMOUS){
 	// Create ROS publishers

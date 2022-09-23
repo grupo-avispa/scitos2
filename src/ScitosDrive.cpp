@@ -17,7 +17,7 @@
 #include "geometry_msgs/msg/quaternion.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
 
-#include <scitos_mira/ScitosDrive.hpp>
+#include "scitos_mira/ScitosDrive.hpp"
 
 ScitosDrive::ScitosDrive() : Node("scitos_drive"), authority_("/", "Drive", mira::Authority::ANONYMOUS){
 	// Create ROS publishers
