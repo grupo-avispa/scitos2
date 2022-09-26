@@ -18,6 +18,9 @@ ScitosMira::ScitosMira(const std::string& name) : framework_(args_), Node(name,
 					rclcpp::NodeOptions().automatically_declare_parameters_from_overrides(true)){
 	RCLCPP_INFO(this->get_logger(), "Configuring the node...");
 
+	// Redirect Mira logger
+	MIRA_LOGGER.registerSink(RosLogSink());
+
 	// Initialize node
 	if (!this->has_parameter(("modules"))){
 		RCLCPP_ERROR(this->get_logger(), "Can't read parameter 'modules'. This MUST be supplied as a space separated list of SCITOS hardware modules to interface into ROS");

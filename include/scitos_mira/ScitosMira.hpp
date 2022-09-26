@@ -21,8 +21,9 @@
 // ROS
 #include "rclcpp/rclcpp.hpp"
 
-// Scitos Module
+// Scitos Mira
 #include "scitos_mira/ScitosModule.hpp"
+#include "scitos_mira/RosLogSink.hpp"
 
 /**
  * @brief Main class for the robot. Manages MIRA handle and ROS node.
