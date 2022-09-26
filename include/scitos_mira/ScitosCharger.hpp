@@ -13,7 +13,6 @@
 #define SCITOS_MIRA__SCITOS_CHARGER_HPP_
 
 // MIRA
-#include <fw/Framework.h>
 #include <robot/BatteryState.h>
 
 // ROS

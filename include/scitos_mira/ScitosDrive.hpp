@@ -13,12 +13,10 @@
 #define SCITOS_MIRA__SCITOS_DRIVE_HPP_
 
 // MIRA
-#include <fw/Framework.h>
 #include <robot/Odometry.h>
 
 // ROS
 #include "rclcpp/rclcpp.hpp"
-#include "std_msgs/msg/bool.hpp"
 #include "std_msgs/msg/float32.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "nav_msgs/msg/odometry.hpp"
