@@ -9,6 +9,10 @@
  *
  */
 
+// C++
+#include <thread>
+#include <chrono>
+
 // BOOST
 #include <boost/algorithm/string/join.hpp>
 
@@ -39,8 +43,8 @@ ScitosMira::ScitosMira(const std::string& name) : framework_(args_), Node(name,
 		framework_.load(config);
 	}
 
-	// TODO: Replace by STL
-	boost::this_thread::sleep(boost::posix_time::milliseconds(5000));
+	// Sleep for 5 seconds and start Mira framework
+	std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 	framework_.start();
 }
 
