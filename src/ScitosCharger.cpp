@@ -14,7 +14,7 @@
 
 #include "scitos_mira/ScitosCharger.hpp"
 
-ScitosCharger::ScitosCharger() : ScitosModule("Charger"){
+ScitosCharger::ScitosCharger() : ScitosModule("scitos_charger"){
 	// Create ROS publishers
 	battery_pub_ 		= this->create_publisher<sensor_msgs::msg::BatteryState>("/battery", 20);
 	charger_pub_ 		= this->create_publisher<scitos_msgs::msg::ChargerStatus>("/charger_status", 20);

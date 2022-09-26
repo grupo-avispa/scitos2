@@ -44,6 +44,7 @@ MIRA_REQUIRE_PACKAGE(SCITOS)
 add_executable(${PROJECT_NAME}
   src/ScitosCharger.cpp
   src/ScitosDrive.cpp
+  src/ScitosMira.cpp
   src/ScitosModule.cpp
   src/scitos_node.cpp
 )
@@ -84,6 +85,10 @@ install(DIRECTORY include/${PROJECT_NAME}/
 
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}/
+)
+
+install(DIRECTORY config
+  DESTINATION share/${PROJECT_NAME}
 )
 
 #############
