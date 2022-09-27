@@ -95,10 +95,7 @@ void ScitosDrive::odometry_data_callback(mira::ChannelRead<mira::robot::Odometry
 	rclcpp::Time odom_time = rclcpp::Time(data->timestamp.toUnixNS());
 
 	// Create quaternion from yaw
-	tf2::Quaternion q;
-	q.setRPY(0, 0, data->value().pose.phi());
 	geometry_msgs::msg::Quaternion orientation = tf2::toMsg(tf2::Quaternion({0, 0, 1}, data->value().pose.phi()));
-	geometry_msgs::msg::Quaternion orientation2 = tf2::toMsg(q);
 
 	// Publish as a nav_msgs::Odometry
 	nav_msgs::msg::Odometry odom_msg;
@@ -128,7 +125,8 @@ void ScitosDrive::odometry_data_callback(mira::ChannelRead<mira::robot::Odometry
 	tf_msg.transform.translation.z = 0.0;
 	tf_msg.transform.rotation = orientation;
 
-	tf_broadcaster_->sendTransform(tf_msg);
+	// TODO: Check transform
+	//tf_broadcaster_->sendTransform(tf_msg);
 }
 
 void ScitosDrive::velocity_command_callback(const geometry_msgs::msg::Twist& msg){
