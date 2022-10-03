@@ -20,6 +20,9 @@
 #include "scitos_mira/ScitosDrive.hpp"
 
 ScitosDrive::ScitosDrive() : ScitosModule("scitos_drive"){
+}
+
+void ScitosDrive::initialize(){
 	// Create ROS publishers
 	bumper_pub_ 		= this->create_publisher<scitos_msgs::msg::BumperStatus>("/bumper", 20);
 	drive_status_pub_ 	= this->create_publisher<scitos_msgs::msg::DriveStatus>("/drive_status", 20);

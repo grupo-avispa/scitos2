@@ -41,7 +41,11 @@
  */
 class ScitosDrive : public ScitosModule{
 	public:
-		ScitosDrive();
+		static std::shared_ptr<ScitosModule> Create() {
+			return std::shared_ptr<ScitosModule>(new ScitosDrive());
+		}
+
+		void initialize();
 
 		void bumper_data_callback(mira::ChannelRead<bool> data);
 		void drive_status_callback(mira::ChannelRead<uint32> data);
@@ -80,6 +84,8 @@ class ScitosDrive : public ScitosModule{
 
 		scitos_msgs::msg::EmergencyStopStatus emergency_stop_;
 		std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+
+		ScitosDrive();
 };
 
 #endif // SCITOS_MIRA__SCITOS_DRIVE_HPP_

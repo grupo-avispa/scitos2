@@ -18,9 +18,6 @@ ScitosModule::ScitosModule(const std::string& name) : Node(name), authority_("/"
 
 }
 
-ScitosModule::~ScitosModule(){
-}
-
 bool ScitosModule::call_mira_service(std::string service_name){
 	mira::RPCFuture<void> rpc = authority_.callService<void>("/robot/Robot", service_name); 
 	rpc.timedWait(mira::Duration::seconds(1));
