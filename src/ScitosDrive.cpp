@@ -27,7 +27,7 @@ void ScitosDrive::initialize(){
 	bumper_pub_ 		= this->create_publisher<scitos_msgs::msg::BumperStatus>("/bumper", 20);
 	drive_status_pub_ 	= this->create_publisher<scitos_msgs::msg::DriveStatus>("/drive_status", 20);
 	emergency_stop_pub_ = this->create_publisher<scitos_msgs::msg::EmergencyStopStatus>("/emergency_stop_status", rclcpp::QoS(20).transient_local());
-	mileage_pub_ 		= this->create_publisher<std_msgs::msg::Float32>("/mileage", 20);
+	mileage_pub_ 		= this->create_publisher<scitos_msgs::msg::Mileage>("/mileage", 20);
 	odometry_pub_ 		= this->create_publisher<nav_msgs::msg::Odometry>("/odom", 20);
 
 	// Create MIRA subscribers
@@ -88,9 +88,10 @@ void ScitosDrive::drive_status_callback(mira::ChannelRead<uint32> data){
 }
 
 void ScitosDrive::mileage_data_callback(mira::ChannelRead<float> data){
-	std_msgs::msg::Float32 out;
-	out.data = data->value();
-	mileage_pub_->publish(out);
+	scitos_msgs::msg::Mileage mileage_msg;
+	mileage_msg.header.stamp = this->now();
+	mileage_msg.distance = data->value();
+	mileage_pub_->publish(mileage_msg);
 }
 
 void ScitosDrive::odometry_data_callback(mira::ChannelRead<mira::robot::Odometry2> data){

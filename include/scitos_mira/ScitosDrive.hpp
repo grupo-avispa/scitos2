@@ -26,6 +26,7 @@
 #include "scitos_msgs/msg/bumper_status.hpp"
 #include "scitos_msgs/msg/drive_status.hpp"
 #include "scitos_msgs/msg/emergency_stop_status.hpp"
+#include "scitos_msgs/msg/mileage.hpp"
 #include "scitos_msgs/srv/change_force.hpp"
 #include "scitos_msgs/srv/emergency_stop.hpp"
 #include "scitos_msgs/srv/enable_motors.hpp"
@@ -70,7 +71,7 @@ class ScitosDrive : public ScitosModule{
 		rclcpp::Publisher<scitos_msgs::msg::BumperStatus>::SharedPtr bumper_pub_;
 		rclcpp::Publisher<scitos_msgs::msg::DriveStatus>::SharedPtr drive_status_pub_;
 		rclcpp::Publisher<scitos_msgs::msg::EmergencyStopStatus>::SharedPtr emergency_stop_pub_;
-		rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr mileage_pub_;
+		rclcpp::Publisher<scitos_msgs::msg::Mileage>::SharedPtr mileage_pub_;
 		rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_pub_;
 			
 		rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;

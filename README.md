@@ -88,11 +88,11 @@ This module control the motors (velocity commands, odometry, bumpers, ...).
 
 	Odometry of the robot. This is also published as a TF between `/odom` and `/base_footprint`.
 
-* **`bumper`** ([std_msgs/Bool])
+* **`bumper`** ([scitos_msgs/BumperStatus])
 
 	State of the robot bumper.
 
-* **`mileage`** ([std_msgs/Float32])
+* **`mileage`** ([scitos_msgs/Mileage])
 
 	The distance in metres that the robot has travelled since the beginning of time.
 
@@ -133,18 +133,18 @@ This module control the motors (velocity commands, odometry, bumpers, ...).
 
 [Ubuntu]: https://ubuntu.com/
 [ROS2]: https://docs.ros.org/en/galactic/
-[std_msgs/Bool]: http://docs.ros2.org/galactic/api/std_msgs/msg/Bool.html
-[std_msgs/Float32]: http://docs.ros2.org/galactic/api/std_msgs/msg/Float32.html
 [nav_msgs/Odometry]: http://docs.ros2.org/galactic/api/nav_msgs/msg/Odometry.html
 [geometry_msgs/Twist]: http://docs.ros2.org/galactic/api/geometry_msgs/msg/Twist.html
 [sensor_msgs/BatteryState]: https://docs.ros2.org/galactic/api/sensor_msgs/msg/BatteryState.html
+[scitos_msgs/BumperStatus]: https://github.com/grupo-avispa/scitos_common/
 [scitos_msgs/ChargerStatus]: https://github.com/grupo-avispa/scitos_common/
 [scitos_msgs/DriveStatus]: https://github.com/grupo-avispa/scitos_common/
 [scitos_msgs/EmergencyStopStatus]: https://github.com/grupo-avispa/scitos_common/
+[scitos_msgs/Mileage]: https://github.com/grupo-avispa/scitos_common/
 [scitos_msgs/ChangeForce]: https://github.com/grupo-avispa/scitos_common/
 [scitos_msgs/EmergencyStop]: https://github.com/grupo-avispa/scitos_common/
 [scitos_msgs/EnableMotors]: https://github.com/grupo-avispa/scitos_common/
 [scitos_msgs/ResetMotorStop]: https://github.com/grupo-avispa/scitos_common/
 [scitos_msgs/ResetOdometry]: https://github.com/grupo-avispa/scitos_common/
-[scitos_msgs/SuspendBumper]: https://github.com/grupo-avispa/scitos_common/
 [scitos_msgs/SavePersistentErrors]: https://github.com/grupo-avispa/scitos_common/
+[scitos_msgs/SuspendBumper]: https://github.com/grupo-avispa/scitos_common/
