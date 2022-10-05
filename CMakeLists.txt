@@ -27,6 +27,7 @@ set(msg_files
   "msg/ChargerStatus.msg"
   "msg/DriveStatus.msg"
   "msg/EmergencyStopStatus.msg"
+  "msg/Mileage.msg"
 )
 set(srv_files
   "srv/ChangeForce.srv"
