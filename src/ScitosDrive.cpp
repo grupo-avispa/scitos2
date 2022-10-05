@@ -24,11 +24,11 @@ ScitosDrive::ScitosDrive() : ScitosModule("scitos_drive"){
 
 void ScitosDrive::initialize(){
 	// Create ROS publishers
-	bumper_pub_ 		= this->create_publisher<scitos_msgs::msg::BumperStatus>("/bumper", 20);
-	drive_status_pub_ 	= this->create_publisher<scitos_msgs::msg::DriveStatus>("/drive_status", 20);
-	emergency_stop_pub_ = this->create_publisher<scitos_msgs::msg::EmergencyStopStatus>("/emergency_stop_status", rclcpp::QoS(20).transient_local());
-	mileage_pub_ 		= this->create_publisher<scitos_msgs::msg::Mileage>("/mileage", 20);
-	odometry_pub_ 		= this->create_publisher<nav_msgs::msg::Odometry>("/odom", 20);
+	bumper_pub_ 		= this->create_publisher<scitos_msgs::msg::BumperStatus>("bumper", 20);
+	drive_status_pub_ 	= this->create_publisher<scitos_msgs::msg::DriveStatus>("drive_status", 20);
+	emergency_stop_pub_ = this->create_publisher<scitos_msgs::msg::EmergencyStopStatus>("emergency_stop_status", rclcpp::QoS(20).transient_local());
+	mileage_pub_ 		= this->create_publisher<scitos_msgs::msg::Mileage>("mileage", 20);
+	odometry_pub_ 		= this->create_publisher<nav_msgs::msg::Odometry>("odom", 20);
 
 	// Create MIRA subscribers
 	authority_.subscribe<mira::robot::Odometry2>("/robot/Odometry", &ScitosDrive::odometry_data_callback, this);
@@ -37,21 +37,21 @@ void ScitosDrive::initialize(){
 	authority_.subscribe<uint32>("/robot/DriveStatusPlain", &ScitosDrive::drive_status_callback, this);
 
 	// Create ROS subscribers
-	cmd_vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>("/cmd_vel", 1000, 
+	cmd_vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>("cmd_vel", 1000, 
 									std::bind(&ScitosDrive::velocity_command_callback, this, std::placeholders::_1));
 
 	// Create ROS services
-	change_force_service_ 		= this->create_service<scitos_msgs::srv::ChangeForce>("/change_force", 
+	change_force_service_ 		= this->create_service<scitos_msgs::srv::ChangeForce>("change_force", 
 									std::bind(&ScitosDrive::change_force, this, std::placeholders::_1, std::placeholders::_2));
-	emergency_stop_service_ 	= this->create_service<scitos_msgs::srv::EmergencyStop>("/emergency_stop", 
+	emergency_stop_service_ 	= this->create_service<scitos_msgs::srv::EmergencyStop>("emergency_stop", 
 									std::bind(&ScitosDrive::emergency_stop, this, std::placeholders::_1, std::placeholders::_2));
-	enable_motors_service_ 		= this->create_service<scitos_msgs::srv::EnableMotors>("/enable_motors", 
+	enable_motors_service_ 		= this->create_service<scitos_msgs::srv::EnableMotors>("enable_motors", 
 									std::bind(&ScitosDrive::enable_motors, this, std::placeholders::_1, std::placeholders::_2));
-	reset_motor_stop_service_ 	= this->create_service<scitos_msgs::srv::ResetMotorStop>("/reset_motorstop", 
+	reset_motor_stop_service_ 	= this->create_service<scitos_msgs::srv::ResetMotorStop>("reset_motorstop", 
 									std::bind(&ScitosDrive::reset_motor_stop, this, std::placeholders::_1, std::placeholders::_2));
-	reset_odometry_service_ 	= this->create_service<scitos_msgs::srv::ResetOdometry>("/reset_odometry", 
+	reset_odometry_service_ 	= this->create_service<scitos_msgs::srv::ResetOdometry>("reset_odometry", 
 									std::bind(&ScitosDrive::reset_odometry, this, std::placeholders::_1, std::placeholders::_2));
-	suspend_bumper_service_ 	= this->create_service<scitos_msgs::srv::SuspendBumper>("/suspend_bumper", 
+	suspend_bumper_service_ 	= this->create_service<scitos_msgs::srv::SuspendBumper>("suspend_bumper", 
 									std::bind(&ScitosDrive::suspend_bumper, this, std::placeholders::_1, std::placeholders::_2));
 
 	emergency_stop_.emergency_stop_activated = false;

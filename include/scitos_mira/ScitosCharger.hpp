@@ -37,12 +37,6 @@ class ScitosCharger : public ScitosModule{
 
 		void initialize();
 
-		void battery_data_callback(mira::ChannelRead<mira::robot::BatteryState> data);
-		void charger_status_callback(mira::ChannelRead<uint8> data);
-
-		bool save_persistent_errors(const std::shared_ptr<scitos_msgs::srv::SavePersistentErrors::Request> request,
-								std::shared_ptr<scitos_msgs::srv::SavePersistentErrors::Response> response);
-
 	private:
 		rclcpp::Publisher<sensor_msgs::msg::BatteryState>::SharedPtr battery_pub_;
 		rclcpp::Publisher<scitos_msgs::msg::ChargerStatus>::SharedPtr charger_pub_;
@@ -50,6 +44,12 @@ class ScitosCharger : public ScitosModule{
 		rclcpp::Service<scitos_msgs::srv::SavePersistentErrors>::SharedPtr save_persistent_errors_service_;
 		
 		ScitosCharger();
+
+		void battery_data_callback(mira::ChannelRead<mira::robot::BatteryState> data);
+		void charger_status_callback(mira::ChannelRead<uint8> data);
+
+		bool save_persistent_errors(const std::shared_ptr<scitos_msgs::srv::SavePersistentErrors::Request> request,
+								std::shared_ptr<scitos_msgs::srv::SavePersistentErrors::Response> response);
 };
 
 #endif // SCITOS_MIRA__SCITOS_CHARGER_HPP_

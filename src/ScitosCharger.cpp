@@ -19,15 +19,15 @@ ScitosCharger::ScitosCharger() : ScitosModule("scitos_charger"){
 
 void ScitosCharger::initialize(){
 	// Create ROS publishers
-	battery_pub_ 		= this->create_publisher<sensor_msgs::msg::BatteryState>("/battery", 20);
-	charger_pub_ 		= this->create_publisher<scitos_msgs::msg::ChargerStatus>("/charger_status", 20);
+	battery_pub_ 		= this->create_publisher<sensor_msgs::msg::BatteryState>("battery", 20);
+	charger_pub_ 		= this->create_publisher<scitos_msgs::msg::ChargerStatus>("charger_status", 20);
 
 	// Create MIRA subscribers
 	authority_.subscribe<mira::robot::BatteryState>("/robot/charger/Battery", &ScitosCharger::battery_data_callback, this);
 	authority_.subscribe<uint8>("/robot/charger/ChargerStatus", &ScitosCharger::charger_status_callback, this);
 
 	// Create ROS services
-	save_persistent_errors_service_ 	= this->create_service<scitos_msgs::srv::SavePersistentErrors>("/charger/save_persistent_errors", 
+	save_persistent_errors_service_ 	= this->create_service<scitos_msgs::srv::SavePersistentErrors>("charger/save_persistent_errors", 
 										std::bind(&ScitosCharger::save_persistent_errors, this, std::placeholders::_1, std::placeholders::_2));
 }
 

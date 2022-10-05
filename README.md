@@ -130,6 +130,11 @@ This module control the motors (velocity commands, odometry, bumpers, ...).
 
 	This service requests temporarily disable the bumper.
 
+## Future work
+- [ ] Convert nodes to LifeCycleNodes.
+- [ ] Add Drive parameters.
+- [ ] Add other modules.
+- [ ] Improve parameter loading.
 
 [Ubuntu]: https://ubuntu.com/
 [ROS2]: https://docs.ros.org/en/galactic/
