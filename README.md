@@ -64,6 +64,12 @@ This module monitor the state of the battery and the charging station.
 
 	State of the charger.
 
+#### Services
+
+* **`charger/save_persistent_errors`** ([scitos_msgs/SavePersistentErrors])
+
+	This services takes a filename as a string and saves the persistent errors of the charger.
+
 ## Nodes
 
 ### Drive
@@ -141,3 +147,4 @@ This module control the motors (velocity commands, odometry, bumpers, ...).
 [scitos_msgs/ResetMotorStop]: https://github.com/grupo-avispa/scitos_common/
 [scitos_msgs/ResetOdometry]: https://github.com/grupo-avispa/scitos_common/
 [scitos_msgs/SuspendBumper]: https://github.com/grupo-avispa/scitos_common/
+[scitos_msgs/SavePersistentErrors]: https://github.com/grupo-avispa/scitos_common/
