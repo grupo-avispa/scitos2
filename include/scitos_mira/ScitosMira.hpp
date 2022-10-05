@@ -33,6 +33,7 @@ class ScitosMira: public rclcpp::Node{
 	public:
 		ScitosMira(const std::string& name);
 		~ScitosMira();
+		std::vector<std::shared_ptr<ScitosModule> > get_modules(){ return modules_; };
 	private:
 		mira::Framework framework_;
 		std::vector<std::string> args_;

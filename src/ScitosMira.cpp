@@ -45,8 +45,8 @@ ScitosMira::ScitosMira(const std::string& name) : framework_(args_), Node(name,
 		framework_.load(config);
 	}
 
-	// Sleep for 5 seconds and start Mira framework
-	std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+	// Sleep for 2 seconds and start Mira framework
+	std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 	framework_.start();
 
 	// Create MIRA modules

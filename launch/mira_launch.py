@@ -15,7 +15,7 @@ def generate_launch_description():
         'mira_config.yaml'
         )
 
-    # Prepare the sicks300_2 node.
+    # Prepare the scitos_mira node.
     scitos_mira_node = Node(
             package = 'scitos_mira',
             namespace = '',
