@@ -24,25 +24,29 @@
  * 
  */
 class RosLogSink : public mira::LogSink{
-	void consume(const mira::LogRecord &record) {
-		switch (record.level) {
-			case mira::SeverityLevel::CRITICAL:
-			case mira::SeverityLevel::ERROR:
-				RCLCPP_ERROR_STREAM(rclcpp::get_logger("mira_logger"), record.message);
-				break;
-			case mira::SeverityLevel::WARNING:
-				RCLCPP_WARN_STREAM(rclcpp::get_logger("mira_logger"), record.message);
-				break;
-			case mira::SeverityLevel::NOTICE:
-				RCLCPP_INFO_STREAM(rclcpp::get_logger("mira_logger"), record.message);
-				break;
-			case mira::SeverityLevel::DEBUG:
-				RCLCPP_DEBUG_STREAM(rclcpp::get_logger("mira_logger"), record.message);
-				break;
-			default:
-				break;
+	public:
+		RosLogSink(rclcpp::Logger logger) : logger_(logger) {}
+		void consume(const mira::LogRecord &record) {
+			switch (record.level) {
+				case mira::SeverityLevel::CRITICAL:
+				case mira::SeverityLevel::ERROR:
+					RCLCPP_ERROR_STREAM(logger_, record.message);
+					break;
+				case mira::SeverityLevel::WARNING:
+					RCLCPP_WARN_STREAM(logger_, record.message);
+					break;
+				case mira::SeverityLevel::NOTICE:
+					RCLCPP_INFO_STREAM(logger_, record.message);
+					break;
+				case mira::SeverityLevel::DEBUG:
+					RCLCPP_DEBUG_STREAM(logger_, record.message);
+					break;
+				default:
+					break;
+				}
 			}
-		}
+	private:
+		rclcpp::Logger logger_;
 };
 
 #endif // SCITOS_MIRA__ROS_LOG_SINK_HPP_

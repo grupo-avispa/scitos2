@@ -24,7 +24,7 @@ ScitosMira::ScitosMira(const std::string& name) : framework_(args_), Node(name,
 	RCLCPP_INFO(this->get_logger(), "Configuring the node...");
 
 	// Redirect Mira logger
-	MIRA_LOGGER.registerSink(RosLogSink());
+	MIRA_LOGGER.registerSink(RosLogSink(this->get_logger()));
 
 	// Initialize node
 	if (!this->has_parameter(("modules"))){
