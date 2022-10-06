@@ -17,15 +17,18 @@
 #include "geometry_msgs/msg/quaternion.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
 
-#include <scitos_mira/ScitosDrive.hpp>
+#include "scitos_mira/ScitosDrive.hpp"
 
-ScitosDrive::ScitosDrive() : Node("scitos_drive"), authority_("/", "scitos_drive", mira::Authority::ANONYMOUS){ 
+ScitosDrive::ScitosDrive() : ScitosModule("scitos_drive"){
+}
+
+void ScitosDrive::initialize(){
 	// Create ROS publishers
-	bumper_pub_ 		= this->create_publisher<scitos_msgs::msg::BumperStatus>("/bumper", 20);
-	drive_status_pub_ 	= this->create_publisher<scitos_msgs::msg::DriveStatus>("/drive_status", 20);
-	emergency_stop_pub_ = this->create_publisher<scitos_msgs::msg::EmergencyStopStatus>("/emergency_stop_status", rclcpp::QoS(20).transient_local());
-	mileage_pub_ 		= this->create_publisher<std_msgs::msg::Float32>("/mileage", 20);
-	odometry_pub_ 		= this->create_publisher<nav_msgs::msg::Odometry>("/odom", 20);
+	bumper_pub_ 		= this->create_publisher<scitos_msgs::msg::BumperStatus>("bumper", 20);
+	drive_status_pub_ 	= this->create_publisher<scitos_msgs::msg::DriveStatus>("drive_status", 20);
+	emergency_stop_pub_ = this->create_publisher<scitos_msgs::msg::EmergencyStopStatus>("emergency_stop_status", rclcpp::QoS(20).transient_local());
+	mileage_pub_ 		= this->create_publisher<scitos_msgs::msg::Mileage>("mileage", 20);
+	odometry_pub_ 		= this->create_publisher<nav_msgs::msg::Odometry>("odom", 20);
 
 	// Create MIRA subscribers
 	authority_.subscribe<mira::robot::Odometry2>("/robot/Odometry", &ScitosDrive::odometry_data_callback, this);
@@ -34,21 +37,21 @@ ScitosDrive::ScitosDrive() : Node("scitos_drive"), authority_("/", "scitos_drive
 	authority_.subscribe<uint32>("/robot/DriveStatusPlain", &ScitosDrive::drive_status_callback, this);
 
 	// Create ROS subscribers
-	cmd_vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>("/cmd_vel", 1000, 
+	cmd_vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>("cmd_vel", 1000, 
 									std::bind(&ScitosDrive::velocity_command_callback, this, std::placeholders::_1));
 
 	// Create ROS services
-	change_force_service_ 		= this->create_service<scitos_msgs::srv::ChangeForce>("/change_force", 
+	change_force_service_ 		= this->create_service<scitos_msgs::srv::ChangeForce>("change_force", 
 									std::bind(&ScitosDrive::change_force, this, std::placeholders::_1, std::placeholders::_2));
-	emergency_stop_service_ 	= this->create_service<scitos_msgs::srv::EmergencyStop>("/emergency_stop", 
+	emergency_stop_service_ 	= this->create_service<scitos_msgs::srv::EmergencyStop>("emergency_stop", 
 									std::bind(&ScitosDrive::emergency_stop, this, std::placeholders::_1, std::placeholders::_2));
-	enable_motors_service_ 		= this->create_service<scitos_msgs::srv::EnableMotors>("/enable_motors", 
+	enable_motors_service_ 		= this->create_service<scitos_msgs::srv::EnableMotors>("enable_motors", 
 									std::bind(&ScitosDrive::enable_motors, this, std::placeholders::_1, std::placeholders::_2));
-	reset_motor_stop_service_ 	= this->create_service<scitos_msgs::srv::ResetMotorStop>("/reset_motorstop", 
+	reset_motor_stop_service_ 	= this->create_service<scitos_msgs::srv::ResetMotorStop>("reset_motorstop", 
 									std::bind(&ScitosDrive::reset_motor_stop, this, std::placeholders::_1, std::placeholders::_2));
-	reset_odometry_service_ 	= this->create_service<scitos_msgs::srv::ResetOdometry>("/reset_odometry", 
+	reset_odometry_service_ 	= this->create_service<scitos_msgs::srv::ResetOdometry>("reset_odometry", 
 									std::bind(&ScitosDrive::reset_odometry, this, std::placeholders::_1, std::placeholders::_2));
-	suspend_bumper_service_ 	= this->create_service<scitos_msgs::srv::SuspendBumper>("/suspend_bumper", 
+	suspend_bumper_service_ 	= this->create_service<scitos_msgs::srv::SuspendBumper>("suspend_bumper", 
 									std::bind(&ScitosDrive::suspend_bumper, this, std::placeholders::_1, std::placeholders::_2));
 
 	emergency_stop_.emergency_stop_activated = false;
@@ -85,9 +88,10 @@ void ScitosDrive::drive_status_callback(mira::ChannelRead<uint32> data){
 }
 
 void ScitosDrive::mileage_data_callback(mira::ChannelRead<float> data){
-	std_msgs::msg::Float32 out;
-	out.data = data->value();
-	mileage_pub_->publish(out);
+	scitos_msgs::msg::Mileage mileage_msg;
+	mileage_msg.header.stamp = this->now();
+	mileage_msg.distance = data->value();
+	mileage_pub_->publish(mileage_msg);
 }
 
 void ScitosDrive::odometry_data_callback(mira::ChannelRead<mira::robot::Odometry2> data){
@@ -95,10 +99,7 @@ void ScitosDrive::odometry_data_callback(mira::ChannelRead<mira::robot::Odometry
 	rclcpp::Time odom_time = rclcpp::Time(data->timestamp.toUnixNS());
 
 	// Create quaternion from yaw
-	tf2::Quaternion q;
-	q.setRPY(0, 0, data->value().pose.phi());
 	geometry_msgs::msg::Quaternion orientation = tf2::toMsg(tf2::Quaternion({0, 0, 1}, data->value().pose.phi()));
-	geometry_msgs::msg::Quaternion orientation2 = tf2::toMsg(q);
 
 	// Publish as a nav_msgs::Odometry
 	nav_msgs::msg::Odometry odom_msg;
@@ -128,7 +129,8 @@ void ScitosDrive::odometry_data_callback(mira::ChannelRead<mira::robot::Odometry
 	tf_msg.transform.translation.z = 0.0;
 	tf_msg.transform.rotation = orientation;
 
-	tf_broadcaster_->sendTransform(tf_msg);
+	// TODO: Check transform
+	//tf_broadcaster_->sendTransform(tf_msg);
 }
 
 void ScitosDrive::velocity_command_callback(const geometry_msgs::msg::Twist& msg){
@@ -152,12 +154,7 @@ bool ScitosDrive::emergency_stop(const std::shared_ptr<scitos_msgs::srv::Emergen
 	emergency_stop_pub_->publish(emergency_stop_);
 
 	// Call mira service
-	mira::RPCFuture<void> rpc = authority_.callService<void>("/robot/Robot", std::string("emergencyStop"));
-	rpc.timedWait(mira::Duration::seconds(1));
-	rpc.get();
-	RCLCPP_DEBUG(this->get_logger(), "Emergency stop: %i", true);
-
-	return true;
+	return call_mira_service("emergencyStop");
 }
 
 bool ScitosDrive::enable_motors(const std::shared_ptr<scitos_msgs::srv::EnableMotors::Request> request,
@@ -179,46 +176,17 @@ bool ScitosDrive::reset_motor_stop(const std::shared_ptr<scitos_msgs::srv::Reset
 	emergency_stop_pub_->publish(emergency_stop_);
 
 	// Call mira service
-	mira::RPCFuture<void> rpc = authority_.callService<void>("/robot/Robot", std::string("resetMotorStop"));
-	rpc.timedWait(mira::Duration::seconds(1));
-	rpc.get(); 
-	RCLCPP_DEBUG(this->get_logger(), "Reset motor stop: %i", true);
-
-	return true;
+	return call_mira_service("resetMotorStop");
 }
 
 bool ScitosDrive::reset_odometry(const std::shared_ptr<scitos_msgs::srv::ResetOdometry::Request> request,
 								std::shared_ptr<scitos_msgs::srv::ResetOdometry::Response> response){
 	// Call mira service
-	mira::RPCFuture<void> rpc = authority_.callService<void>("/robot/Robot", std::string("resetOdometry"));
-	rpc.timedWait(mira::Duration::seconds(1));
-	rpc.get();
-	RCLCPP_DEBUG(this->get_logger(), "Reset odometry: %i", true);
-
-	return true;
+	return call_mira_service("resetOdometry");
 }
 
 bool ScitosDrive::suspend_bumper(const std::shared_ptr<scitos_msgs::srv::SuspendBumper::Request> request,
 								std::shared_ptr<scitos_msgs::srv::SuspendBumper::Response> response){
 	// Call mira service
-	mira::RPCFuture<void> rpc = authority_.callService<void>("/robot/Robot", std::string("suspendBumper"));
-	rpc.timedWait(mira::Duration::seconds(1));
-	rpc.get();
-	RCLCPP_DEBUG(this->get_logger(), "Suspend bumer: %i", true);
-
-	return true;
+	return call_mira_service("suspendBumper");
 }
-
-bool ScitosDrive::set_mira_param(std::string param_name, std::string value){
-	mira::RPCFuture<void> rpc = authority_.callService<void>("/robot/Robot#builtin", std::string("setProperty"), param_name, value); 
-	rpc.timedWait(mira::Duration::seconds(1));
-	try {
-		rpc.get(); 
-	}catch (mira::XRPC& e){
-		RCLCPP_WARN(this->get_logger(), "Mira RPC error caught when setting parameter: %s", e.what() );
-		return false;
-	}
-	return true; 
-}
-
-
