@@ -1,0 +1,7 @@
+# Scitos Mira
+scitos_mira:
+  ros__parameters:
+    modules: ['Charger', 'Drive']
+    config_file: "/home/alberto/instaladores-itera-rosi/mira/SCITOS/CLARC/SCITOSDriver.xml"
+    magnetic_barrier_enabled: true
+    odometry_frame: base_footprint

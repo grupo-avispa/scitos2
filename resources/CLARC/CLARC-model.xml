@@ -1,0 +1,62 @@
+<root>
+	<Model class="mira::robot::DifferentialRobotModel">
+		<MaxForwardVelocity>1.0</MaxForwardVelocity>
+		<MaxBackwardVelocity>-0.4</MaxBackwardVelocity>
+		<MaxRotVelocity>120</MaxRotVelocity>
+		<TransEpsilonVelocity>0.02</TransEpsilonVelocity>
+		<RotEpsilonVelocity>1</RotEpsilonVelocity>
+		<MaxTransAcceleration>0.5</MaxTransAcceleration>
+		<MaxTransDeceleration>1.0</MaxTransDeceleration>
+		<MaxRotAcceleration>180</MaxRotAcceleration>
+		<MaxRotDeceleration>180</MaxRotDeceleration>
+		<MaxEmergencyDeceleration>1.0</MaxEmergencyDeceleration>
+		<WheelDistance>0.330</WheelDistance>
+
+		<AlphaRotRot>0.0005</AlphaRotRot>
+		<AlphaRotTrans>0.0005</AlphaRotTrans>
+		<AlphaTransTrans>0.0005</AlphaTransTrans>
+		<AlphaTransRot>0.0005</AlphaTransRot>
+		<RMDF>
+			<model name="WeRobots">
+				<include file="${findpkg SCITOS}/etc/SCITOS-materials.xml" />
+				<material name="coverColor">
+					<color rgba="${color}" />
+				</material>
+				<link name="RobotFrame">
+					<collision>
+						<geometry>
+							<box size="0.485 0.434 1.25" />
+						</geometry>
+						<origin xyz="-0.1 0 0.625" />
+					</collision>
+					<collision name="SafetyZone">
+						<geometry>
+							<polygon>
+								<point xy="0.048  0.500" />
+								<point xy="0.748  0.500" />
+								<point xy="1.048  0.200" />
+								<point xy="1.048 -0.200" />
+								<point xy="0.748 -0.500" />
+								<point xy="0.048 -0.500" />
+							</polygon>
+						</geometry>
+					</collision>
+				</link>
+
+				<joint name="BaseToBody" type="fixed">
+					<parent link="RobotFrame" />
+					<child link="BodyFrame" />
+				</joint>
+
+				<if_not frontLaser="none">
+					<joint name="BaseToLaser" type="fixed">
+						<parent link="RobotFrame" />
+						<child link="frontLaser/MountFrame" />
+						<origin xyz="0.055 0 0.190" rpy="0 0 0" />
+					</joint>
+				</if_not>
+
+			</model>
+		</RMDF>
+	</Model>
+</root>

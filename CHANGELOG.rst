@@ -1,0 +1,18 @@
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package scitos_mira
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+0.0.1 (05-10-2022)
+------------------
+* Create README.md.
+* Create CHANGELOG.rst.
+* Create CMakeLists.mira.
+* Create package.xml.
+* Added config file for mira.
+* Added launch file for mira.
+* Added MIRA log sink.
+* Added ModuleFactory.
+* Added Charger & Drive modules (ScitosModule)
+* Added main ScitosMira node.
+* Added CLARC and WeRobot modules.
+* Contributors: Alberto Tudela.
