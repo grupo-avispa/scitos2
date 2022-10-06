@@ -2,7 +2,6 @@
 
 ![ROS2](https://img.shields.io/badge/ros2-galactic-purple?logo=ros&logoColor=white)
 ![License](https://img.shields.io/badge/license-GPL-green)
-[![Build](https://github.com/ajtudela/scitos_mira/actions/workflows/build.yml/badge.svg?branch=galactic)](https://github.com/ajtudela/scitos_mira/actions/workflows/build.yml)
 
 ## Overview
 
@@ -141,15 +140,15 @@ This module control the motors (velocity commands, odometry, bumpers, ...).
 [nav_msgs/Odometry]: http://docs.ros2.org/galactic/api/nav_msgs/msg/Odometry.html
 [geometry_msgs/Twist]: http://docs.ros2.org/galactic/api/geometry_msgs/msg/Twist.html
 [sensor_msgs/BatteryState]: https://docs.ros2.org/galactic/api/sensor_msgs/msg/BatteryState.html
-[scitos_msgs/BumperStatus]: https://github.com/grupo-avispa/scitos_common/
-[scitos_msgs/ChargerStatus]: https://github.com/grupo-avispa/scitos_common/
-[scitos_msgs/DriveStatus]: https://github.com/grupo-avispa/scitos_common/
-[scitos_msgs/EmergencyStopStatus]: https://github.com/grupo-avispa/scitos_common/
-[scitos_msgs/Mileage]: https://github.com/grupo-avispa/scitos_common/
-[scitos_msgs/ChangeForce]: https://github.com/grupo-avispa/scitos_common/
-[scitos_msgs/EmergencyStop]: https://github.com/grupo-avispa/scitos_common/
-[scitos_msgs/EnableMotors]: https://github.com/grupo-avispa/scitos_common/
-[scitos_msgs/ResetMotorStop]: https://github.com/grupo-avispa/scitos_common/
-[scitos_msgs/ResetOdometry]: https://github.com/grupo-avispa/scitos_common/
-[scitos_msgs/SavePersistentErrors]: https://github.com/grupo-avispa/scitos_common/
-[scitos_msgs/SuspendBumper]: https://github.com/grupo-avispa/scitos_common/
+[scitos_msgs/BumperStatus]: ../scitos_msgs/msg/BumperStatus.msg
+[scitos_msgs/ChargerStatus]: ../scitos_msgs/msg/ChargerStatus.msg
+[scitos_msgs/DriveStatus]: ../scitos_msgs/msg/DriveStatus.msg
+[scitos_msgs/EmergencyStopStatus]: ../scitos_msgs/msg/EmergencyStopStatus.msg
+[scitos_msgs/Mileage]: ../scitos_msgs/msg/Mileage.msg
+[scitos_msgs/ChangeForce]: ../scitos_msgs/srv/ChangeForce.msg
+[scitos_msgs/EmergencyStop]: ../scitos_msgs/srv/EmergencyStop.msg
+[scitos_msgs/EnableMotors]: ../scitos_msgs/srv/EnableMotors.msg
+[scitos_msgs/ResetMotorStop]: ../scitos_msgs/srv/ResetMotorStop.msg
+[scitos_msgs/ResetOdometry]: ../scitos_msgs/srv/ResetOdometry.msg
+[scitos_msgs/SavePersistentErrors]: ../srv/msg/SavePersistentErrors.msg
+[scitos_msgs/SuspendBumper]: ../scitos_msgs/srv/SuspendBumper.msg

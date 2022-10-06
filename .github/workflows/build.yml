@@ -19,9 +19,15 @@ jobs:
         uses: ros-tooling/setup-ros@v0.3
         with:
           required-ros-distributions: galactic
-      - name: Install dependencies
+      - name: Build without run tests for scitos_msgs
         uses: ros-tooling/action-ros-ci@v0.2
         with:
           package-name: scitos_msgs
+          target-ros2-distro: galactic
+          skip-tests: true
+      - name: Build without run tests for scitos_mira
+        uses: ros-tooling/action-ros-ci@v0.2
+        with:
+          package-name: scitos_mira
           target-ros2-distro: galactic
           skip-tests: true

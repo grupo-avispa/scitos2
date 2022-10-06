@@ -2,7 +2,6 @@
 
 ![ROS2](https://img.shields.io/badge/ros2-galactic-purple?logo=ros&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green)
-[![Build](https://github.com/ajtudela/scitos_msgs/actions/workflows/build.yml/badge.svg?branch=galactic)](https://github.com/ajtudela/scitos_msgs/actions/workflows/build.yml)
 
 ## Overview
 This package provides messages and services relating to Metralabs Scitos robot base.
