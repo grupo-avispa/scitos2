@@ -26,7 +26,7 @@ ScitosMira::ScitosMira(const std::string& name) : Node(name), framework_(args_){
 	MIRA_LOGGER.registerSink(RosLogSink(this->get_logger()));
 
 	// Declare and read parameters
-	this->declare_parameter("modules");
+	this->declare_parameter("modules", rclcpp::ParameterType::PARAMETER_STRING_ARRAY);
 	this->get_parameter("modules", modules_names_);
 	std::string joined = boost::algorithm::join(modules_names_, ", ");
 	if (!joined.empty()){
