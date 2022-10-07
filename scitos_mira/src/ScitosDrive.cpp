@@ -19,6 +19,8 @@
 
 #include "scitos_mira/ScitosDrive.hpp"
 
+uint64 MAGNETIC_BARRIER_RFID_CODE = 0xabababab;
+
 ScitosDrive::ScitosDrive() : ScitosModule("scitos_drive"){
 }
 
@@ -27,14 +29,17 @@ void ScitosDrive::initialize(){
 	bumper_pub_ 		= this->create_publisher<scitos_msgs::msg::BumperStatus>("bumper", 20);
 	drive_status_pub_ 	= this->create_publisher<scitos_msgs::msg::DriveStatus>("drive_status", 20);
 	emergency_stop_pub_ = this->create_publisher<scitos_msgs::msg::EmergencyStopStatus>("emergency_stop_status", rclcpp::QoS(20).transient_local());
+	magnetic_barrier_pub_	= this->create_publisher<scitos_msgs::msg::BarrierStatus>("barrier_status", rclcpp::QoS(20).transient_local());
 	mileage_pub_ 		= this->create_publisher<scitos_msgs::msg::Mileage>("mileage", 20);
 	odometry_pub_ 		= this->create_publisher<nav_msgs::msg::Odometry>("odom", 20);
+	rfid_pub_ 			= this->create_publisher<scitos_msgs::msg::RfidTag>("rfid", 20);
 
 	// Create MIRA subscribers
 	authority_.subscribe<mira::robot::Odometry2>("/robot/Odometry", &ScitosDrive::odometry_data_callback, this);
 	authority_.subscribe<bool>("/robot/Bumper", &ScitosDrive::bumper_data_callback, this);
 	authority_.subscribe<float>("/robot/Mileage", &ScitosDrive::mileage_data_callback, this);
 	authority_.subscribe<uint32>("/robot/DriveStatusPlain", &ScitosDrive::drive_status_callback, this);
+	authority_.subscribe<uint64>("/robot/RFIDUserTag", &ScitosDrive::rfid_status_callback, this);
 
 	// Create ROS subscribers
 	cmd_vel_sub_ = this->create_subscription<geometry_msgs::msg::Twist>("cmd_vel", 1000, 
@@ -47,6 +52,10 @@ void ScitosDrive::initialize(){
 									std::bind(&ScitosDrive::emergency_stop, this, std::placeholders::_1, std::placeholders::_2));
 	enable_motors_service_ 		= this->create_service<scitos_msgs::srv::EnableMotors>("enable_motors", 
 									std::bind(&ScitosDrive::enable_motors, this, std::placeholders::_1, std::placeholders::_2));
+	enable_rfid_service_ 		= this->create_service<scitos_msgs::srv::EnableRfid>("enable_rfid", 
+									std::bind(&ScitosDrive::enable_rfid, this, std::placeholders::_1, std::placeholders::_2));
+	reset_barrier_stop_service_ = this->create_service<scitos_msgs::srv::ResetBarrierStop>("reset_barrier_stop", 
+									std::bind(&ScitosDrive::reset_barrier_stop, this, std::placeholders::_1, std::placeholders::_2));
 	reset_motor_stop_service_ 	= this->create_service<scitos_msgs::srv::ResetMotorStop>("reset_motorstop", 
 									std::bind(&ScitosDrive::reset_motor_stop, this, std::placeholders::_1, std::placeholders::_2));
 	reset_odometry_service_ 	= this->create_service<scitos_msgs::srv::ResetOdometry>("reset_odometry", 
@@ -54,12 +63,24 @@ void ScitosDrive::initialize(){
 	suspend_bumper_service_ 	= this->create_service<scitos_msgs::srv::SuspendBumper>("suspend_bumper", 
 									std::bind(&ScitosDrive::suspend_bumper, this, std::placeholders::_1, std::placeholders::_2));
 
-	emergency_stop_.emergency_stop_activated = false;
-
 	// Declare and read parameters
 	this->declare_parameter("base_frame", rclcpp::ParameterValue("base_footprint"));
 	this->get_parameter("base_frame", base_frame_);
 	RCLCPP_INFO(this->get_logger(), "The parameter base_frame is set to: %s", base_frame_.c_str());
+
+	bool magnetic_barrier_enabled = true;
+	this->declare_parameter("magnetic_barrier_enabled", rclcpp::ParameterValue(false));
+	this->get_parameter("magnetic_barrier_enabled", magnetic_barrier_enabled);
+	RCLCPP_INFO(this->get_logger(), "The parameter magnetic_barrier_enabled is set to: %s", magnetic_barrier_enabled ? "true" : "false");
+
+	try{
+		set_mira_param("MainControlUnit.RearLaser.Enabled", magnetic_barrier_enabled ? "true" : "false");
+	}catch(mira::Exception& ex){}
+
+	emergency_stop_.emergency_stop_activated = false;
+	barrier_status_.barrier_stopped = false;
+	barrier_status_.last_detection_stamp = rclcpp::Time(0);
+	magnetic_barrier_pub_->publish(barrier_status_);
 }
 
 void ScitosDrive::bumper_data_callback(mira::ChannelRead<bool> data){
@@ -149,9 +170,20 @@ void ScitosDrive::velocity_command_callback(const geometry_msgs::msg::Twist& msg
 	}
 }
 
+void ScitosDrive::rfid_status_callback(mira::ChannelRead<uint64> data){
+	scitos_msgs::msg::RfidTag tag_msg;
+	if (data->value() == MAGNETIC_BARRIER_RFID_CODE) {
+		barrier_status_.barrier_stopped = true;
+		barrier_status_.last_detection_stamp = rclcpp::Time(data->timestamp.toUnixNS());
+		magnetic_barrier_pub_->publish(barrier_status_);
+	}
+	tag_msg.tag = data->value();
+	rfid_pub_->publish(tag_msg);
+}
+
 bool ScitosDrive::change_force(const std::shared_ptr<scitos_msgs::srv::ChangeForce::Request> request,
 								std::shared_ptr<scitos_msgs::srv::ChangeForce::Response> response){
-	return set_mira_param("MotorController.Force",mira::toString(request->force));
+	return set_mira_param("MotorController.Force", mira::toString(request->force));
 }
 
 bool ScitosDrive::emergency_stop(const std::shared_ptr<scitos_msgs::srv::EmergencyStop::Request> request,
@@ -198,4 +230,21 @@ bool ScitosDrive::suspend_bumper(const std::shared_ptr<scitos_msgs::srv::Suspend
 								std::shared_ptr<scitos_msgs::srv::SuspendBumper::Response> response){
 	// Call mira service
 	return call_mira_service("suspendBumper");
+}
+
+bool ScitosDrive::enable_rfid(const std::shared_ptr<scitos_msgs::srv::EnableRfid::Request> request,
+								std::shared_ptr<scitos_msgs::srv::EnableRfid::Response> response){
+	if (request->enable == true){
+		return set_mira_param("MainControlUnit.RearLaser.Enabled", "true");
+	}else{
+		return set_mira_param("MainControlUnit.RearLaser.Enabled", "false");
+	}
+	return false;
+}
+
+bool ScitosDrive::reset_barrier_stop(const std::shared_ptr<scitos_msgs::srv::ResetBarrierStop::Request> request,
+								std::shared_ptr<scitos_msgs::srv::ResetBarrierStop::Response> response){
+	barrier_status_.barrier_stopped = false;
+	magnetic_barrier_pub_->publish(barrier_status_);
+	return true;
 }

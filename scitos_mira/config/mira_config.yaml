@@ -4,4 +4,4 @@ scitos_mira:
     modules: ['Charger', 'Drive']
     config_file: "resources/CLARC/SCITOSDriver.xml"
     magnetic_barrier_enabled: true
-    odometry_frame: base_footprint
+    base_frame: base_footprint
