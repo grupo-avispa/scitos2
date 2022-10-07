@@ -5,6 +5,10 @@ Changelog for package scitos_mira
 0.0.2 (07-10-20022)
 ------------------
 * Change casting to static_cast.
+* Added base_frame as parameter.
+* Added rfid enable service and publish rfid tag.
+* Added reset barrier stop service and publish magnet barrier status.
+* Improve parameter loading.
 
 0.0.1 (05-10-2022)
 ------------------

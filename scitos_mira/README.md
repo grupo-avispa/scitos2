@@ -103,6 +103,15 @@ This module control the motors (velocity commands, odometry, bumpers, ...).
 
 	The state of the emergency buttons.
 
+* **`barrier_status`** ([scitos_msgs/BarrierStatus])
+
+	The state of the magnetic barrier.
+
+* **`rfid`** ([scitos_msgs/RfidTag])
+
+	The readings of the RFID sensor.
+
+
 #### Services
 
 * **`change_force`** ([scitos_msgs/ChangeForce])
@@ -113,9 +122,17 @@ This module control the motors (velocity commands, odometry, bumpers, ...).
 
 	This empty request/response service stops the robot. It is equivalent to the bumper being pressed - the motor stop is engaged, and can be reset with /reset_motorstop.
 
+* **`enable_rfid`** ([scitos_msgs/EnableRfid])
+
+	This service takes a `std_msgs::Bool enabled` in the request, and gives an empty response. It used to enable / disable the RFID sensor.
+
 * **`enable_motors`** ([scitos_msgs/EnableMotors])
 
 	This service takes a `std_msgs::Bool enabled` in the request, and gives an empty response. Disabling the motors is the same as placing the robot into "Free Run" mode from the status display.
+
+* **`reset_barrier_stop`** ([scitos_msgs/ResetBarrierStop])
+
+	This service is an empty request and empty response. It turns off the magnetic strip detector.
 
 * **`reset_motorstop`** ([scitos_msgs/ResetMotorStop])
 
@@ -129,25 +146,39 @@ This module control the motors (velocity commands, odometry, bumpers, ...).
 
 	This service requests temporarily disable the bumper.
 
+#### Parameters
+
+* **`base_frame`** (string, default: base_footprint)
+
+	The name of the base frame of the robot.
+
+* **`magnetic_barrier_enabled`** (bool, default: false)
+
+	This parameter should be set to true to enable the magnetic strip detector to cut out the motors.
+
 ## Future work
 - [ ] Convert nodes to LifeCycleNodes.
-- [ ] Add Drive parameters.
+- [x] Add Drive parameters.
 - [ ] Add other modules.
-- [ ] Improve parameter loading.
+- [x] Improve parameter loading.
 
 [Ubuntu]: https://ubuntu.com/
 [ROS2]: https://docs.ros.org/en/galactic/
 [nav_msgs/Odometry]: http://docs.ros2.org/galactic/api/nav_msgs/msg/Odometry.html
 [geometry_msgs/Twist]: http://docs.ros2.org/galactic/api/geometry_msgs/msg/Twist.html
 [sensor_msgs/BatteryState]: https://docs.ros2.org/galactic/api/sensor_msgs/msg/BatteryState.html
+[scitos_msgs/BarrierStatus]: ../scitos_msgs/msg/BarrierStatus.msg
 [scitos_msgs/BumperStatus]: ../scitos_msgs/msg/BumperStatus.msg
 [scitos_msgs/ChargerStatus]: ../scitos_msgs/msg/ChargerStatus.msg
 [scitos_msgs/DriveStatus]: ../scitos_msgs/msg/DriveStatus.msg
 [scitos_msgs/EmergencyStopStatus]: ../scitos_msgs/msg/EmergencyStopStatus.msg
 [scitos_msgs/Mileage]: ../scitos_msgs/msg/Mileage.msg
+[scitos_msgs/RfidTag]: ../scitos_msgs/msg/RfidTag.msg
 [scitos_msgs/ChangeForce]: ../scitos_msgs/srv/ChangeForce.msg
 [scitos_msgs/EmergencyStop]: ../scitos_msgs/srv/EmergencyStop.msg
+[scitos_msgs/EnableRfid]: ./scitos_msgs/srv/EnableRfid.msg
 [scitos_msgs/EnableMotors]: ../scitos_msgs/srv/EnableMotors.msg
+[scitos_msgs/ResetBarrierStop]: ../scitos_msgs/srv/ResetBarrierStop.msg
 [scitos_msgs/ResetMotorStop]: ../scitos_msgs/srv/ResetMotorStop.msg
 [scitos_msgs/ResetOdometry]: ../scitos_msgs/srv/ResetOdometry.msg
 [scitos_msgs/SavePersistentErrors]: ../srv/msg/SavePersistentErrors.msg

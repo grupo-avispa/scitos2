@@ -19,30 +19,32 @@
 #include "scitos_mira/ScitosMira.hpp"
 #include "scitos_mira/ModuleFactory.hpp"
 
-ScitosMira::ScitosMira(const std::string& name) : framework_(args_), Node(name, 
-					rclcpp::NodeOptions().automatically_declare_parameters_from_overrides(true)){
+ScitosMira::ScitosMira(const std::string& name) : Node(name), framework_(args_){
 	RCLCPP_INFO(this->get_logger(), "Configuring the node...");
 
 	// Redirect Mira logger
 	MIRA_LOGGER.registerSink(RosLogSink(this->get_logger()));
 
-	// Initialize node
-	if (!this->has_parameter(("modules"))){
+	// Declare and read parameters
+	this->declare_parameter("modules");
+	this->get_parameter("modules", modules_names_);
+	std::string joined = boost::algorithm::join(modules_names_, ", ");
+	if (!joined.empty()){
+		RCLCPP_INFO(this->get_logger(), "Loaded modules: [%s]", joined.c_str());
+	}else{
 		RCLCPP_ERROR(this->get_logger(), "Can't read parameter 'modules'. This MUST be supplied as a space separated list of SCITOS hardware modules to interface into ROS");
 		exit(1);
-	}else{
-		this->get_parameter("modules", modules_names_);
-		std::string joined = boost::algorithm::join(modules_names_, ", ");
-		RCLCPP_INFO(this->get_logger(), "Loaded modules: [%s]", joined.c_str());
 	}
-	if (!this->has_parameter(("config_file"))){
-		RCLCPP_ERROR(this->get_logger(), "Can't read parameter 'config_file'");
-		exit(1);
-	}else{
-		std::string config;
-		this->get_parameter("config_file", config);
-		RCLCPP_INFO(this->get_logger(), "Loaded config file: %s", config.c_str());
+
+	std::string config;
+	this->declare_parameter("scitos_config", rclcpp::ParameterValue(""));
+	this->get_parameter("scitos_config", config);
+	if (!config.empty()){
+		RCLCPP_INFO(this->get_logger(), "Loaded scitos config: %s", config.c_str());
 		framework_.load(config);
+	}else{
+		RCLCPP_ERROR(this->get_logger(), "Can't read parameter 'scitos_config'");
+		exit(1);
 	}
 
 	// Sleep for 2 seconds and start Mira framework

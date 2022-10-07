@@ -2,6 +2,5 @@
 scitos_mira:
   ros__parameters:
     modules: ['Charger', 'Drive']
-    config_file: "resources/CLARC/SCITOSDriver.xml"
     magnetic_barrier_enabled: true
     base_frame: base_footprint
