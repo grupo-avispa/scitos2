@@ -55,6 +55,11 @@ void ScitosDrive::initialize(){
 									std::bind(&ScitosDrive::suspend_bumper, this, std::placeholders::_1, std::placeholders::_2));
 
 	emergency_stop_.emergency_stop_activated = false;
+
+	// Declare and read parameters
+	this->declare_parameter("base_frame", rclcpp::ParameterValue("base_footprint"));
+	this->get_parameter("base_frame", base_frame_);
+	RCLCPP_INFO(this->get_logger(), "The parameter base_frame is set to: %s", base_frame_.c_str());
 }
 
 void ScitosDrive::bumper_data_callback(mira::ChannelRead<bool> data){
@@ -81,8 +86,7 @@ void ScitosDrive::drive_status_callback(mira::ChannelRead<uint32> data){
 	status_msg.safety_field_rear_laser = static_cast<bool>((*data) & (1 << 26));
 	status_msg.safety_field_front_laser = static_cast<bool>((*data) & (1 << 27));
 
-	RCLCPP_DEBUG(this->get_logger(), "Drive controller status (Nor: %i, MStop: %i, FreeRun: %i, EmBut: %i, 
-			BumpPres: %i, BusErr: %i, Stall: %i, InterErr: %i)",
+	RCLCPP_DEBUG(this->get_logger(), "Drive controller status (Nor: %i, MStop: %i, FreeRun: %i, EmBut: %i, BumpPres: %i, BusErr: %i, Stall: %i, InterErr: %i)",
 			status_msg.mode_normal, status_msg.mode_forced_stopped, 
 			status_msg.mode_freerun, status_msg.emergency_stop_activated, 
 			status_msg.bumper_front_activated, status_msg.error_sifas_communication, 
@@ -109,7 +113,7 @@ void ScitosDrive::odometry_data_callback(mira::ChannelRead<mira::robot::Odometry
 	nav_msgs::msg::Odometry odom_msg;
 	odom_msg.header.stamp = odom_time;
 	odom_msg.header.frame_id = "/odom";
-	odom_msg.child_frame_id = "base_footprint";
+	odom_msg.child_frame_id = base_frame_;
 
 	// Set the position
 	odom_msg.pose.pose.position.x = data->value().pose.x();
@@ -126,7 +130,7 @@ void ScitosDrive::odometry_data_callback(mira::ChannelRead<mira::robot::Odometry
 	geometry_msgs::msg::TransformStamped tf_msg;
 	tf_msg.header.stamp = odom_time;
 	tf_msg.header.frame_id = "/odom";
-	tf_msg.child_frame_id = "base_footprint";
+	tf_msg.child_frame_id = base_frame_;
 
 	tf_msg.transform.translation.x = data->value().pose.x();
 	tf_msg.transform.translation.y = data->value().pose.y();

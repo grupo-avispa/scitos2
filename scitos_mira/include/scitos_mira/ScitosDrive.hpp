@@ -12,6 +12,9 @@
 #ifndef SCITOS_MIRA__SCITOS_DRIVE_HPP_
 #define SCITOS_MIRA__SCITOS_DRIVE_HPP_
 
+// C++
+#include <string>
+
 // MIRA
 #include <robot/Odometry.h>
 
@@ -66,6 +69,7 @@ class ScitosDrive : public ScitosModule{
 
 		scitos_msgs::msg::EmergencyStopStatus emergency_stop_;
 		std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+		std::string base_frame_;
 
 		ScitosDrive();
 
