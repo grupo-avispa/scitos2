@@ -28,12 +28,14 @@ set(msg_files
   "msg/DriveStatus.msg"
   "msg/EmergencyStopStatus.msg"
   "msg/Mileage.msg"
+  "msg/RfidTag.msg"
 )
 set(srv_files
   "srv/ChangeForce.srv"
   "srv/EmergencyStop.srv"
   "srv/EnableMotors.srv"
   "srv/EnableRfid.srv"
+  "srv/ResetBarrierStop.srv"
   "srv/ResetMotorStop.srv"
   "srv/ResetOdometry.srv"
   "srv/SavePersistentErrors.srv"
