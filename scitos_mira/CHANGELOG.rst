@@ -2,6 +2,10 @@
 Changelog for package scitos_mira
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.2 (07-10-20022)
+------------------
+* Change casting to static_cast.
+
 0.0.1 (05-10-2022)
 ------------------
 * Create README.md.

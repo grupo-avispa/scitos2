@@ -67,22 +67,26 @@ void ScitosDrive::bumper_data_callback(mira::ChannelRead<bool> data){
 void ScitosDrive::drive_status_callback(mira::ChannelRead<uint32> data){
 	scitos_msgs::msg::DriveStatus status_msg;
 	status_msg.header.stamp = rclcpp::Time(data->timestamp.toUnixNS());
-	status_msg.mode_normal = (bool)((*data) & 1);
-	status_msg.mode_forced_stopped = (bool)((*data) & (1 << 1));
-	status_msg.mode_freerun = (bool)((*data) & (1 << 2));
+	status_msg.mode_normal = static_cast<bool>((*data) & 1);
+	status_msg.mode_forced_stopped = static_cast<bool>((*data) & (1 << 1));
+	status_msg.mode_freerun = static_cast<bool>((*data) & (1 << 2));
 
-	status_msg.emergency_stop_activated = (bool)((*data) & (1 << 7));
-	status_msg.emergency_stop_status = (bool)((*data) & (1 << 8));
-	status_msg.bumper_front_activated = (bool)((*data) & (1 << 9));
-	status_msg.bumper_front_status = (bool)((*data) & (1 << 10));
-	status_msg.bumper_rear_activated = (bool)((*data) & (1 << 11));
-	status_msg.bumper_rear_status = (bool)((*data) & (1 << 12));
+	status_msg.emergency_stop_activated = static_cast<bool>((*data) & (1 << 7));
+	status_msg.emergency_stop_status = static_cast<bool>((*data) & (1 << 8));
+	status_msg.bumper_front_activated = static_cast<bool>((*data) & (1 << 9));
+	status_msg.bumper_front_status = static_cast<bool>((*data) & (1 << 10));
+	status_msg.bumper_rear_activated = static_cast<bool>((*data) & (1 << 11));
+	status_msg.bumper_rear_status = static_cast<bool>((*data) & (1 << 12));
 
-	status_msg.safety_field_rear_laser = (bool)((*data) & (1 << 26));
-	status_msg.safety_field_front_laser = (bool)((*data) & (1 << 27));
+	status_msg.safety_field_rear_laser = static_cast<bool>((*data) & (1 << 26));
+	status_msg.safety_field_front_laser = static_cast<bool>((*data) & (1 << 27));
 
-	RCLCPP_DEBUG(this->get_logger(), "Drive controller status (Nor: %i, MStop: %i, FreeRun: %i, EmBut: %i, BumpPres: %i, BusErr: %i, Stall: %i, InterErr: %i)",
-			status_msg.mode_normal, status_msg.mode_forced_stopped, status_msg.mode_freerun, status_msg.emergency_stop_activated, status_msg.bumper_front_activated, status_msg.error_sifas_communication, status_msg.error_stall_mode, status_msg.error_sifas_internal);
+	RCLCPP_DEBUG(this->get_logger(), "Drive controller status (Nor: %i, MStop: %i, FreeRun: %i, EmBut: %i, 
+			BumpPres: %i, BusErr: %i, Stall: %i, InterErr: %i)",
+			status_msg.mode_normal, status_msg.mode_forced_stopped, 
+			status_msg.mode_freerun, status_msg.emergency_stop_activated, 
+			status_msg.bumper_front_activated, status_msg.error_sifas_communication, 
+			status_msg.error_stall_mode, status_msg.error_sifas_internal);
 
 	drive_status_pub_->publish(status_msg); 
 }
@@ -160,7 +164,8 @@ bool ScitosDrive::emergency_stop(const std::shared_ptr<scitos_msgs::srv::Emergen
 bool ScitosDrive::enable_motors(const std::shared_ptr<scitos_msgs::srv::EnableMotors::Request> request,
 								std::shared_ptr<scitos_msgs::srv::EnableMotors::Response> response){
 	// Call mira service
-	mira::RPCFuture<void> rpc = authority_.callService<void>("/robot/Robot", std::string("enableMotors"),(bool)request->enable);
+	mira::RPCFuture<void> rpc = authority_.callService<void>("/robot/Robot", std::string("enableMotors"), 
+																static_cast<bool>(request->enable));
 	rpc.timedWait(mira::Duration::seconds(1));
 	rpc.get();
 	RCLCPP_DEBUG(this->get_logger(), "Enable motor: %i", true);

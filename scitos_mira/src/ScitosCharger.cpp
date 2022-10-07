@@ -37,7 +37,7 @@ void ScitosCharger::battery_data_callback(mira::ChannelRead<mira::robot::Battery
 
 	sensor_msgs::msg::BatteryState battery;
 
-	battery.header.set__stamp(time);
+	battery.header.stamp = time;
 	battery.voltage = data->voltage;
 	battery.current = data->current;
 	battery.percentage = (data->lifePercent == 255) ? std::numeric_limits<float>::quiet_NaN() : 
