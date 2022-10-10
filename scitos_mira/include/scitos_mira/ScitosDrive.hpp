@@ -24,6 +24,7 @@
 #include "geometry_msgs/msg/twist.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "tf2_ros/transform_broadcaster.h"
+#include "rcl_interfaces/msg/set_parameters_result.hpp"
 
 // SCITOS MSGS
 #include "scitos_msgs/msg/barrier_status.hpp"
@@ -54,6 +55,7 @@ class ScitosDrive : public ScitosModule{
 		}
 
 		void initialize();
+		rcl_interfaces::msg::SetParametersResult parameters_callback(const std::vector<rclcpp::Parameter> &parameters);
 
 	private:
 		rclcpp::Publisher<scitos_msgs::msg::BumperStatus>::SharedPtr bumper_pub_;
@@ -74,6 +76,8 @@ class ScitosDrive : public ScitosModule{
 		rclcpp::Service<scitos_msgs::srv::ResetMotorStop>::SharedPtr reset_motor_stop_service_;
 		rclcpp::Service<scitos_msgs::srv::ResetOdometry>::SharedPtr reset_odometry_service_;
 		rclcpp::Service<scitos_msgs::srv::SuspendBumper>::SharedPtr suspend_bumper_service_;
+
+		OnSetParametersCallbackHandle::SharedPtr callback_handle_;
 
 		scitos_msgs::msg::EmergencyStopStatus emergency_stop_;
 		scitos_msgs::msg::BarrierStatus barrier_status_;

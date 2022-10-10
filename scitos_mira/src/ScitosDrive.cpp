@@ -77,10 +77,42 @@ void ScitosDrive::initialize(){
 		set_mira_param("MainControlUnit.RearLaser.Enabled", magnetic_barrier_enabled ? "true" : "false");
 	}catch(mira::Exception& ex){}
 
+	// Callback for monitor changes in parameters
+	callback_handle_ = this->add_on_set_parameters_callback(
+						std::bind(&ScitosDrive::parameters_callback, this, std::placeholders::_1));
+
 	emergency_stop_.emergency_stop_activated = false;
 	barrier_status_.barrier_stopped = false;
 	barrier_status_.last_detection_stamp = rclcpp::Time(0);
 	magnetic_barrier_pub_->publish(barrier_status_);
+}
+
+rcl_interfaces::msg::SetParametersResult ScitosDrive::parameters_callback(
+												const std::vector<rclcpp::Parameter> &parameters){
+	rcl_interfaces::msg::SetParametersResult result;
+	result.successful = true;
+	result.reason = "success";
+	
+	for (const auto &param: parameters){
+		if (param.get_name() == "magnetic_barrier_enabled" && 
+			param.get_type() == rclcpp::ParameterType::PARAMETER_BOOL){
+			try{
+				set_mira_param("MainControlUnit.RearLaser.Enabled", param.as_bool() ? "true" : "false");
+				RCLCPP_INFO(this->get_logger(), "The parameter magnetic_barrier_enabled is set to: %s", param.as_bool() ? "true" : "false");
+			}catch(mira::Exception& ex){
+				result.successful = false;
+				result.reason = "MIRA exception";
+			}
+		}
+
+		if (param.get_name() == "base_frame" && 
+			param.get_type() == rclcpp::ParameterType::PARAMETER_STRING){
+			base_frame_ = param.as_string();
+			RCLCPP_INFO(this->get_logger(), "The parameter base_frame is set to: %s", base_frame_.c_str());
+		}
+	}
+
+	return result;
 }
 
 void ScitosDrive::bumper_data_callback(mira::ChannelRead<bool> data){
