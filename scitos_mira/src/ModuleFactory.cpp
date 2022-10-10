@@ -12,12 +12,16 @@
 #include "scitos_mira/ModuleFactory.hpp"
 #include "scitos_mira/ScitosModule.hpp"
 #include "scitos_mira/ScitosCharger.hpp"
+#include "scitos_mira/ScitosDisplay.hpp"
 #include "scitos_mira/ScitosDrive.hpp"
+#include "scitos_mira/ScitosEBC.hpp"
 
 // Constructor
 ModuleFactory::ModuleFactory(){
 	register_module("Charger", ScitosCharger::Create());
+	register_module("Display", ScitosDisplay::Create());
 	register_module("Drive", ScitosDrive::Create());
+	register_module("EBC", ScitosEBC::Create());
 }
 
 // Registers the module with the given name

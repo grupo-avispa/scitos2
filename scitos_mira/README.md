@@ -10,7 +10,9 @@ This package contaning drivers for Metralabs Scitos robot base (HG4 version) usi
 Several sensors and components of SCITOS robots are exposed as ROS  published / subscribed topics and services. At the moment the included ``modules`` are:
 
 * **Charger**: this module monitor the state of the battery and the charging station.
-* **Drive**: this module control the motors (velocity commands, odometry, bumpers, ...).
+* **Display**: this module changes the status display on the base.
+* **Drive**: this module controls the motors (velocity commands, odometry, bumpers, ...).
+* **EBC**: this module controls the power for extra devices.
 
 **Keywords:** ROS2, scitos, mira, metralabs
 
@@ -69,7 +71,37 @@ This module monitor the state of the battery and the charging station.
 
 	This services takes a filename as a string and saves the persistent errors of the charger.
 
-## Nodes
+### Display
+
+This module changes the status display on the base.
+
+#### Subscribed Topics
+
+* **`user_menu_selected`** ([scitos_msgs/MenuEntry])
+
+	This topic is published when one of the user sub-menus is selected.
+
+#### Parameters
+
+* **`user_menu_enabled`** (bool, default: false)
+
+	Enable / disable the user menu entry.
+
+* **`menu_name`** (string, default: "User Menu")
+
+	The name of the user menu entry in the main menu of the status display.
+
+* **`menu_entry_name_1`** (string, default: "Menu Entry 1")
+
+	The name of the first sub menu entry in the user menu of the status display.
+
+* **`menu_entry_name_2`** (string, default: "Menu Entry 2")
+
+	The name of the second sub menu entry in the user menu of the status display.
+
+* **`menu_entry_name_3`** (string, default: "Menu Entry 3")
+
+	The name of the third sub menu entry in the user menu of the status display.
 
 ### Drive
 
@@ -156,10 +188,88 @@ This module control the motors (velocity commands, odometry, bumpers, ...).
 
 	This parameter should be set to true to enable the magnetic strip detector to cut out the motors.
 
+### EBC
+
+This module controls the power for extra devices.
+
+#### Parameters
+
+* **`mcu_5v_enabled`** (bool, default: true)
+
+	Enable / disable 5V enabled at MCU.
+
+* **`mcu_12v_enabled`** (bool, default: true)
+
+	Enable / disable 12V enabled at MCU.
+
+* **`mcu_24v_enabled`** (bool, default: true)
+
+	Enable / disable 24V enabled at MCU.
+
+* **`port0_5v_enabled`** (bool, default: true)
+
+	Enable / disable 5V enabled at port 0.
+
+* **`port0_12v_enabled`** (bool, default: true)
+
+	Enable / disable 12V enabled at port 0.
+
+* **`port0_24v_enabled`** (bool, default: true)
+
+	Enable / disable 24V enabled at port 0.
+
+* **`port1_5v_enabled`** (bool, default: true)
+
+	Enable / disable 5V enabled at port 1.
+
+* **`port1_12v_enabled`** (bool, default: true)
+
+	Enable / disable 12V enabled at port 1.
+
+* **`port1_24v_enabled`** (bool, default: true)
+
+	Enable / disable 24V enabled at port 1.
+
+* **`mcu_5v_max_current`** (double, default: 2.5)
+
+	Maximum current for MCU 5V in A. The value must be between 0-2.5A.
+
+* **`mcu_12v_max_current`** (double, default: 2.5)
+
+	Maximum current for MCU 12V in A. The value must be between 0-2.5A.
+
+* **`mcu_24v_max_current`** (double, default: 2.5)
+
+	Maximum current for MCU 24V in A. The value must be between 0-2.5A.
+
+* **`port0_5v_max_current`** (double, default: 2.5)
+
+	Maximum current for port 0 5V in A. The value must be between 0-2.5A.
+
+* **`port0_12v_max_current`** (double, default: 2.5)
+
+	Maximum current for port 0 12V in A. The value must be between 0-2.5A.
+
+* **`port0_24v_max_current`** (double, default: 2.5)
+
+	Maximum current for port 0 24V in A. The value must be between 0-2.5A.
+
+* **`port1_5v_max_current`** (double, default: 2.5)
+
+	Maximum current for port 1 5V in A. The value must be between 0-2.5A.
+
+* **`port1_12v_max_current`** (double, default: 2.5)
+
+	Maximum current for port 1 12V in A. The value must be between 0-4A.
+
+* **`port1_24v_max_current`** (double, default: 4)
+
+	Maximum current for port 1 24V in A. The value must be between 0-4A.
+
 ## Future work
 - [ ] Convert nodes to LifeCycleNodes.
 - [x] Add Drive parameters.
-- [ ] Add other modules.
+- [x] Add other modules.
 - [x] Improve parameter loading.
 
 [Ubuntu]: https://ubuntu.com/
@@ -172,6 +282,7 @@ This module control the motors (velocity commands, odometry, bumpers, ...).
 [scitos_msgs/ChargerStatus]: ../scitos_msgs/msg/ChargerStatus.msg
 [scitos_msgs/DriveStatus]: ../scitos_msgs/msg/DriveStatus.msg
 [scitos_msgs/EmergencyStopStatus]: ../scitos_msgs/msg/EmergencyStopStatus.msg
+[scitos_msgs/MenuEntry]: ../scitos_msgs/msg/MenuEntry.msg
 [scitos_msgs/Mileage]: ../scitos_msgs/msg/Mileage.msg
 [scitos_msgs/RfidTag]: ../scitos_msgs/msg/RfidTag.msg
 [scitos_msgs/ChangeForce]: ../scitos_msgs/srv/ChangeForce.msg

@@ -2,6 +2,11 @@
 Changelog for package scitos_mira
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.1.0 (10-10-2022)
+------------------
+* Added callback for monitoring parameters.
+* Added Display and EBC module.
+
 0.0.2 (07-10-20022)
 ------------------
 * Change casting to static_cast.

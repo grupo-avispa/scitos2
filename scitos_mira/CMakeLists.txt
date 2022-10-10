@@ -44,7 +44,9 @@ MIRA_REQUIRE_PACKAGE(SCITOS)
 add_executable(${PROJECT_NAME}
   src/ModuleFactory.cpp
   src/ScitosCharger.cpp
+  src/ScitosDisplay.cpp
   src/ScitosDrive.cpp
+  src/ScitosEBC.cpp
   src/ScitosMira.cpp
   src/ScitosModule.cpp
   src/scitos_node.cpp

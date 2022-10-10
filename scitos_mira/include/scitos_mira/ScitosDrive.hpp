@@ -55,7 +55,6 @@ class ScitosDrive : public ScitosModule{
 		}
 
 		void initialize();
-		rcl_interfaces::msg::SetParametersResult parameters_callback(const std::vector<rclcpp::Parameter> &parameters);
 
 	private:
 		rclcpp::Publisher<scitos_msgs::msg::BumperStatus>::SharedPtr bumper_pub_;
@@ -85,6 +84,8 @@ class ScitosDrive : public ScitosModule{
 		std::string base_frame_;
 
 		ScitosDrive();
+
+		rcl_interfaces::msg::SetParametersResult parameters_callback(const std::vector<rclcpp::Parameter> &parameters);
 
 		void bumper_data_callback(mira::ChannelRead<bool> data);
 		void drive_status_callback(mira::ChannelRead<uint32> data);
