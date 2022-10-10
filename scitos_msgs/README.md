@@ -13,6 +13,7 @@ This package provides messages and services relating to Metralabs Scitos robot b
 * [ChargerStatus](msg/ChargerStatus.msg): Describes the current state of the charger.
 * [DriveStatus](msg/DriveStatus.msg): Describes the current hardware state.
 * [EmergencyStopStatus](msg/EmergencyStopStatus.msg): Describes the current state of the emergency stop button.
+* [MenuEntry](msg/MenuEntry.msg): Describes the entry number for the embedded status display.
 * [Mileage](msg/Mileage.msg): Describes the distance that the robot has travelled.
 * [RfidTag](msg/RfidTag.msg): Describes the code of a RFID tag.
 

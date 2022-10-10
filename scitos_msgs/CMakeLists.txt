@@ -27,6 +27,7 @@ set(msg_files
   "msg/ChargerStatus.msg"
   "msg/DriveStatus.msg"
   "msg/EmergencyStopStatus.msg"
+  "msg/MenuEntry.msg"
   "msg/Mileage.msg"
   "msg/RfidTag.msg"
 )
