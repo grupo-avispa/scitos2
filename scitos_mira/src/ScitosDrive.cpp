@@ -64,12 +64,16 @@ void ScitosDrive::initialize(){
 									std::bind(&ScitosDrive::suspend_bumper, this, std::placeholders::_1, std::placeholders::_2));
 
 	// Declare and read parameters
-	this->declare_parameter("base_frame", rclcpp::ParameterValue("base_footprint"));
+	this->declare_parameter("base_frame", rclcpp::ParameterValue("base_footprint"), 
+							rcl_interfaces::msg::ParameterDescriptor()
+							.set__description("The name of the base frame of the robot"));
 	this->get_parameter("base_frame", base_frame_);
 	RCLCPP_INFO(this->get_logger(), "The parameter base_frame is set to: %s", base_frame_.c_str());
 
 	bool magnetic_barrier_enabled = true;
-	this->declare_parameter("magnetic_barrier_enabled", rclcpp::ParameterValue(false));
+	this->declare_parameter("magnetic_barrier_enabled", rclcpp::ParameterValue(false), 
+							rcl_interfaces::msg::ParameterDescriptor()
+							.set__description("Enable the magnetic strip detector to cut out the motors"));
 	this->get_parameter("magnetic_barrier_enabled", magnetic_barrier_enabled);
 	RCLCPP_INFO(this->get_logger(), "The parameter magnetic_barrier_enabled is set to: %s", magnetic_barrier_enabled ? "true" : "false");
 

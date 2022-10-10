@@ -26,7 +26,9 @@ ScitosMira::ScitosMira(const std::string& name) : Node(name), framework_(args_){
 	MIRA_LOGGER.registerSink(RosLogSink(this->get_logger()));
 
 	// Declare and read parameters
-	this->declare_parameter("modules", rclcpp::ParameterType::PARAMETER_STRING_ARRAY);
+	this->declare_parameter("modules", rclcpp::ParameterType::PARAMETER_STRING_ARRAY, 
+							rcl_interfaces::msg::ParameterDescriptor()
+							.set__description("List of the modules exposed by the node"));
 	this->get_parameter("modules", modules_names_);
 	std::string joined = boost::algorithm::join(modules_names_, ", ");
 	if (!joined.empty()){
@@ -37,7 +39,9 @@ ScitosMira::ScitosMira(const std::string& name) : Node(name), framework_(args_){
 	}
 
 	std::string config;
-	this->declare_parameter("scitos_config", rclcpp::ParameterValue(""));
+	this->declare_parameter("scitos_config", rclcpp::ParameterType::PARAMETER_STRING, 
+							rcl_interfaces::msg::ParameterDescriptor()
+							.set__description("Configuration of the robot in XML format"));
 	this->get_parameter("scitos_config", config);
 	if (!config.empty()){
 		RCLCPP_INFO(this->get_logger(), "Loaded scitos config: %s", config.c_str());

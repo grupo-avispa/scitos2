@@ -6,6 +6,7 @@ Changelog for package scitos_mira
 ------------------
 * Added callback for monitoring parameters.
 * Added Display and EBC module.
+* Added parameters descriptions.
 
 0.0.2 (07-10-20022)
 ------------------

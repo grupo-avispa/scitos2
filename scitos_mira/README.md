@@ -43,11 +43,13 @@ To build from source, clone the latest version from this repository into your co
 
 ## Usage
 
-First, edit the configuration file *mira_config.yaml* in the ``config`` folder. You MUST edit the modules you want to use and the  configuration of your SCITOS robot in xml format.
+First, edit the configuration file *mira_config.yaml* in the ``config`` folder. You MUST edit the modules you want to use in your robot.
+
+Second, edit the launch file *mira_launch.py* in the ``launch`` folder. Change the path of the configuration of your SCITOS robot in XML format.
 
 Then, run the scitos_mira node with:
 
-	ros2 launch scitos_mira mira_launch.py 
+	ros2 launch scitos_mira mira_launch.py
 
 ## Modules
 
