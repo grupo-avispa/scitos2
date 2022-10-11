@@ -89,6 +89,9 @@ void ScitosDrive::initialize(){
 	barrier_status_.barrier_stopped = false;
 	barrier_status_.last_detection_stamp = rclcpp::Time(0);
 	magnetic_barrier_pub_->publish(barrier_status_);
+
+	// Initialize the transform broadcaster
+	tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 }
 
 rcl_interfaces::msg::SetParametersResult ScitosDrive::parameters_callback(
@@ -194,8 +197,7 @@ void ScitosDrive::odometry_data_callback(mira::ChannelRead<mira::robot::Odometry
 	tf_msg.transform.translation.z = 0.0;
 	tf_msg.transform.rotation = orientation;
 
-	// TODO: Check transform
-	//tf_broadcaster_->sendTransform(tf_msg);
+	tf_broadcaster_->sendTransform(tf_msg);
 }
 
 void ScitosDrive::velocity_command_callback(const geometry_msgs::msg::Twist& msg){

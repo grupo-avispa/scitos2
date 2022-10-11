@@ -20,7 +20,6 @@
 
 // ROS
 #include "rclcpp/rclcpp.hpp"
-#include "std_msgs/msg/float32.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "tf2_ros/transform_broadcaster.h"
@@ -80,7 +79,7 @@ class ScitosDrive : public ScitosModule{
 
 		scitos_msgs::msg::EmergencyStopStatus emergency_stop_;
 		scitos_msgs::msg::BarrierStatus barrier_status_;
-		std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+		std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 		std::string base_frame_;
 
 		ScitosDrive();
