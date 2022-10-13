@@ -2,6 +2,10 @@
 Changelog for package scitos_mira
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.1.2 (13-10-2022)
+------------------
+* Check if the parameters have been declared.
+
 0.1.1 (11-10-2022)
 ------------------
 * Fix tf broadcaster.
