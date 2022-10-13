@@ -20,15 +20,18 @@
 
 // ROS
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include "lifecycle_msgs/msg/transition.hpp"
+
+typedef rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn ScitosCallReturn;
 
 /**
  * @brief Base class for all Scitos modules (Drive, Charger, etc).
  * 
  */
-class ScitosModule : public rclcpp::Node{
+class ScitosModule : public rclcpp_lifecycle::LifecycleNode{
 	public:
-		ScitosModule(const std::string& name);
-		virtual void initialize() = 0;
+		ScitosModule(const std::string& name, bool intra_process_comms = false);
 		virtual ~ScitosModule(){};
 
 	protected:

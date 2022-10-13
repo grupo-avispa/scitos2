@@ -14,7 +14,7 @@
 ScitosEBC::ScitosEBC() : ScitosModule("scitos_ebc"){
 }
 
-void ScitosEBC::initialize(){
+ScitosCallReturn ScitosEBC::on_configure(const rclcpp_lifecycle::State &){
 	// Declare and read parameters
 	bool port_enabled;
 	declare_parameter_if_not_declared("mcu_5v_enabled", rclcpp::ParameterValue(true), 
@@ -192,6 +192,36 @@ void ScitosEBC::initialize(){
 	// Callback for monitor changes in parameters
 	callback_handle_ = this->add_on_set_parameters_callback(
 						std::bind(&ScitosEBC::parameters_callback, this, std::placeholders::_1));
+
+	return ScitosCallReturn::SUCCESS;
+}
+
+ScitosCallReturn ScitosEBC::on_activate(const rclcpp_lifecycle::State &){
+	RCLCPP_INFO(this->get_logger(), "Activating the node...");
+	return ScitosCallReturn::SUCCESS;
+}
+
+ScitosCallReturn ScitosEBC::on_deactivate(const rclcpp_lifecycle::State &){
+	RCLCPP_INFO(this->get_logger(), "Deactivating the node...");
+
+	// Stops the main dispatcher thread
+	authority_.stop();
+
+	return ScitosCallReturn::SUCCESS;
+}
+
+ScitosCallReturn ScitosEBC::on_cleanup(const rclcpp_lifecycle::State &){
+	RCLCPP_INFO(this->get_logger(), "Cleaning the node...");
+	return ScitosCallReturn::SUCCESS;
+}
+
+ScitosCallReturn ScitosEBC::on_shutdown(const rclcpp_lifecycle::State & state){
+	RCLCPP_INFO(this->get_logger(), "Shutdown the node from state %s.", state.label().c_str());
+
+	// Checks out and invalidate the authority
+	authority_.checkout();
+
+	return ScitosCallReturn::SUCCESS;
 }
 
 rcl_interfaces::msg::SetParametersResult ScitosEBC::parameters_callback(

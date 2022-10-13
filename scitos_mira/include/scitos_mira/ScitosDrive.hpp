@@ -20,6 +20,7 @@
 
 // ROS
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "tf2_ros/transform_broadcaster.h"
@@ -53,16 +54,21 @@ class ScitosDrive : public ScitosModule{
 			return std::shared_ptr<ScitosModule>(new ScitosDrive());
 		}
 
-		void initialize();
+		rcl_interfaces::msg::SetParametersResult parameters_callback(const std::vector<rclcpp::Parameter> &parameters);
+		ScitosCallReturn on_configure(const rclcpp_lifecycle::State &);
+		ScitosCallReturn on_activate(const rclcpp_lifecycle::State &);
+		ScitosCallReturn on_deactivate(const rclcpp_lifecycle::State &);
+		ScitosCallReturn on_cleanup(const rclcpp_lifecycle::State &);
+		ScitosCallReturn on_shutdown(const rclcpp_lifecycle::State & state);
 
 	private:
-		rclcpp::Publisher<scitos_msgs::msg::BumperStatus>::SharedPtr bumper_pub_;
-		rclcpp::Publisher<scitos_msgs::msg::DriveStatus>::SharedPtr drive_status_pub_;
-		rclcpp::Publisher<scitos_msgs::msg::EmergencyStopStatus>::SharedPtr emergency_stop_pub_;
-		rclcpp::Publisher<scitos_msgs::msg::BarrierStatus>::SharedPtr magnetic_barrier_pub_;
-		rclcpp::Publisher<scitos_msgs::msg::Mileage>::SharedPtr mileage_pub_;
-		rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_pub_;
-		rclcpp::Publisher<scitos_msgs::msg::RfidTag>::SharedPtr rfid_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<scitos_msgs::msg::BumperStatus>::SharedPtr bumper_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<scitos_msgs::msg::DriveStatus>::SharedPtr drive_status_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<scitos_msgs::msg::EmergencyStopStatus>::SharedPtr emergency_stop_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<scitos_msgs::msg::BarrierStatus>::SharedPtr magnetic_barrier_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<scitos_msgs::msg::Mileage>::SharedPtr mileage_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Odometry>::SharedPtr odometry_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<scitos_msgs::msg::RfidTag>::SharedPtr rfid_pub_;
 			
 		rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;
 
@@ -83,8 +89,6 @@ class ScitosDrive : public ScitosModule{
 		std::string base_frame_;
 
 		ScitosDrive();
-
-		rcl_interfaces::msg::SetParametersResult parameters_callback(const std::vector<rclcpp::Parameter> &parameters);
 
 		void bumper_data_callback(mira::ChannelRead<bool> data);
 		void drive_status_callback(mira::ChannelRead<uint32> data);

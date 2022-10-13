@@ -75,7 +75,7 @@ ScitosMira::~ScitosMira(){
 void ScitosMira::initialize(){
 	// Initialize all of the modules
 	for (auto& module: modules_){
-		module->initialize();
+		//module->initialize();
 	}
 }
 

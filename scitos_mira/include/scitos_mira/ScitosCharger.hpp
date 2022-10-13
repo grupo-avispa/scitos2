@@ -17,6 +17,7 @@
 
 // ROS
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "sensor_msgs/msg/battery_state.hpp"
 
 // SCITOS MSGS
@@ -35,11 +36,15 @@ class ScitosCharger : public ScitosModule{
 			return std::shared_ptr<ScitosModule>(new ScitosCharger());
 		}
 
-		void initialize();
+		ScitosCallReturn on_configure(const rclcpp_lifecycle::State &);
+		ScitosCallReturn on_activate(const rclcpp_lifecycle::State &);
+		ScitosCallReturn on_deactivate(const rclcpp_lifecycle::State &);
+		ScitosCallReturn on_cleanup(const rclcpp_lifecycle::State &);
+		ScitosCallReturn on_shutdown(const rclcpp_lifecycle::State & state);
 
 	private:
-		rclcpp::Publisher<sensor_msgs::msg::BatteryState>::SharedPtr battery_pub_;
-		rclcpp::Publisher<scitos_msgs::msg::ChargerStatus>::SharedPtr charger_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::BatteryState>::SharedPtr battery_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<scitos_msgs::msg::ChargerStatus>::SharedPtr charger_pub_;
 		
 		rclcpp::Service<scitos_msgs::srv::SavePersistentErrors>::SharedPtr save_persistent_errors_service_;
 		

@@ -14,7 +14,7 @@
 ScitosDisplay::ScitosDisplay() : ScitosModule("scitos_display"){
 }
 
-void ScitosDisplay::initialize(){
+ScitosCallReturn ScitosDisplay::on_configure(const rclcpp_lifecycle::State &){
 	// Create publisher
 	display_data_pub_ = this->create_publisher<scitos_msgs::msg::MenuEntry>("user_menu_selected", 1);
 
@@ -67,6 +67,50 @@ void ScitosDisplay::initialize(){
 		set_mira_param("StatusDisplay.EnableUserMenu", "false");
 		RCLCPP_INFO(this->get_logger(), "The parameter user_menu_enabled is set to: false");
 	}
+
+	return ScitosCallReturn::SUCCESS;
+}
+
+ScitosCallReturn ScitosDisplay::on_activate(const rclcpp_lifecycle::State &){
+	RCLCPP_INFO(this->get_logger(), "Activating the node...");
+
+	// Explicitly activate the lifecycle publishers
+	display_data_pub_->on_activate();
+
+	return ScitosCallReturn::SUCCESS;
+}
+
+ScitosCallReturn ScitosDisplay::on_deactivate(const rclcpp_lifecycle::State &){
+	RCLCPP_INFO(this->get_logger(), "Deactivating the node...");
+
+	// Explicitly deactivate the lifecycle publishers
+	display_data_pub_->on_deactivate();
+
+	// Stops the main dispatcher thread
+	authority_.stop();
+
+	return ScitosCallReturn::SUCCESS;
+}
+
+ScitosCallReturn ScitosDisplay::on_cleanup(const rclcpp_lifecycle::State &){
+	RCLCPP_INFO(this->get_logger(), "Cleaning the node...");
+
+	// Release the shared pointer
+	display_data_pub_.reset();
+
+	return ScitosCallReturn::SUCCESS;
+}
+
+ScitosCallReturn ScitosDisplay::on_shutdown(const rclcpp_lifecycle::State & state){
+	RCLCPP_INFO(this->get_logger(), "Shutdown the node from state %s.", state.label().c_str());
+
+	// Release the shared pointer
+	display_data_pub_.reset();
+
+	// Checks out and invalidate the authority
+	authority_.checkout();
+
+	return ScitosCallReturn::SUCCESS;
 }
 
 rcl_interfaces::msg::SetParametersResult ScitosDisplay::parameters_callback(

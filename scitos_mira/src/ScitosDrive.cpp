@@ -24,7 +24,8 @@ uint64 MAGNETIC_BARRIER_RFID_CODE = 0xabababab;
 ScitosDrive::ScitosDrive() : ScitosModule("scitos_drive"){
 }
 
-void ScitosDrive::initialize(){
+ScitosCallReturn ScitosDrive::on_configure(const rclcpp_lifecycle::State &){
+	RCLCPP_INFO(this->get_logger(), "Configuring the node...");
 	// Create ROS publishers
 	bumper_pub_ 		= this->create_publisher<scitos_msgs::msg::BumperStatus>("bumper", 20);
 	drive_status_pub_ 	= this->create_publisher<scitos_msgs::msg::DriveStatus>("drive_status", 20);
@@ -92,6 +93,78 @@ void ScitosDrive::initialize(){
 
 	// Initialize the transform broadcaster
 	tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+
+	return ScitosCallReturn::SUCCESS;
+}
+
+ScitosCallReturn ScitosDrive::on_activate(const rclcpp_lifecycle::State &){
+	RCLCPP_INFO(this->get_logger(), "Activating the node...");
+
+	// Explicitly activate the lifecycle publishers
+	bumper_pub_->on_activate();
+	drive_status_pub_->on_activate();
+	emergency_stop_pub_->on_activate();
+	magnetic_barrier_pub_->on_activate();
+	mileage_pub_->on_activate();
+	odometry_pub_->on_activate();
+	rfid_pub_->on_activate();
+
+	return ScitosCallReturn::SUCCESS;
+}
+
+ScitosCallReturn ScitosDrive::on_deactivate(const rclcpp_lifecycle::State &){
+	RCLCPP_INFO(this->get_logger(), "Deactivating the node...");
+
+	// Explicitly deactivate the lifecycle publishers
+	bumper_pub_->on_deactivate();
+	drive_status_pub_->on_deactivate();
+	emergency_stop_pub_->on_deactivate();
+	magnetic_barrier_pub_->on_deactivate();
+	mileage_pub_->on_deactivate();
+	odometry_pub_->on_deactivate();
+	rfid_pub_->on_deactivate();
+
+	// Stops the main dispatcher thread
+	authority_.stop();
+
+	return ScitosCallReturn::SUCCESS;
+}
+
+ScitosCallReturn ScitosDrive::on_cleanup(const rclcpp_lifecycle::State &){
+	RCLCPP_INFO(this->get_logger(), "Cleaning the node...");
+
+	// Reset the shared pointers
+	bumper_pub_.reset();
+	drive_status_pub_.reset();
+	emergency_stop_pub_.reset();
+	magnetic_barrier_pub_.reset();
+	mileage_pub_.reset();
+	odometry_pub_.reset();
+	rfid_pub_.reset();
+
+	// Checks out and invalidate the authority
+	// TODO: Check this
+	//authority_.checkout();
+
+	return ScitosCallReturn::SUCCESS;
+}
+
+ScitosCallReturn ScitosDrive::on_shutdown(const rclcpp_lifecycle::State & state){
+	RCLCPP_INFO(this->get_logger(), "Shutdown the node from state %s.", state.label().c_str());
+
+	// Reset the shared pointers
+	bumper_pub_.reset();
+	drive_status_pub_.reset();
+	emergency_stop_pub_.reset();
+	magnetic_barrier_pub_.reset();
+	mileage_pub_.reset();
+	odometry_pub_.reset();
+	rfid_pub_.reset();
+
+	// Checks out and invalidate the authority
+	authority_.checkout();
+
+	return ScitosCallReturn::SUCCESS;
 }
 
 rcl_interfaces::msg::SetParametersResult ScitosDrive::parameters_callback(

@@ -14,6 +14,7 @@
 
 // ROS
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "rcl_interfaces/msg/set_parameters_result.hpp"
 
 #include "scitos_mira/ScitosModule.hpp"
@@ -28,15 +29,17 @@ class ScitosEBC : public ScitosModule{
 			return std::shared_ptr<ScitosModule>(new ScitosEBC());
 		}
 
-		void initialize();
+		rcl_interfaces::msg::SetParametersResult parameters_callback(const std::vector<rclcpp::Parameter> &parameters);
+		ScitosCallReturn on_configure(const rclcpp_lifecycle::State &);
+		ScitosCallReturn on_activate(const rclcpp_lifecycle::State &);
+		ScitosCallReturn on_deactivate(const rclcpp_lifecycle::State &);
+		ScitosCallReturn on_cleanup(const rclcpp_lifecycle::State &);
+		ScitosCallReturn on_shutdown(const rclcpp_lifecycle::State & state);
 
 	private:
-		ScitosEBC();
-
 		OnSetParametersCallbackHandle::SharedPtr callback_handle_;
 
-		rcl_interfaces::msg::SetParametersResult parameters_callback(const std::vector<rclcpp::Parameter> &parameters);
-
+		ScitosEBC();
 };
 
 #endif // SCITOS_MIRA__SCITOS_EBC_HPP_

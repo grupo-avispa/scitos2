@@ -17,7 +17,7 @@
 ScitosCharger::ScitosCharger() : ScitosModule("scitos_charger"){
 }
 
-void ScitosCharger::initialize(){
+ScitosCallReturn ScitosCharger::on_configure(const rclcpp_lifecycle::State &){
 	// Create ROS publishers
 	battery_pub_ 		= this->create_publisher<sensor_msgs::msg::BatteryState>("battery", 20);
 	charger_pub_ 		= this->create_publisher<scitos_msgs::msg::ChargerStatus>("charger_status", 20);
@@ -29,6 +29,54 @@ void ScitosCharger::initialize(){
 	// Create ROS services
 	save_persistent_errors_service_ 	= this->create_service<scitos_msgs::srv::SavePersistentErrors>("charger/save_persistent_errors", 
 										std::bind(&ScitosCharger::save_persistent_errors, this, std::placeholders::_1, std::placeholders::_2));
+
+	return ScitosCallReturn::SUCCESS;
+}
+
+ScitosCallReturn ScitosCharger::on_activate(const rclcpp_lifecycle::State &){
+	RCLCPP_INFO(this->get_logger(), "Activating the node...");
+
+	// Explicitly activate the lifecycle publishers
+	battery_pub_->on_activate();
+	charger_pub_->on_activate();
+
+	return ScitosCallReturn::SUCCESS;
+}
+
+ScitosCallReturn ScitosCharger::on_deactivate(const rclcpp_lifecycle::State &){
+	RCLCPP_INFO(this->get_logger(), "Deactivating the node...");
+
+	// Explicitly deactivate the lifecycle publishers
+	battery_pub_->on_deactivate();
+	charger_pub_->on_deactivate();
+
+	// Stops the main dispatcher thread
+	authority_.stop();
+
+	return ScitosCallReturn::SUCCESS;
+}
+
+ScitosCallReturn ScitosCharger::on_cleanup(const rclcpp_lifecycle::State &){
+	RCLCPP_INFO(this->get_logger(), "Cleaning the node...");
+
+	// Release the shared pointers
+	battery_pub_.reset();
+	charger_pub_.reset();
+
+	return ScitosCallReturn::SUCCESS;
+}
+
+ScitosCallReturn ScitosCharger::on_shutdown(const rclcpp_lifecycle::State & state){
+	RCLCPP_INFO(this->get_logger(), "Shutdown the node from state %s.", state.label().c_str());
+
+	// Release the shared pointers
+	battery_pub_.reset();
+	charger_pub_.reset();
+
+	// Checks out and invalidate the authority
+	authority_.checkout();
+
+	return ScitosCallReturn::SUCCESS;
 }
 
 void ScitosCharger::battery_data_callback(mira::ChannelRead<mira::robot::BatteryState> data){

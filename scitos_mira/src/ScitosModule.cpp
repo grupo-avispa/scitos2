@@ -14,8 +14,10 @@
 
 #include "scitos_mira/ScitosModule.hpp"
 
-ScitosModule::ScitosModule(const std::string& name) : Node(name), authority_("/", "scitos_ros", mira::Authority::ANONYMOUS){
-
+ScitosModule::ScitosModule(const std::string& name, bool intra_process_comms) : 
+					rclcpp_lifecycle::LifecycleNode(name, rclcpp::NodeOptions()
+					.use_intra_process_comms(intra_process_comms)),
+					authority_("/", "scitos_ros", mira::Authority::ANONYMOUS){
 }
 
 bool ScitosModule::call_mira_service(std::string service_name){
