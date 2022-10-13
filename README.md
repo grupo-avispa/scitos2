@@ -1,7 +1,6 @@
 # scitos2
 
 ![ROS2](https://img.shields.io/badge/ros2-galactic-purple?logo=ros&logoColor=white)
-[![Build](https://github.com/ajtudela/scitos2/actions/workflows/build.yml/badge.svg?branch=dev)](https://github.com/ajtudela/scitos2/actions/workflows/build.yml)
 
 ## Overview
 
