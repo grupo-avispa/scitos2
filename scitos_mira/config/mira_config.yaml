@@ -2,5 +2,7 @@
 scitos_mira:
   ros__parameters:
     modules: ['Charger', 'Drive']
+scitos_drive:
+  ros__parameters:
     magnetic_barrier_enabled: true
     base_frame: base_footprint
