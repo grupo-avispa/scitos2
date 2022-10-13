@@ -6,7 +6,7 @@ name: Build
 on:
   push:
     branches:
-      - galactic
+      - dev
   pull_request:
 
 jobs:
@@ -19,15 +19,9 @@ jobs:
         uses: ros-tooling/setup-ros@v0.3
         with:
           required-ros-distributions: galactic
-      - name: Build without run tests for scitos_msgs
+      - name: Build without run tests for scitos2
         uses: ros-tooling/action-ros-ci@v0.2
         with:
-          package-name: scitos_msgs
-          target-ros2-distro: galactic
-          skip-tests: true
-      - name: Build without run tests for scitos_mira
-        uses: ros-tooling/action-ros-ci@v0.2
-        with:
-          package-name: scitos_mira
+          package-name: scitos2
           target-ros2-distro: galactic
           skip-tests: true

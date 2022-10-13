@@ -26,20 +26,20 @@ void ScitosDisplay::initialize(){
 	authority_.subscribe<uint8>("/robot/StatusDisplayUserMenuEvent", &ScitosDisplay::menu_data_callback, this);
 
 	// Declare and read parameters
-	this->declare_parameter("user_menu_enabled", rclcpp::ParameterValue(false), 
+	declare_parameter_if_not_declared("user_menu_enabled", rclcpp::ParameterValue(false), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("Enable / disable the user menu entry"));
 	this->get_parameter("user_menu_enabled", user_menu_enabled_);
-	this->declare_parameter("menu_name", rclcpp::ParameterValue("User Menu"), 
+	declare_parameter_if_not_declared("menu_name", rclcpp::ParameterValue("User Menu"), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("The name of the user menu entry in the main menu of the status display"));
-	this->declare_parameter("menu_entry_name_1", rclcpp::ParameterValue("Entry 1"), 
+	declare_parameter_if_not_declared("menu_entry_name_1", rclcpp::ParameterValue("Entry 1"), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("The name of the first sub menu entry in the user menu of the status display."));
-	this->declare_parameter("menu_entry_name_2", rclcpp::ParameterValue("Entry 2"), 
+	declare_parameter_if_not_declared("menu_entry_name_2", rclcpp::ParameterValue("Entry 2"), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("The name of the second sub menu entry in the user menu of the status display."));
-	this->declare_parameter("menu_entry_name_3", rclcpp::ParameterValue("Entry 3"), 
+	declare_parameter_if_not_declared("menu_entry_name_3", rclcpp::ParameterValue("Entry 3"), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("The name of the third sub menu entry in the user menu of the status display."));
 

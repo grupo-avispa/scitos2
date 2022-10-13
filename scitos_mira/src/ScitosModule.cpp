@@ -48,3 +48,12 @@ std::string ScitosModule::get_mira_param(std::string param_name){
 	rpc.timedWait(mira::Duration::seconds(1));
 	return rpc.get();
 }
+
+void ScitosModule::declare_parameter_if_not_declared(const std::string & param_name, 
+	const rclcpp::ParameterValue & default_value, 
+	const rcl_interfaces::msg::ParameterDescriptor & param_descriptor){
+
+	if (!this->has_parameter(param_name)){
+		this->declare_parameter(param_name, default_value, param_descriptor);
+	}
+}

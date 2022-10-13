@@ -26,7 +26,7 @@ ScitosMira::ScitosMira(const std::string& name) : Node(name), framework_(args_){
 	MIRA_LOGGER.registerSink(RosLogSink(this->get_logger()));
 
 	// Declare and read parameters
-	this->declare_parameter("modules", rclcpp::ParameterType::PARAMETER_STRING_ARRAY, 
+	declare_parameter_if_not_declared("modules", rclcpp::ParameterType::PARAMETER_STRING_ARRAY, 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("List of the modules exposed by the node"));
 	this->get_parameter("modules", modules_names_);
@@ -39,7 +39,7 @@ ScitosMira::ScitosMira(const std::string& name) : Node(name), framework_(args_){
 	}
 
 	std::string config;
-	this->declare_parameter("scitos_config", rclcpp::ParameterType::PARAMETER_STRING, 
+	declare_parameter_if_not_declared("scitos_config", rclcpp::ParameterType::PARAMETER_STRING, 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("Configuration of the robot in XML format"));
 	this->get_parameter("scitos_config", config);
@@ -76,5 +76,14 @@ void ScitosMira::initialize(){
 	// Initialize all of the modules
 	for (auto& module: modules_){
 		module->initialize();
+	}
+}
+
+void ScitosMira::declare_parameter_if_not_declared(const std::string & param_name, 
+	const rclcpp::ParameterType & param_type,
+	const rcl_interfaces::msg::ParameterDescriptor & param_descriptor){
+
+	if (!this->has_parameter(param_name)){
+		this->declare_parameter(param_name, param_type, param_descriptor);
 	}
 }
