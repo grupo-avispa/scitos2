@@ -2,6 +2,10 @@
 Changelog for package scitos_mira
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.1.3 (24-10-2022)
+------------------
+* Update launch file with arguments.
+
 0.1.2 (13-10-2022)
 ------------------
 * Check if the parameters have been declared.
