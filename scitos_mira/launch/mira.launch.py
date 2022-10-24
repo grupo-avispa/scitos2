@@ -38,15 +38,15 @@ def generate_launch_description():
         description='Full path to the Scitos parameter file to use'
     )
 
-    # Prepare the scitos_mira node.
+    # Scitos mira
     scitos_mira_node = Node(
-            package = 'scitos_mira',
-            namespace = '',
-            executable = 'scitos_mira',
-            #name = 'scitos_mira',     # Uncomment to 'hide' charger, drive, etc. nodes under scitos mira.
-            parameters = [default_mira_param_file, {'scitos_config': default_scitos_param_file}],
-            emulate_tty = True
-        )
+        package = 'scitos_mira',
+        namespace = '',
+        executable = 'scitos_mira',
+        #name = 'scitos_mira',     # Uncomment to 'hide' charger, drive, etc. nodes under scitos mira.
+        parameters = [default_mira_param_file, {'scitos_config': default_scitos_param_file}],
+        emulate_tty = True
+    )
 
     return LaunchDescription([
         mira_param_file_launch_arg,
