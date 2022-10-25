@@ -32,7 +32,7 @@ def generate_launch_description():
         default_value=default_mira_param_file,
         description='Full path to the Mira parameter file to use'
     )
-    sicks300_param_file_launch_arg = DeclareLaunchArgument(
+    scitos_param_file_launch_arg = DeclareLaunchArgument(
         'scitos_param_file',
         default_value=default_scitos_param_file,
         description='Full path to the Scitos parameter file to use'
@@ -44,12 +44,12 @@ def generate_launch_description():
         namespace = '',
         executable = 'scitos_mira',
         #name = 'scitos_mira',     # Uncomment to 'hide' charger, drive, etc. nodes under scitos mira.
-        parameters = [default_mira_param_file, {'scitos_config': default_scitos_param_file}],
+        parameters = [mira_param_file, {'scitos_config': scitos_param_file}],
         emulate_tty = True
     )
 
     return LaunchDescription([
         mira_param_file_launch_arg,
-        sicks300_param_file_launch_arg,
+        scitos_param_file_launch_arg,
         scitos_mira_node,
     ])
