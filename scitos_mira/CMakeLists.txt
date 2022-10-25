@@ -90,7 +90,7 @@ install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}/
 )
 
-install(DIRECTORY config
+install(DIRECTORY params
   DESTINATION share/${PROJECT_NAME}
 )
 

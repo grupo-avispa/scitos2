@@ -19,7 +19,7 @@ def generate_launch_description():
     scitos_dir = get_package_share_directory('scitos_mira')
 
     # Read the YAML parameters file.
-    default_mira_param_file = os.path.join(scitos_dir, 'config', 'default.yaml')
+    default_mira_param_file = os.path.join(scitos_dir, 'params', 'default.yaml')
     default_scitos_param_file = os.path.join(scitos_dir, 'resources', 'CLARC', 'SCITOSDriver.xml')
 
     # Create the launch configuration variables.

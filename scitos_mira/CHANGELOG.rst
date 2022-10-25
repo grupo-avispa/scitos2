@@ -2,9 +2,10 @@
 Changelog for package scitos_mira
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.1.3 (24-10-2022)
+0.1.3 (25-10-2022)
 ------------------
 * Update launch file with arguments.
+* Rename folder from config to params.
 
 0.1.2 (13-10-2022)
 ------------------
