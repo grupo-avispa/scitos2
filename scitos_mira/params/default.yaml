@@ -5,4 +5,4 @@ scitos_mira:
 scitos_drive:
   ros__parameters:
     magnetic_barrier_enabled: true
-    base_frame: base_footprint
+    base_frame: base_link
