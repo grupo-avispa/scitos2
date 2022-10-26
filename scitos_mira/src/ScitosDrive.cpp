@@ -172,7 +172,7 @@ void ScitosDrive::odometry_data_callback(mira::ChannelRead<mira::robot::Odometry
 	// Publish as a nav_msgs::Odometry
 	nav_msgs::msg::Odometry odom_msg;
 	odom_msg.header.stamp = odom_time;
-	odom_msg.header.frame_id = "/odom";
+	odom_msg.header.frame_id = "odom";
 	odom_msg.child_frame_id = base_frame_;
 
 	// Set the position
@@ -189,7 +189,7 @@ void ScitosDrive::odometry_data_callback(mira::ChannelRead<mira::robot::Odometry
 	// Publish a TF
 	geometry_msgs::msg::TransformStamped tf_msg;
 	tf_msg.header.stamp = odom_time;
-	tf_msg.header.frame_id = "/odom";
+	tf_msg.header.frame_id = "odom";
 	tf_msg.child_frame_id = base_frame_;
 
 	tf_msg.transform.translation.x = data->value().pose.x();
