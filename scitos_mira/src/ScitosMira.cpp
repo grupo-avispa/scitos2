@@ -61,7 +61,7 @@ ScitosMira::ScitosMira(const std::string& name) : Node(name), framework_(args_){
 		if (!factory.is_registered(name)){
 			RCLCPP_ERROR_STREAM(this->get_logger(), "A non existent module named '" << name << "' was trying to be created.");
 		}else{
-			RCLCPP_INFO(this->get_logger(), "Loading module: [%s]", name.c_str());
+			RCLCPP_INFO(this->get_logger(), "Created module: [%s]", name.c_str());
 			modules_.push_back(factory.create_module(name));
 		}
 	}

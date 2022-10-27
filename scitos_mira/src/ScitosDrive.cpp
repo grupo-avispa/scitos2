@@ -85,7 +85,15 @@ void ScitosDrive::initialize(){
 	callback_handle_ = this->add_on_set_parameters_callback(
 						std::bind(&ScitosDrive::parameters_callback, this, std::placeholders::_1));
 
+	// Publish initial values
+	emergency_stop_.header.frame_id = base_frame_;
+	emergency_stop_.header.stamp = this->now();
 	emergency_stop_.emergency_stop_activated = false;
+	emergency_stop_pub_->publish(emergency_stop_);
+
+	// Publish initial values
+	barrier_status_.header.frame_id = base_frame_;
+	barrier_status_.header.stamp = this->now();
 	barrier_status_.barrier_stopped = false;
 	barrier_status_.last_detection_stamp = rclcpp::Time(0);
 	magnetic_barrier_pub_->publish(barrier_status_);
@@ -124,6 +132,7 @@ rcl_interfaces::msg::SetParametersResult ScitosDrive::parameters_callback(
 
 void ScitosDrive::bumper_data_callback(mira::ChannelRead<bool> data){
 	scitos_msgs::msg::BumperStatus status_msg;
+	status_msg.header.frame_id = base_frame_;
 	status_msg.header.stamp = this->now();
 	status_msg.bumper_activated = data->value();
 	bumper_pub_->publish(status_msg);
@@ -132,6 +141,7 @@ void ScitosDrive::bumper_data_callback(mira::ChannelRead<bool> data){
 void ScitosDrive::drive_status_callback(mira::ChannelRead<uint32> data){
 	scitos_msgs::msg::DriveStatus status_msg;
 	status_msg.header.stamp = rclcpp::Time(data->timestamp.toUnixNS());
+	status_msg.header.frame_id = base_frame_;
 	status_msg.mode_normal = static_cast<bool>((*data) & 1);
 	status_msg.mode_forced_stopped = static_cast<bool>((*data) & (1 << 1));
 	status_msg.mode_freerun = static_cast<bool>((*data) & (1 << 2));
@@ -157,6 +167,7 @@ void ScitosDrive::drive_status_callback(mira::ChannelRead<uint32> data){
 
 void ScitosDrive::mileage_data_callback(mira::ChannelRead<float> data){
 	scitos_msgs::msg::Mileage mileage_msg;
+	mileage_msg.header.frame_id = base_frame_;
 	mileage_msg.header.stamp = this->now();
 	mileage_msg.distance = data->value();
 	mileage_pub_->publish(mileage_msg);
@@ -210,7 +221,9 @@ void ScitosDrive::velocity_command_callback(const geometry_msgs::msg::Twist& msg
 
 void ScitosDrive::rfid_status_callback(mira::ChannelRead<uint64> data){
 	scitos_msgs::msg::RfidTag tag_msg;
-	if (data->value() == MAGNETIC_BARRIER_RFID_CODE) {
+	if (data->value() == MAGNETIC_BARRIER_RFID_CODE){
+		barrier_status_.header.frame_id = base_frame_;
+		barrier_status_.header.stamp = this->now();
 		barrier_status_.barrier_stopped = true;
 		barrier_status_.last_detection_stamp = rclcpp::Time(data->timestamp.toUnixNS());
 		magnetic_barrier_pub_->publish(barrier_status_);
@@ -227,6 +240,7 @@ bool ScitosDrive::change_force(const std::shared_ptr<scitos_msgs::srv::ChangeFor
 bool ScitosDrive::emergency_stop(const std::shared_ptr<scitos_msgs::srv::EmergencyStop::Request> request,
 								std::shared_ptr<scitos_msgs::srv::EmergencyStop::Response> response){
 	// Publish emergency stop
+	emergency_stop_.header.frame_id = base_frame_;
 	emergency_stop_.header.stamp = this->now();
 	emergency_stop_.emergency_stop_activated = true;
 	emergency_stop_pub_->publish(emergency_stop_);
@@ -250,6 +264,7 @@ bool ScitosDrive::enable_motors(const std::shared_ptr<scitos_msgs::srv::EnableMo
 bool ScitosDrive::reset_motor_stop(const std::shared_ptr<scitos_msgs::srv::ResetMotorStop::Request> request,
 								std::shared_ptr<scitos_msgs::srv::ResetMotorStop::Response> response){
 	// Publish emergency stop
+	emergency_stop_.header.frame_id = base_frame_;
 	emergency_stop_.header.stamp = this->now();
 	emergency_stop_.emergency_stop_activated = false;
 	emergency_stop_pub_->publish(emergency_stop_);
@@ -282,6 +297,8 @@ bool ScitosDrive::enable_rfid(const std::shared_ptr<scitos_msgs::srv::EnableRfid
 
 bool ScitosDrive::reset_barrier_stop(const std::shared_ptr<scitos_msgs::srv::ResetBarrierStop::Request> request,
 								std::shared_ptr<scitos_msgs::srv::ResetBarrierStop::Response> response){
+	barrier_status_.header.frame_id = base_frame_;
+	barrier_status_.header.stamp = this->now();
 	barrier_status_.barrier_stopped = false;
 	magnetic_barrier_pub_->publish(barrier_status_);
 	return true;

@@ -2,6 +2,10 @@
 Changelog for package scitos_mira
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.1.4 (27-10-2022)
+------------------
+* Added header to all messages.
+
 0.1.3 (25-10-2022)
 ------------------
 * Update launch file with arguments.
