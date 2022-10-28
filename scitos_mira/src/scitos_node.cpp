@@ -18,7 +18,7 @@
 int main(int argc, char **argv){
 	rclcpp::init(argc, argv);
 
-	rclcpp::executors::SingleThreadedExecutor exe;
+	rclcpp::executors::MultiThreadedExecutor exe;
 
 	// Create ScitosMira and add node modules to executor
 	auto node = std::make_shared<ScitosMira>("scitos_mira");
