@@ -2,7 +2,12 @@
 Changelog for package scitos_mira
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.1.4 (27-10-2022)
+0.1.5 (10-11-2022)
+------------------
+* Change to MultiThreadedExecutor.
+* Move modules to its own folder.
+
+0.1.4 (28-10-2022)
 ------------------
 * Added header to all messages.
 

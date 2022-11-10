@@ -11,10 +11,10 @@
 
 #include "scitos_mira/ModuleFactory.hpp"
 #include "scitos_mira/ScitosModule.hpp"
-#include "scitos_mira/ScitosCharger.hpp"
-#include "scitos_mira/ScitosDisplay.hpp"
-#include "scitos_mira/ScitosDrive.hpp"
-#include "scitos_mira/ScitosEBC.hpp"
+#include "scitos_mira/modules/ScitosCharger.hpp"
+#include "scitos_mira/modules/ScitosDisplay.hpp"
+#include "scitos_mira/modules/ScitosDrive.hpp"
+#include "scitos_mira/modules/ScitosEBC.hpp"
 
 // Constructor
 ModuleFactory::ModuleFactory(){

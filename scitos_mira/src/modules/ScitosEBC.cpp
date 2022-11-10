@@ -9,7 +9,7 @@
  *
  */
 
-#include "scitos_mira/ScitosEBC.hpp"
+#include "scitos_mira/modules/ScitosEBC.hpp"
 
 ScitosEBC::ScitosEBC() : ScitosModule("scitos_ebc"){
 }

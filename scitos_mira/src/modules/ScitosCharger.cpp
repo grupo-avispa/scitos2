@@ -12,7 +12,7 @@
 // C++
 #include <limits>
 
-#include "scitos_mira/ScitosCharger.hpp"
+#include "scitos_mira/modules/ScitosCharger.hpp"
 
 ScitosCharger::ScitosCharger() : ScitosModule("scitos_charger"){
 }

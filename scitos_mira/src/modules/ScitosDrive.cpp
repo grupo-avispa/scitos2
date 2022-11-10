@@ -17,7 +17,7 @@
 #include "geometry_msgs/msg/quaternion.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
 
-#include "scitos_mira/ScitosDrive.hpp"
+#include "scitos_mira/modules/ScitosDrive.hpp"
 
 uint64 MAGNETIC_BARRIER_RFID_CODE = 0xabababab;
 

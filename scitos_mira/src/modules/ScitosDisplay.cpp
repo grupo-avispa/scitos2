@@ -9,7 +9,7 @@
  *
  */
 
-#include "scitos_mira/ScitosDisplay.hpp"
+#include "scitos_mira/modules/ScitosDisplay.hpp"
 
 ScitosDisplay::ScitosDisplay() : ScitosModule("scitos_display"){
 }
