@@ -36,7 +36,7 @@ The scitos_mira package has been tested under [ROS2] Galactic on [Ubuntu] 20.04.
 To build from source, clone the latest version from this repository into your colcon workspace and compile the package using
 
 	cd colcon_workspace/src
-	git clone https://github.com/ajtudela/scitos_mira.git
+	git clone https://github.com/grupo-avispa/scitos2.git
 	cd ../
 	rosdep install -i --from-path src --rosdistro galactic -y
 	colcon build
