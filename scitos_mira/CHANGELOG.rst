@@ -2,6 +2,10 @@
 Changelog for package scitos_mira
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.2.0 (07-12-2022)
+------------------
+* Added visualization of the bumper status.
+
 0.1.5 (10-11-2022)
 ------------------
 * Change to MultiThreadedExecutor.

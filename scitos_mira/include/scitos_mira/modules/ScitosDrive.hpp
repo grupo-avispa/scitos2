@@ -20,10 +20,11 @@
 
 // ROS
 #include "rclcpp/rclcpp.hpp"
+#include "rcl_interfaces/msg/set_parameters_result.hpp"
+#include "tf2_ros/transform_broadcaster.h"
 #include "geometry_msgs/msg/twist.hpp"
 #include "nav_msgs/msg/odometry.hpp"
-#include "tf2_ros/transform_broadcaster.h"
-#include "rcl_interfaces/msg/set_parameters_result.hpp"
+#include "visualization_msgs/msg/marker_array.hpp"
 
 // SCITOS MSGS
 #include "scitos_msgs/msg/barrier_status.hpp"
@@ -57,6 +58,7 @@ class ScitosDrive : public ScitosModule{
 
 	private:
 		rclcpp::Publisher<scitos_msgs::msg::BumperStatus>::SharedPtr bumper_pub_;
+		rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr bumper_markers_pub_;
 		rclcpp::Publisher<scitos_msgs::msg::DriveStatus>::SharedPtr drive_status_pub_;
 		rclcpp::Publisher<scitos_msgs::msg::EmergencyStopStatus>::SharedPtr emergency_stop_pub_;
 		rclcpp::Publisher<scitos_msgs::msg::BarrierStatus>::SharedPtr magnetic_barrier_pub_;

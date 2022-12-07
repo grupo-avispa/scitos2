@@ -125,6 +125,10 @@ This module control the motors (velocity commands, odometry, bumpers, ...).
 
 	State of the robot bumper.
 
+* **`bumper_viz`** ([visualization_msgs/MarkerArray])
+
+	Markers with the state of the robot bumper: red if is activate, white otherwise.
+
 * **`mileage`** ([scitos_msgs/Mileage])
 
 	The distance in metres that the robot has travelled since the beginning of time.
@@ -278,6 +282,7 @@ This module controls the power for extra devices.
 [ROS2]: https://docs.ros.org/en/galactic/
 [nav_msgs/Odometry]: http://docs.ros2.org/galactic/api/nav_msgs/msg/Odometry.html
 [geometry_msgs/Twist]: http://docs.ros2.org/galactic/api/geometry_msgs/msg/Twist.html
+[visualization_msgs/MarkerArray]: http://docs.ros.org/api/visualization_msgs/html/msg/MarkerArray.html
 [sensor_msgs/BatteryState]: https://docs.ros2.org/galactic/api/sensor_msgs/msg/BatteryState.html
 [scitos_msgs/BarrierStatus]: ../scitos_msgs/msg/BarrierStatus.msg
 [scitos_msgs/BumperStatus]: ../scitos_msgs/msg/BumperStatus.msg

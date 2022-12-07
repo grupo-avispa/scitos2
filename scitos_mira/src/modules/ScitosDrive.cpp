@@ -27,6 +27,7 @@ ScitosDrive::ScitosDrive() : ScitosModule("scitos_drive"){
 void ScitosDrive::initialize(){
 	// Create ROS publishers
 	bumper_pub_ 		= this->create_publisher<scitos_msgs::msg::BumperStatus>("bumper", 20);
+	bumper_markers_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("bumper_viz", 20);
 	drive_status_pub_ 	= this->create_publisher<scitos_msgs::msg::DriveStatus>("drive_status", 20);
 	emergency_stop_pub_ = this->create_publisher<scitos_msgs::msg::EmergencyStopStatus>("emergency_stop_status", rclcpp::QoS(20).transient_local());
 	magnetic_barrier_pub_	= this->create_publisher<scitos_msgs::msg::BarrierStatus>("barrier_status", rclcpp::QoS(20).transient_local());
@@ -136,6 +137,65 @@ void ScitosDrive::bumper_data_callback(mira::ChannelRead<bool> data){
 	status_msg.header.stamp = this->now();
 	status_msg.bumper_activated = data->value();
 	bumper_pub_->publish(status_msg);
+
+	// Note: Only perform visualization if there's any subscriber
+	if (bumper_markers_pub_->get_subscription_count() == 0) return;
+
+	// Publish markers
+	visualization_msgs::msg::MarkerArray bumper_markers_;
+	visualization_msgs::msg::Marker cylinder;
+	cylinder.header = status_msg.header;
+	cylinder.lifetime = rclcpp::Duration(0, 10);
+	cylinder.ns = "bumpers";
+	cylinder.type = visualization_msgs::msg::Marker::CYLINDER;
+	cylinder.action = visualization_msgs::msg::Marker::ADD;
+	cylinder.scale.x = 0.05;
+	cylinder.scale.y = 0.05;
+	cylinder.scale.z = 0.45;
+	cylinder.pose.position.z = 0.03;
+
+	// Change color depending on the state: red if activated, white otherwise
+	if (data->value()){
+		cylinder.color.r = 1.0;
+		cylinder.color.g = 0.0;
+		cylinder.color.b = 0.0;
+		cylinder.color.a = 1.0;
+	}else{
+		cylinder.color.r = 1.0;
+		cylinder.color.g = 1.0;
+		cylinder.color.b = 1.0;
+		cylinder.color.a = 1.0;
+	}
+
+	// Left bumper
+	cylinder.id = 0;
+	cylinder.pose.position.x = -0.10;
+	cylinder.pose.position.y = 0.20;
+	cylinder.pose.orientation = tf2::toMsg(tf2::Quaternion({0, 1, 0}, M_PI / 2.0));
+	bumper_markers_.markers.push_back(cylinder);
+
+	// Right bumper
+	cylinder.id = 1;
+	cylinder.pose.position.x = -0.10;
+	cylinder.pose.position.y = -0.20;
+	cylinder.pose.orientation = tf2::toMsg(tf2::Quaternion({0, 1, 0}, M_PI / 2.0));
+	bumper_markers_.markers.push_back(cylinder);
+
+	// Front bumper
+	cylinder.id = 2;
+	cylinder.pose.position.y = 0.0;
+	cylinder.pose.position.x = 0.15;
+	cylinder.pose.orientation = tf2::toMsg(tf2::Quaternion({1, 0, 0}, M_PI / 2.0));
+	bumper_markers_.markers.push_back(cylinder);
+
+	// Rear bumper
+	cylinder.id = 3;
+	cylinder.pose.position.y = 0.0;
+	cylinder.pose.position.x = -0.35;
+	cylinder.pose.orientation = tf2::toMsg(tf2::Quaternion({1, 0, 0}, M_PI / 2.0));
+	bumper_markers_.markers.push_back(cylinder);
+
+	bumper_markers_pub_->publish(bumper_markers_);
 }
 
 void ScitosDrive::drive_status_callback(mira::ChannelRead<uint32> data){

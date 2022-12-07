@@ -6,7 +6,7 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
+  #add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
 ################################################
@@ -23,9 +23,10 @@ find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(scitos_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
 
 ## Find system libraries
-find_package(Boost REQUIRED COMPONENTS thread)
+find_package(Boost REQUIRED)
 
 ###########
 ## Build ##
@@ -61,6 +62,7 @@ ament_target_dependencies(${PROJECT_NAME}
   nav_msgs
   sensor_msgs
   scitos_msgs
+  visualization_msgs
 )
 target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
 
