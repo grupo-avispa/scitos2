@@ -134,7 +134,7 @@ rcl_interfaces::msg::SetParametersResult ScitosDrive::parameters_callback(
 void ScitosDrive::bumper_data_callback(mira::ChannelRead<bool> data){
 	scitos_msgs::msg::BumperStatus status_msg;
 	status_msg.header.frame_id = base_frame_;
-	status_msg.header.stamp = this->now();
+	status_msg.header.stamp = rclcpp::Time(data->timestamp.toUnixNS());
 	status_msg.bumper_activated = data->value();
 	bumper_pub_->publish(status_msg);
 
@@ -228,7 +228,7 @@ void ScitosDrive::drive_status_callback(mira::ChannelRead<uint32> data){
 void ScitosDrive::mileage_data_callback(mira::ChannelRead<float> data){
 	scitos_msgs::msg::Mileage mileage_msg;
 	mileage_msg.header.frame_id = base_frame_;
-	mileage_msg.header.stamp = this->now();
+	mileage_msg.header.stamp = rclcpp::Time(data->timestamp.toUnixNS());
 	mileage_msg.distance = data->value();
 	mileage_pub_->publish(mileage_msg);
 }
@@ -283,7 +283,7 @@ void ScitosDrive::rfid_status_callback(mira::ChannelRead<uint64> data){
 	scitos_msgs::msg::RfidTag tag_msg;
 	if (data->value() == MAGNETIC_BARRIER_RFID_CODE){
 		barrier_status_.header.frame_id = base_frame_;
-		barrier_status_.header.stamp = this->now();
+		barrier_status_.header.stamp = rclcpp::Time(data->timestamp.toUnixNS());
 		barrier_status_.barrier_stopped = true;
 		barrier_status_.last_detection_stamp = rclcpp::Time(data->timestamp.toUnixNS());
 		magnetic_barrier_pub_->publish(barrier_status_);
