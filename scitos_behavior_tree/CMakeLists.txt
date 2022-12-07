@@ -30,11 +30,11 @@ set(dependencies
   behaviortree_cpp_v3
 )
 
-add_library(is_bumper_activated_condition_bt_node SHARED src/condition/is_bumper_activated_condition.cpp)
-list(APPEND plugin_libs is_bumper_activated_condition_bt_node)
+add_library(scitos_is_bumper_activated_condition_bt_node SHARED src/condition/is_bumper_activated_condition.cpp)
+list(APPEND plugin_libs scitos_is_bumper_activated_condition_bt_node)
 
-add_library(reset_motorstop_service_bt_node SHARED src/action/reset_motorstop_service.cpp)
-list(APPEND plugin_libs reset_motorstop_service_bt_node)
+add_library(scitos_reset_motorstop_service_bt_node SHARED src/action/reset_motorstop_service.cpp)
+list(APPEND plugin_libs scitos_is_bumper_activated_condition_bt_node)
 
 foreach(bt_plugin ${plugin_libs})
   ament_target_dependencies(${bt_plugin} ${dependencies})
