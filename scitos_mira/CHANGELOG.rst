@@ -2,6 +2,10 @@
 Changelog for package scitos_mira
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.2.1 (09-12-2022)
+------------------
+* Replace declare_if_not_declared by using nav2_util.
+
 0.2.0 (07-12-2022)
 ------------------
 * Added visualization of the bumper status.

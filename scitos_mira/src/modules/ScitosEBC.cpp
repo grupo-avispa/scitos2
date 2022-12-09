@@ -9,6 +9,8 @@
  *
  */
 
+#include "nav2_util/node_utils.hpp"
+
 #include "scitos_mira/modules/ScitosEBC.hpp"
 
 ScitosEBC::ScitosEBC() : ScitosModule("scitos_ebc"){
@@ -17,63 +19,63 @@ ScitosEBC::ScitosEBC() : ScitosModule("scitos_ebc"){
 void ScitosEBC::initialize(){
 	// Declare and read parameters
 	bool port_enabled;
-	declare_parameter_if_not_declared("mcu_5v_enabled", rclcpp::ParameterValue(true), 
+	nav2_util::declare_parameter_if_not_declared(this, "mcu_5v_enabled", rclcpp::ParameterValue(true), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("Enable / disable 5V enabled at MCU"));
 	this->get_parameter("mcu_5v_enabled", port_enabled);
 	set_mira_param("MainControlUnit.EBC_5V.Enabled", port_enabled ? "true" : "false");
 	RCLCPP_INFO(this->get_logger(), "The parameter mcu_5v_enabled is set to: %s", port_enabled ? "true" : "false");
 
-	declare_parameter_if_not_declared("mcu_12v_enabled", rclcpp::ParameterValue(true), 
+	nav2_util::declare_parameter_if_not_declared(this, "mcu_12v_enabled", rclcpp::ParameterValue(true), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("Enable / disable 12V enabled at MCU"));
 	this->get_parameter("mcu_12v_enabled", port_enabled);
 	set_mira_param("MainControlUnit.EBC_12V.Enabled", port_enabled ? "true" : "false");
 	RCLCPP_INFO(this->get_logger(), "The parameter mcu_12v_enabled is set to: %s", port_enabled ? "true" : "false");
 
-	declare_parameter_if_not_declared("mcu_24v_enabled", rclcpp::ParameterValue(true), 
+	nav2_util::declare_parameter_if_not_declared(this, "mcu_24v_enabled", rclcpp::ParameterValue(true), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("Enable / disable 24V enabled at MCU"));
 	this->get_parameter("mcu_24v_enabled", port_enabled);
 	set_mira_param("MainControlUnit.EBC_24V.Enabled", port_enabled ? "true" : "false");
 	RCLCPP_INFO(this->get_logger(), "The parameter mcu_24v_enabled is set to: %s", port_enabled ? "true" : "false");
 
-	declare_parameter_if_not_declared("port0_5v_enabled", rclcpp::ParameterValue(true), 
+	nav2_util::declare_parameter_if_not_declared(this, "port0_5v_enabled", rclcpp::ParameterValue(true), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("Enable / disable 5V enabled at port 0"));
 	this->get_parameter("port0_5v_enabled", port_enabled);
 	set_mira_param("EBC7.Port0_5V.Enabled", port_enabled ? "true" : "false");
 	RCLCPP_INFO(this->get_logger(), "The parameter port0_5v_enabled is set to: %s", port_enabled ? "true" : "false");
 
-	declare_parameter_if_not_declared("port0_12v_enabled", rclcpp::ParameterValue(true), 
+	nav2_util::declare_parameter_if_not_declared(this, "port0_12v_enabled", rclcpp::ParameterValue(true), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("Enable / disable 12V enabled at port 0"));
 	this->get_parameter("port0_12v_enabled", port_enabled);
 	set_mira_param("EBC7.Port0_12V.Enabled", port_enabled ? "true" : "false");
 	RCLCPP_INFO(this->get_logger(), "The parameter port0_12v_enabled is set to: %s", port_enabled ? "true" : "false");
 
-	declare_parameter_if_not_declared("port0_24v_enabled", rclcpp::ParameterValue(true), 
+	nav2_util::declare_parameter_if_not_declared(this, "port0_24v_enabled", rclcpp::ParameterValue(true), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("Enable / disable 24V enabled at port 0"));
 	this->get_parameter("port0_24v_enabled", port_enabled);
 	set_mira_param("EBC7.Port0_24V.Enabled", port_enabled ? "true" : "false");
 	RCLCPP_INFO(this->get_logger(), "The parameter port0_24v_enabled is set to: %s", port_enabled ? "true" : "false");
 
-	declare_parameter_if_not_declared("port1_5v_enabled", rclcpp::ParameterValue(true), 
+	nav2_util::declare_parameter_if_not_declared(this, "port1_5v_enabled", rclcpp::ParameterValue(true), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("Enable / disable 5V enabled at port 1"));
 	this->get_parameter("port1_5v_enabled", port_enabled);
 	set_mira_param("EBC7.Port1_5V.Enabled", port_enabled ? "true" : "false");
 	RCLCPP_INFO(this->get_logger(), "The parameter port1_5v_enabled is set to: %s", port_enabled ? "true" : "false");
 
-	declare_parameter_if_not_declared("port1_12v_enabled", rclcpp::ParameterValue(true), 
+	nav2_util::declare_parameter_if_not_declared(this, "port1_12v_enabled", rclcpp::ParameterValue(true), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("Enable / disable 12V enabled at port 1"));
 	this->get_parameter("port1_12v_enabled", port_enabled);
 	set_mira_param("EBC7.Port1_12V.Enabled", port_enabled ? "true" : "false");
 	RCLCPP_INFO(this->get_logger(), "The parameter port1_12v_enabled is set to: %s", port_enabled ? "true" : "false");
 
-	declare_parameter_if_not_declared("port1_24v_enabled", rclcpp::ParameterValue(true), 
+	nav2_util::declare_parameter_if_not_declared(this, "port1_24v_enabled", rclcpp::ParameterValue(true), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("Enable / disable 24V enabled at port 1"));
 	this->get_parameter("port1_24v_enabled", port_enabled);
@@ -81,7 +83,7 @@ void ScitosEBC::initialize(){
 	RCLCPP_INFO(this->get_logger(), "The parameter port1_24v_enabled is set to: %s", port_enabled ? "true" : "false");
 
 	float port_max_current;
-	declare_parameter_if_not_declared("mcu_5v_max_current", rclcpp::ParameterValue(2.5), 
+	nav2_util::declare_parameter_if_not_declared(this, "mcu_5v_max_current", rclcpp::ParameterValue(2.5), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("Maximum current for MCU 5V in A")
 							.set__floating_point_range({rcl_interfaces::msg::FloatingPointRange()
@@ -93,7 +95,7 @@ void ScitosEBC::initialize(){
 	set_mira_param("MainControlUnit.EBC_5V.MaxCurrent", std::to_string(port_max_current));
 	RCLCPP_INFO(this->get_logger(), "The parameter mcu_5v_max_current is set to: %f", port_max_current);
 
-	declare_parameter_if_not_declared("mcu_12v_max_current", rclcpp::ParameterValue(2.5), 
+	nav2_util::declare_parameter_if_not_declared(this, "mcu_12v_max_current", rclcpp::ParameterValue(2.5), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("Maximum current for MCU 12V in A")
 							.set__floating_point_range({rcl_interfaces::msg::FloatingPointRange()
@@ -105,7 +107,7 @@ void ScitosEBC::initialize(){
 	set_mira_param("MainControlUnit.EBC_12V.MaxCurrent", std::to_string(port_max_current));
 	RCLCPP_INFO(this->get_logger(), "The parameter mcu_12v_max_current is set to: %f", port_max_current);
 
-	declare_parameter_if_not_declared("mcu_24v_max_current", rclcpp::ParameterValue(2.5), 
+	nav2_util::declare_parameter_if_not_declared(this, "mcu_24v_max_current", rclcpp::ParameterValue(2.5), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("Maximum current for MCU 24V in A")
 							.set__floating_point_range({rcl_interfaces::msg::FloatingPointRange()
@@ -117,7 +119,7 @@ void ScitosEBC::initialize(){
 	set_mira_param("MainControlUnit.EBC_24V.MaxCurrent", std::to_string(port_max_current));
 	RCLCPP_INFO(this->get_logger(), "The parameter mcu_24v_max_current is set to: %f", port_max_current);
 
-	declare_parameter_if_not_declared("port0_5v_max_current", rclcpp::ParameterValue(2.5), 
+	nav2_util::declare_parameter_if_not_declared(this, "port0_5v_max_current", rclcpp::ParameterValue(2.5), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("Maximum current for port 0 5V in A")
 							.set__floating_point_range({rcl_interfaces::msg::FloatingPointRange()
@@ -129,7 +131,7 @@ void ScitosEBC::initialize(){
 	set_mira_param("EBC7.Port0_5V.MaxCurrent", std::to_string(port_max_current));
 	RCLCPP_INFO(this->get_logger(), "The parameter port0_5v_max_current is set to: %f", port_max_current);
 
-	declare_parameter_if_not_declared("port0_12v_max_current", rclcpp::ParameterValue(2.5), 
+	nav2_util::declare_parameter_if_not_declared(this, "port0_12v_max_current", rclcpp::ParameterValue(2.5), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("Maximum current for port 0 12V in A")
 							.set__floating_point_range({rcl_interfaces::msg::FloatingPointRange()
@@ -141,7 +143,7 @@ void ScitosEBC::initialize(){
 	set_mira_param("EBC7.Port0_12V.MaxCurrent", std::to_string(port_max_current));
 	RCLCPP_INFO(this->get_logger(), "The parameter port0_12v_max_current is set to: %f", port_max_current);
 
-	declare_parameter_if_not_declared("port0_24v_max_current", rclcpp::ParameterValue(2.5), 
+	nav2_util::declare_parameter_if_not_declared(this, "port0_24v_max_current", rclcpp::ParameterValue(2.5), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("Maximum current for port 0 24V in A")
 							.set__floating_point_range({rcl_interfaces::msg::FloatingPointRange()
@@ -153,7 +155,7 @@ void ScitosEBC::initialize(){
 	set_mira_param("EBC7.Port0_24V.MaxCurrent", std::to_string(port_max_current));
 	RCLCPP_INFO(this->get_logger(), "The parameter port0_24v_max_current is set to: %f", port_max_current);
 
-	declare_parameter_if_not_declared("port1_5v_max_current", rclcpp::ParameterValue(2.5), 
+	nav2_util::declare_parameter_if_not_declared(this, "port1_5v_max_current", rclcpp::ParameterValue(2.5), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("Maximum current for port 1 5V in A")
 							.set__floating_point_range({rcl_interfaces::msg::FloatingPointRange()
@@ -165,7 +167,7 @@ void ScitosEBC::initialize(){
 	set_mira_param("EBC7.Port1_5V.MaxCurrent", std::to_string(port_max_current));
 	RCLCPP_INFO(this->get_logger(), "The parameter port1_5v_max_current is set to: %f", port_max_current);
 
-	declare_parameter_if_not_declared("port1_12v_max_current", rclcpp::ParameterValue(2.5), 
+	nav2_util::declare_parameter_if_not_declared(this, "port1_12v_max_current", rclcpp::ParameterValue(2.5), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("Maximum current for port 1 12V in A")
 							.set__floating_point_range({rcl_interfaces::msg::FloatingPointRange()
@@ -177,7 +179,7 @@ void ScitosEBC::initialize(){
 	set_mira_param("EBC7.Port1_12V.MaxCurrent", std::to_string(port_max_current));
 	RCLCPP_INFO(this->get_logger(), "The parameter port1_12v_max_current is set to: %f", port_max_current);
 
-	declare_parameter_if_not_declared("port1_24v_max_current", rclcpp::ParameterValue(4.0), 
+	nav2_util::declare_parameter_if_not_declared(this, "port1_24v_max_current", rclcpp::ParameterValue(4.0), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("Maximum current for port 1 24V in A")
 							.set__floating_point_range({rcl_interfaces::msg::FloatingPointRange()

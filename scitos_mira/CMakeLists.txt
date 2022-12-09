@@ -21,6 +21,7 @@ find_package(tf2_geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(nav2_util REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(scitos_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
@@ -60,6 +61,7 @@ ament_target_dependencies(${PROJECT_NAME}
   std_msgs
   geometry_msgs
   nav_msgs
+  nav2_util
   sensor_msgs
   scitos_msgs
   visualization_msgs

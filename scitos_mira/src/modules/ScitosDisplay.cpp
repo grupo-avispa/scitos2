@@ -9,6 +9,8 @@
  *
  */
 
+#include "nav2_util/node_utils.hpp"
+
 #include "scitos_mira/modules/ScitosDisplay.hpp"
 
 ScitosDisplay::ScitosDisplay() : ScitosModule("scitos_display"){
@@ -26,20 +28,20 @@ void ScitosDisplay::initialize(){
 	authority_.subscribe<uint8>("/robot/StatusDisplayUserMenuEvent", &ScitosDisplay::menu_data_callback, this);
 
 	// Declare and read parameters
-	declare_parameter_if_not_declared("user_menu_enabled", rclcpp::ParameterValue(false), 
+	nav2_util::declare_parameter_if_not_declared(this, "user_menu_enabled", rclcpp::ParameterValue(false), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("Enable / disable the user menu entry"));
 	this->get_parameter("user_menu_enabled", user_menu_enabled_);
-	declare_parameter_if_not_declared("menu_name", rclcpp::ParameterValue("User Menu"), 
+	nav2_util::declare_parameter_if_not_declared(this, "menu_name", rclcpp::ParameterValue("User Menu"), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("The name of the user menu entry in the main menu of the status display"));
-	declare_parameter_if_not_declared("menu_entry_name_1", rclcpp::ParameterValue("Entry 1"), 
+	nav2_util::declare_parameter_if_not_declared(this, "menu_entry_name_1", rclcpp::ParameterValue("Entry 1"), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("The name of the first sub menu entry in the user menu of the status display."));
-	declare_parameter_if_not_declared("menu_entry_name_2", rclcpp::ParameterValue("Entry 2"), 
+	nav2_util::declare_parameter_if_not_declared(this, "menu_entry_name_2", rclcpp::ParameterValue("Entry 2"), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("The name of the second sub menu entry in the user menu of the status display."));
-	declare_parameter_if_not_declared("menu_entry_name_3", rclcpp::ParameterValue("Entry 3"), 
+	nav2_util::declare_parameter_if_not_declared(this, "menu_entry_name_3", rclcpp::ParameterValue("Entry 3"), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("The name of the third sub menu entry in the user menu of the status display."));
 
