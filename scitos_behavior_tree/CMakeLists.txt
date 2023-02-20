@@ -13,6 +13,7 @@ find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(scitos_msgs REQUIRED)
 find_package(behaviortree_cpp_v3 REQUIRED)
+find_package(nav2_behavior_tree REQUIRED)
 
 ###########
 ## Build ##
@@ -28,6 +29,7 @@ set(dependencies
   sensor_msgs
   scitos_msgs
   behaviortree_cpp_v3
+  nav2_behavior_tree
 )
 
 add_library(scitos_is_bumper_activated_condition_bt_node SHARED src/condition/is_bumper_activated_condition.cpp)
