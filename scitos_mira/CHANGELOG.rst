@@ -2,6 +2,10 @@
 Changelog for package scitos_mira
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.3.0 (10-03-2023)
+------------------
+* Improve battery status.
+
 0.2.1 (09-12-2022)
 ------------------
 * Replace declare_if_not_declared by using nav2_util.

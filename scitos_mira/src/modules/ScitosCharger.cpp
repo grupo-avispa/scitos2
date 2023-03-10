@@ -43,16 +43,26 @@ void ScitosCharger::battery_data_callback(mira::ChannelRead<mira::robot::Battery
 	battery.percentage = (data->lifePercent == 255) ? std::numeric_limits<float>::quiet_NaN() : 
 													static_cast<float>(data->lifePercent) / 100.0;
 	battery.cell_voltage = data->cellVoltage;
+	battery.power_supply_technology = sensor_msgs::msg::BatteryState::POWER_SUPPLY_TECHNOLOGY_LIFE;
 	battery.present = data->powerSupplyPresent;
 	battery.capacity = static_cast<float>(data->lifeTime) / 60.0 * battery.current;
-	
+
 	if (data->charging){
-		battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_CHARGING;
-	}else if (battery.percentage == 1.0){
-		battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_FULL;
-	}else if (battery.current < 0){
-		battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_DISCHARGING;
+		if (battery.current <= 1.5){
+			battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_DISCHARGING;
+		}else{
+			battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_CHARGING;
+		}
 	}else{
+		if (battery.percentage == 1.0){
+			battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_FULL;
+		}else{
+			battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_NOT_CHARGING;
+		}
+	}
+
+	// Exception
+	if (data->charging && battery.current >= 1.5){
 		battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_UNKNOWN;
 	}
 
