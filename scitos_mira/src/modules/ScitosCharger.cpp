@@ -39,32 +39,34 @@ void ScitosCharger::battery_data_callback(mira::ChannelRead<mira::robot::Battery
 
 	battery.header.stamp = time;
 	battery.voltage = data->voltage;
-	battery.current = data->current;
+	battery.temperature = std::numeric_limits<float>::quiet_NaN();
+	battery.current = -data->current;
+	battery.charge = (data->lifeTime == -1) ? std::numeric_limits<float>::quiet_NaN() : 
+											(static_cast<float>(data->lifeTime) / 60.0 * battery.current);
+	battery.capacity = std::numeric_limits<float>::quiet_NaN();
+	battery.design_capacity = 40.0;
 	battery.percentage = (data->lifePercent == 255) ? std::numeric_limits<float>::quiet_NaN() : 
 													static_cast<float>(data->lifePercent) / 100.0;
-	battery.cell_voltage = data->cellVoltage;
-	battery.power_supply_technology = sensor_msgs::msg::BatteryState::POWER_SUPPLY_TECHNOLOGY_LIFE;
-	battery.present = data->powerSupplyPresent;
-	battery.capacity = static_cast<float>(data->lifeTime) / 60.0 * battery.current;
 
 	if (data->charging){
-		if (battery.current <= 1.5){
-			battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_DISCHARGING;
-		}else{
-			battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_CHARGING;
-		}
+		battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_CHARGING;
+	}else if (battery.percentage == 1.0 && data->powerSupplyPresent){
+		battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_FULL;
+	}else if (data->powerSupplyPresent){
+		battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_NOT_CHARGING;
+	}else if (battery.current < 0){
+		battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_DISCHARGING;
 	}else{
-		if (battery.percentage == 1.0){
-			battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_FULL;
-		}else{
-			battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_NOT_CHARGING;
-		}
-	}
-
-	// Exception
-	if (data->charging && battery.current >= 1.5){
 		battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_UNKNOWN;
 	}
+
+	battery.power_supply_health = sensor_msgs::msg::BatteryState::POWER_SUPPLY_HEALTH_UNKNOWN;
+	battery.power_supply_technology = sensor_msgs::msg::BatteryState::POWER_SUPPLY_TECHNOLOGY_LIFE;
+	battery.present = (data->cellVoltage).empty() ? false : true;
+	battery.cell_voltage = data->cellVoltage;
+	battery.cell_temperature.resize(battery.cell_voltage.size(), std::numeric_limits<float>::quiet_NaN());
+	battery.location = "Slot 1";
+	battery.serial_number = "Unknown";
 
 	battery_pub_->publish(battery);
 }
