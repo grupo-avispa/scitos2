@@ -1,6 +1,6 @@
 # scitos_mira
 
-![ROS2](https://img.shields.io/badge/ros2-galactic-purple?logo=ros&logoColor=white)
+![ROS2](https://img.shields.io/badge/ros2-humble-blue?logo=ros&logoColor=white)
 ![License](https://img.shields.io/badge/license-GPL-green)
 
 ## Overview
@@ -18,7 +18,7 @@ Several sensors and components of SCITOS robots are exposed as ROS  published / 
 
 **Author: Alberto Tudela<br />**
 
-The scitos_mira package has been tested under [ROS2] Galactic on [Ubuntu] 20.04. This code is mainly based on [scitos_drivers](https://github.com/strands-project/scitos_drivers/) but ported to ROS2; expect that it changes often and any fitness for a particular purpose is disclaimed.
+The scitos_mira package has been tested under [ROS2] Humble on [Ubuntu] 22.04. This code is mainly based on [scitos_drivers](https://github.com/strands-project/scitos_drivers/) but ported to ROS2; expect that it changes often and any fitness for a particular purpose is disclaimed.
 
 ## Installation
 
@@ -26,10 +26,10 @@ The scitos_mira package has been tested under [ROS2] Galactic on [Ubuntu] 20.04.
 
 #### Dependencies
 
-- [Robot Operating System (ROS) 2](https://docs.ros.org/en/galactic/) (middleware for robotics),
+- [Robot Operating System (ROS) 2](https://docs.ros.org/en/humble/) (middleware for robotics),
 - [Boost](https://www.boost.org/) (C++ source libraries)
 
-		rosdep install -i --from-path src --rosdistro galactic -y
+		rosdep install -i --from-path src --rosdistro humble -y
 
 #### Building
 
@@ -38,7 +38,7 @@ To build from source, clone the latest version from this repository into your co
 	cd colcon_workspace/src
 	git clone https://github.com/grupo-avispa/scitos2.git
 	cd ../
-	rosdep install -i --from-path src --rosdistro galactic -y
+	rosdep install -i --from-path src --rosdistro humble -y
 	colcon build
 
 ## Usage
@@ -280,11 +280,11 @@ This module controls the power for extra devices.
 - [x] Improve parameter loading.
 
 [Ubuntu]: https://ubuntu.com/
-[ROS2]: https://docs.ros.org/en/galactic/
-[nav_msgs/Odometry]: http://docs.ros2.org/galactic/api/nav_msgs/msg/Odometry.html
-[geometry_msgs/Twist]: http://docs.ros2.org/galactic/api/geometry_msgs/msg/Twist.html
+[ROS2]: https://docs.ros.org/en/humble/
+[nav_msgs/Odometry]: http://docs.ros2.org/humble/api/nav_msgs/msg/Odometry.html
+[geometry_msgs/Twist]: http://docs.ros2.org/humble/api/geometry_msgs/msg/Twist.html
 [visualization_msgs/MarkerArray]: http://docs.ros.org/api/visualization_msgs/html/msg/MarkerArray.html
-[sensor_msgs/BatteryState]: https://docs.ros2.org/galactic/api/sensor_msgs/msg/BatteryState.html
+[sensor_msgs/BatteryState]: https://docs.ros2.org/humble/api/sensor_msgs/msg/BatteryState.html
 [scitos_msgs/BarrierStatus]: ../scitos_msgs/msg/BarrierStatus.msg
 [scitos_msgs/BumperStatus]: ../scitos_msgs/msg/BumperStatus.msg
 [scitos_msgs/ChargerStatus]: ../scitos_msgs/msg/ChargerStatus.msg

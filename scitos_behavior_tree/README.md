@@ -1,6 +1,6 @@
 # scitos_behavior_tree
 
-![ROS2](https://img.shields.io/badge/ros2-galactic-purple?logo=ros&logoColor=white)
+![ROS2](https://img.shields.io/badge/ros2-humble-blue?logo=ros&logoColor=white)
 ![License](https://img.shields.io/badge/license-GPL-green)
 
 ## Overview
@@ -16,7 +16,7 @@ The plugins included in this package are:
 
 **Author: Alberto Tudela<br />**
 
-The scitos_behavior_tree package has been tested under [ROS2] Galactic on [Ubuntu] 20.04. This code is mainly based on [scitos_drivers](https://github.com/strands-project/scitos_drivers/) but ported to ROS2; expect that it changes often and any fitness for a particular purpose is disclaimed.
+The scitos_behavior_tree package has been tested under [ROS2] Humble on [Ubuntu] 22.04. This code is mainly based on [scitos_drivers](https://github.com/strands-project/scitos_drivers/) but ported to ROS2; expect that it changes often and any fitness for a particular purpose is disclaimed.
 
 ## Installation
 
@@ -24,7 +24,7 @@ The scitos_behavior_tree package has been tested under [ROS2] Galactic on [Ubunt
 
 #### Dependencies
 
-- [Robot Operating System (ROS) 2](https://docs.ros.org/en/galactic/) (middleware for robotics),
+- [Robot Operating System (ROS) 2](https://docs.ros.org/en/humble/) (middleware for robotics),
 
 #### Building
 
@@ -33,9 +33,9 @@ To build from source, clone the latest version from this repository into your co
 	cd colcon_workspace/src
 	git clone https://github.com/grupo-avispa/scitos2.git
 	cd ../
-	rosdep install -i --from-path src --rosdistro galactic -y
+	rosdep install -i --from-path src --rosdistro humble -y
 	colcon build --symlink-install
 
 [Ubuntu]: https://ubuntu.com/
-[ROS2]: https://docs.ros.org/en/galactic/
+[ROS2]: https://docs.ros.org/en/humble/
 [BehaviorTree.CPP]: https://github.com/BehaviorTree/BehaviorTree.CPP

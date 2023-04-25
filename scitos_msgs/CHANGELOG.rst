@@ -2,6 +2,10 @@
 Changelog for package scitos_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.4.0 (25-04-2023)
+------------------
+* Prepare for humble release.
+
 1.3.0 (10-10-2022)
 ------------------
 * Added MenuEntry.msg.

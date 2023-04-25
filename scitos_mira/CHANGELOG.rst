@@ -2,6 +2,10 @@
 Changelog for package scitos_mira
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.0 (25-04-2023)
+------------------
+* Prepare for humble release.
+
 0.3.1 (12-04-2023)
 ------------------
 * Fill the battery status message.

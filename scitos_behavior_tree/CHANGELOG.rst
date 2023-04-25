@@ -2,6 +2,10 @@
 Changelog for package scitos_behavior_tree
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.2.0 (25-04-2023)
+------------------
+* Prepare for humble release.
+
 0.1.0 (07-12-2022)
 ------------------
 * Added visualization of the bumper status.
