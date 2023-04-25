@@ -1,0 +1,12 @@
+<root>
+	<IgnoreIntervals>
+		<item>
+			<Start>-135.0</Start>
+			<End>-115.0</End>
+		</item>
+		<item>
+			<Start>115.0</Start>
+			<End>135.0</End>
+		</item>
+	</IgnoreIntervals>
+</root>

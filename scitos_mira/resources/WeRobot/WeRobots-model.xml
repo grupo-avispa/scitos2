@@ -1,0 +1,79 @@
+<root>
+	<!-- Default mounting direction of gyro/accelerometer module -->
+	<var motionTrackingRPY="-90 -90 0"/>
+
+	<Model class="mira::robot::DifferentialRobotModel">
+		<MaxForwardVelocity>0.6</MaxForwardVelocity>
+		<MaxBackwardVelocity>-0.4</MaxBackwardVelocity>
+		<MaxRotVelocity>120</MaxRotVelocity>
+		<TransEpsilonVelocity>0.02</TransEpsilonVelocity>
+		<RotEpsilonVelocity>1</RotEpsilonVelocity>
+		<MaxTransAcceleration>0.5</MaxTransAcceleration>
+		<MaxTransDeceleration>1.0</MaxTransDeceleration>
+		<MaxRotAcceleration>180</MaxRotAcceleration>
+		<MaxRotDeceleration>180</MaxRotDeceleration>
+		<MaxEmergencyDeceleration>1.0</MaxEmergencyDeceleration>
+		<WheelDistance>0.306</WheelDistance>
+
+		<AlphaRotRot>0.0005</AlphaRotRot>
+		<AlphaRotTrans>0.0005</AlphaRotTrans>
+		<AlphaTransTrans>0.0005</AlphaTransTrans>
+		<AlphaTransRot>0.0005</AlphaTransRot>
+		<RMDF>
+			<model name="WeRobots">
+				<include file="${findpkg SCITOS}/etc/SCITOS-materials.xml" />
+				<material name="coverColor">
+					<color rgba="${color}" />
+				</material>
+				<link name="RobotFrame">
+					<visual>
+						<origin xyz="0.0 0 0.03" />
+						<geometry>
+							<mesh filename="WeRobot.stl" scale="1" />
+						</geometry>
+						<material name="coverColor"/>
+					</visual>
+					<collision>
+						<geometry>
+							<box size="0.485 0.434 1.25" />
+						</geometry>
+						<origin xyz="-0.1 0 0.625" />
+					</collision>
+					<collision name="SafetyZone">
+						<geometry>
+							<polygon>
+								<point xy="0.048  0.500" />
+								<point xy="0.748  0.500" />
+								<point xy="1.048  0.200" />
+								<point xy="1.048 -0.200" />
+								<point xy="0.748 -0.500" />
+								<point xy="0.048 -0.500" />
+							</polygon>
+						</geometry>
+					</collision>
+				</link>
+
+				<joint name="BaseToBody" type="fixed">
+					<parent link="RobotFrame" />
+					<child link="BodyFrame" />
+				</joint>
+
+				<if_not frontLaser="none">
+					<joint name="BaseToLaser" type="fixed">
+						<parent link="RobotFrame" />
+						<child link="frontLaser/MountFrame" />
+						<origin xyz="0.048 0 0.242" rpy="180 0 0" />
+					</joint>
+				</if_not>
+
+				<link name="MotionTrackingFrame"/>
+				<joint name="MotionTrackingToRobot" type="fixed">
+					<parent link="RobotFrame" />
+					<child link="MotionTrackingFrame" />
+					<origin xyz="0 0 0" rpy="${motionTrackingRPY}"/>
+				</joint>
+
+			</model>
+		</RMDF>
+	</Model>
+</root>

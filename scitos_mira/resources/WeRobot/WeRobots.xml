@@ -1,0 +1,51 @@
+<root>
+	<unit id="Robot" class="mira::robot::SCITOSManager">
+		<RobotType>WeRobots</RobotType>
+		<RobotModelProvider>
+			<include file="WeRobots-model.xml" />
+		</RobotModelProvider>
+		<Modules>
+			<MainControlUnit>
+				<OdometryInterval>50</OdometryInterval>
+				<Force>60</Force>
+				<RFIDReaderEnabled>true</RFIDReaderEnabled>
+
+				<!--Should odometry be corrected based on OdometryCorrection-->
+				<UseOdometryCorrection>${useOdometryCorrection}</UseOdometryCorrection>
+				<!--Parameters for odometry correction -->
+				<OdometryCorrection>
+					<!--Correction factor for wheel base (distance between both wheels). Compensates 
+						deviations of the wheel base due to construction. (default: 1.0 which does 
+						no correction) -->
+					<cb>${wheelBaseCorrectionFactor}</cb>
+					<!--Correction factor for wheel diameter ratio between left and right wheel. 
+						This compensates small differences between the wheel diameter of the left 
+						and right wheel. (default: 1.0 which does no correction) -->
+					<cr>${wheelDiameterCorrectionFactor}</cr>
+					<!--Correction factor for the average wheel diameter. This can be regarded 
+						as an overall scaling factor for the left and right wheel. (default: 1.0 
+						which does no correction) -->
+					<cd>${averageWheelDiameterCorrectionFactor}</cd>
+				</OdometryCorrection>
+
+				<!-- A SICK S300 Standard is used as front laser. -->
+				<FrontLaser>
+					<MaxCurrent>2.5</MaxCurrent>
+					<Enabled>true</Enabled>
+				</FrontLaser>
+
+				<!-- The rear laser power supply is used for the magnetic sensor. -->
+				<RearLaser>
+					<MaxCurrent>1.0</MaxCurrent>
+					<Enabled>true</Enabled>
+				</RearLaser>
+
+				<MotorResetOnErrorCurrentThreshold>0.03</MotorResetOnErrorCurrentThreshold>
+				<MotorResetOnErrorTimeout>500</MotorResetOnErrorTimeout>
+
+			</MainControlUnit>
+		</Modules>
+	</unit>
+
+	<link child="RobotFrame" parent="OdometryFrame" />
+</root>

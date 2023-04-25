@@ -1,0 +1,71 @@
+<root>
+	<include file="SCITOSRobotAttributes.xml" />
+
+	<var robot="SCITOS-A5" />
+	<var canType="PCAN" />
+	<var coverType="2008" />
+	<var sonar="false" />
+	<var useOdometryCorrection="false" />
+	<var wheelBaseCorrectionFactor="1.0" />
+	<var wheelDiameterCorrectionFactor="1.0" />
+	<var averageWheelDiameterCorrectionFactor="1.0" />
+
+	<if robot="SCITOS-A5">
+		<var frontLaser="SickS300" />
+		<var frontLaserDevice="/dev/ttyUSB0" />
+		<var rearLaser="none" />
+		<var color="1 0 0" />
+	</if>
+	<if robot="SCITOS-G3">
+		<var frontLaser="SickS300" />
+		<var frontLaserDevice="/dev/ttyUSB0" />
+		<var rearLaser="none" />
+		<var color="1 0 0" />
+	</if>
+	<if robot="SCITOS-HM2012">
+		<var frontLaser="SickS300" />
+		<var frontLaserDevice="/dev/ttyUSB0" />
+		<var rearLaser="none" />
+		<var color="0 0 1" />
+	</if>
+	<if robot="SCITOS-G5">
+		<var frontLaser="LeuzeRS4" />
+		<var frontLaserDevice="/dev/ttyUSB0" />
+		<var rearLaser="none" />
+		<var color="0 0 1" />
+	</if>
+	<if robot="SCITOS-G6">
+		<var bodyType="tray" />
+		<var frontLaser="LeuzeRS4" />
+		<var frontLaserDevice="/dev/ttyUSB0" />
+		<var rearLaser="LeuzeRS4" />
+		<var rearLaserDevice="/dev/ttyUSB1" />
+		<var color="0 0 1" />
+	</if>
+	<if robot="SCITOS-G6-small">
+		<var bodyType="tray" />
+		<var frontLaser="SickS300" />
+		<var frontLaserDevice="/dev/ttyUSB0" />
+		<var color="0 0 1" />
+	</if>
+
+	<!-- The default configuration file for the robot. -->
+	<var robotConfigFile="${findpkg SCITOS}/etc/${robot}.xml"/>
+
+	<using name="robot/can/IncomingCAN"/>
+	<using name="robot/can/OutgoingCAN"/>
+
+	<namespace name="robot">
+		<namespace name="can">
+			<include file="${findpkg CANDriver}/etc/CANDriver.xml"/>
+		</namespace>
+		<using name="can/IncomingCAN"/>
+		<using name="can/OutgoingCAN"/>
+		<include file="${robotConfigFile}"/>
+		<!--<include file="SCITOS-G5.xml"/>-->
+	</namespace>
+	
+	<!-- The default laser ignore interval file names. -->
+	<var frontLaserIgnoreIntervals="${findpkg SCITOS}/etc/${robot}-IgnoreIntervals-${frontLaser}.xml"/>
+	<var rearLaserIgnoreIntervals="${findpkg SCITOS}/etc/${robot}-IgnoreIntervals-${rearLaser}.xml"/>
+</root>
