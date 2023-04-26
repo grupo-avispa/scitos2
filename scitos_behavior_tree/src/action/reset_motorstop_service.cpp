@@ -23,7 +23,6 @@ ResetMotorStopService::ResetMotorStopService(
 }
 
 void ResetMotorStopService::on_tick(){
-	increment_recovery_count();
 }
 
 }  // namespace scitos_behavior_tree
