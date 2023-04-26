@@ -29,7 +29,7 @@ ScitosMira::ScitosMira(const std::string& name) : Node(name), framework_({}){
 	MIRA_LOGGER.registerSink(RosLogSink(this->get_logger()));
 
 	// Declare and read parameters
-	nav2_util::declare_parameter_if_not_declared(this, "modules", rclcpp::ParameterValue(""), 
+	nav2_util::declare_parameter_if_not_declared(this, "modules", rclcpp::ParameterValue(std::vector<std::string>{}), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("List of the modules exposed by the node"));
 	this->get_parameter("modules", modules_names_);
