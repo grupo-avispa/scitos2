@@ -1,5 +1,8 @@
 <root>
     <TreeNodesModel>
+        <Action ID="EmergencyStop">
+            <input_port name="service_name" defaul="emergency_stop">Service name</input_port>
+        </Action>
         <Action ID="ResetMotorStop">
             <input_port name="service_name" defaul="reset_motorstop">Service name</input_port>
         </Action>
