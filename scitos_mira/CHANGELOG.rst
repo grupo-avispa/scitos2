@@ -2,6 +2,13 @@
 Changelog for package scitos_mira
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.1 (26-04-2023)
+------------------
+* Replace declare_if_not_declared by using nav2_util.
+* Added log when terminate the node.
+* Reset motorstop if bumper is activated at startup.
+* Reset motorstop when emergency button is released.
+
 0.4.0 (25-04-2023)
 ------------------
 * Prepare for humble release.

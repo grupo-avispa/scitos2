@@ -36,15 +36,10 @@ class ScitosMira: public rclcpp::Node{
 		std::vector<std::shared_ptr<ScitosModule> > get_modules(){ return modules_; };
 	private:
 		mira::Framework framework_;
-		std::vector<std::string> args_;
 		std::vector<std::string> modules_names_;
 		std::vector<std::shared_ptr<ScitosModule> > modules_;
 
 		void initialize();
-		void declare_parameter_if_not_declared(const std::string & param_name, 
-			const rclcpp::ParameterType & param_type, 
-			const rcl_interfaces::msg::ParameterDescriptor & param_descriptor =
-			rcl_interfaces::msg::ParameterDescriptor());
 };
 
 #endif // SCITOS_MIRA__MIRA_CHARGER_HPP_

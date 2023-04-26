@@ -83,6 +83,7 @@ class ScitosDrive : public ScitosModule{
 		scitos_msgs::msg::BarrierStatus barrier_status_;
 		std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 		std::string base_frame_;
+		bool setup_;
 
 		ScitosDrive();
 

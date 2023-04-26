@@ -16,17 +16,20 @@
 // BOOST
 #include <boost/algorithm/string/join.hpp>
 
+// ROS
+#include "nav2_util/node_utils.hpp"
+
 #include "scitos_mira/ScitosMira.hpp"
 #include "scitos_mira/ModuleFactory.hpp"
 
-ScitosMira::ScitosMira(const std::string& name) : Node(name), framework_(args_){
+ScitosMira::ScitosMira(const std::string& name) : Node(name), framework_({}){
 	RCLCPP_INFO(this->get_logger(), "Configuring the node...");
 
 	// Redirect Mira logger
 	MIRA_LOGGER.registerSink(RosLogSink(this->get_logger()));
 
 	// Declare and read parameters
-	declare_parameter_if_not_declared("modules", rclcpp::ParameterType::PARAMETER_STRING_ARRAY, 
+	nav2_util::declare_parameter_if_not_declared(this, "modules", rclcpp::ParameterValue(""), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("List of the modules exposed by the node"));
 	this->get_parameter("modules", modules_names_);
@@ -39,7 +42,7 @@ ScitosMira::ScitosMira(const std::string& name) : Node(name), framework_(args_){
 	}
 
 	std::string config;
-	declare_parameter_if_not_declared("scitos_config", rclcpp::ParameterType::PARAMETER_STRING, 
+	nav2_util::declare_parameter_if_not_declared(this, "scitos_config", rclcpp::ParameterValue(""), 
 							rcl_interfaces::msg::ParameterDescriptor()
 							.set__description("Configuration of the robot in XML format"));
 	this->get_parameter("scitos_config", config);
@@ -70,20 +73,14 @@ ScitosMira::ScitosMira(const std::string& name) : Node(name), framework_(args_){
 }
 
 ScitosMira::~ScitosMira(){
+	if (framework_.isTerminationRequested()){
+		RCLCPP_INFO(this->get_logger(), "Stopping MIRA framework...");
+	}
 }
 
 void ScitosMira::initialize(){
 	// Initialize all of the modules
 	for (auto& module: modules_){
 		module->initialize();
-	}
-}
-
-void ScitosMira::declare_parameter_if_not_declared(const std::string & param_name, 
-	const rclcpp::ParameterType & param_type,
-	const rcl_interfaces::msg::ParameterDescriptor & param_descriptor){
-
-	if (!this->has_parameter(param_name)){
-		this->declare_parameter(param_name, param_type, param_descriptor);
 	}
 }

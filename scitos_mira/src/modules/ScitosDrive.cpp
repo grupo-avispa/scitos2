@@ -22,7 +22,7 @@
 
 uint64 MAGNETIC_BARRIER_RFID_CODE = 0xabababab;
 
-ScitosDrive::ScitosDrive() : ScitosModule("scitos_drive"){
+ScitosDrive::ScitosDrive() : ScitosModule("scitos_drive"), setup_(false){
 }
 
 void ScitosDrive::initialize(){
@@ -30,8 +30,10 @@ void ScitosDrive::initialize(){
 	bumper_pub_ 		= this->create_publisher<scitos_msgs::msg::BumperStatus>("bumper", 20);
 	bumper_markers_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("bumper_viz", 20);
 	drive_status_pub_ 	= this->create_publisher<scitos_msgs::msg::DriveStatus>("drive_status", 20);
-	emergency_stop_pub_ = this->create_publisher<scitos_msgs::msg::EmergencyStopStatus>("emergency_stop_status", rclcpp::QoS(20).transient_local());
-	magnetic_barrier_pub_	= this->create_publisher<scitos_msgs::msg::BarrierStatus>("barrier_status", rclcpp::QoS(20).transient_local());
+	emergency_stop_pub_ = this->create_publisher<scitos_msgs::msg::EmergencyStopStatus>(
+							"emergency_stop_status", rclcpp::QoS(1).transient_local());
+	magnetic_barrier_pub_	= this->create_publisher<scitos_msgs::msg::BarrierStatus>(
+							"barrier_status", rclcpp::QoS(1).transient_local());
 	mileage_pub_ 		= this->create_publisher<scitos_msgs::msg::Mileage>("mileage", 20);
 	odometry_pub_ 		= this->create_publisher<nav_msgs::msg::Odometry>("odom", 20);
 	rfid_pub_ 			= this->create_publisher<scitos_msgs::msg::RfidTag>("rfid", 20);
@@ -102,9 +104,6 @@ void ScitosDrive::initialize(){
 
 	// Initialize the transform broadcaster
 	tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
-
-	// Reset motor stop at startup
-	call_mira_service("resetMotorStop");
 }
 
 rcl_interfaces::msg::SetParametersResult ScitosDrive::parameters_callback(
@@ -141,6 +140,12 @@ void ScitosDrive::bumper_data_callback(mira::ChannelRead<bool> data){
 	status_msg.header.stamp = rclcpp::Time(data->timestamp.toUnixNS());
 	status_msg.bumper_activated = data->value();
 	bumper_pub_->publish(status_msg);
+
+	// Reset motorstop if bumper is activated at startup
+	if (!setup_ && status_msg.bumper_activated){
+		call_mira_service("resetMotorStop");
+		setup_ = true;
+	}
 
 	// Note: Only perform visualization if there's any subscriber
 	if (bumper_markers_pub_->get_subscription_count() == 0) return;
@@ -219,6 +224,11 @@ void ScitosDrive::drive_status_callback(mira::ChannelRead<uint32> data){
 
 	status_msg.safety_field_rear_laser = static_cast<bool>((*data) & (1 << 26));
 	status_msg.safety_field_front_laser = static_cast<bool>((*data) & (1 << 27));
+
+	// Reset motorstop when emergency button is released
+	if (status_msg.emergency_stop_activated && !status_msg.emergency_stop_status){
+		call_mira_service("resetMotorStop");
+	}
 
 	RCLCPP_DEBUG(this->get_logger(), "Drive controller status (Nor: %i, MStop: %i, FreeRun: %i, EmBut: %i, BumpPres: %i, BusErr: %i, Stall: %i, InterErr: %i)",
 			status_msg.mode_normal, status_msg.mode_forced_stopped, 
