@@ -25,17 +25,17 @@ IsBumperActivatedCondition::IsBumperActivatedCondition(
 	getInput("bumper_topic", bumper_topic_);
 	node_ = config().blackboard->get<rclcpp::Node::SharedPtr>("node");
 	callback_group_ = node_->create_callback_group(
-	rclcpp::CallbackGroupType::MutuallyExclusive,
-	false);
+		rclcpp::CallbackGroupType::MutuallyExclusive,
+		false);
 	callback_group_executor_.add_callback_group(callback_group_, node_->get_node_base_interface());
 
 	rclcpp::SubscriptionOptions sub_option;
 	sub_option.callback_group = callback_group_;
 	bumper_sub_ = node_->create_subscription<scitos_msgs::msg::BumperStatus>(
-	bumper_topic_,
-	rclcpp::SystemDefaultsQoS(),
-	std::bind(&IsBumperActivatedCondition::bumperCallback, this, std::placeholders::_1),
-	sub_option);
+		bumper_topic_,
+		rclcpp::SystemDefaultsQoS(),
+		std::bind(&IsBumperActivatedCondition::bumperCallback, this, std::placeholders::_1),
+		sub_option);
 }
 
 BT::NodeStatus IsBumperActivatedCondition::tick(){
