@@ -50,7 +50,7 @@ void ScitosCharger::battery_data_callback(mira::ChannelRead<mira::robot::Battery
 
 	if (data->charging){
 		battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_CHARGING;
-	}else if (battery.percentage == 1.0 && data->powerSupplyPresent){
+	}else if (battery.percentage == 1.0){
 		battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_FULL;
 	}else if (data->powerSupplyPresent){
 		battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_NOT_CHARGING;

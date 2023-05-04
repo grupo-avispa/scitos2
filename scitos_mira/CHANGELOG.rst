@@ -2,6 +2,10 @@
 Changelog for package scitos_mira
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.2 (04-05-2023)
+------------------
+* Fix POWER_SUPPLY_STATUS_FULL not set when battery is full.
+
 0.4.1 (26-04-2023)
 ------------------
 * Replace declare_if_not_declared by using nav2_util.
