@@ -1,7 +1,7 @@
 /*
  * SCITOS MODULE
  *
- * Copyright (c) 2022 Alberto José Tudela Roldán <ajtudela@gmail.com>
+ * Copyright (c) 2022-2023 Alberto José Tudela Roldán <ajtudela@gmail.com>
  * 
  * This file is part of scitos_mira project.
  * 
@@ -25,10 +25,10 @@
  * @brief Base class for all Scitos modules (Drive, Charger, etc).
  * 
  */
-class ScitosModule : public rclcpp::Node{
+class ScitosModule{
 	public:
-		ScitosModule(const std::string& name);
-		virtual void initialize() = 0;
+		ScitosModule(const std::string & name);
+		virtual void initialize(const rclcpp::Node::WeakPtr & ros_node) = 0;
 		virtual ~ScitosModule(){};
 
 	protected:
@@ -37,6 +37,8 @@ class ScitosModule : public rclcpp::Node{
 		std::string get_mira_param(std::string param_name);
 
 		mira::Authority authority_;
+		rclcpp::Node::WeakPtr node_;
+		rclcpp::Logger logger_;
 };
 
 #endif // SCITOS_MIRA__SCITOS_MODULE_HPP_

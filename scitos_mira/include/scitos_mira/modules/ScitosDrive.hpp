@@ -1,7 +1,7 @@
 /*
  * SCITOS DRIVE
  *
- * Copyright (c) 2022 Alberto José Tudela Roldán <ajtudela@gmail.com>
+ * Copyright (c) 2022-2023 Alberto José Tudela Roldán <ajtudela@gmail.com>
  * 
  * This file is part of scitos_mira project.
  * 
@@ -54,7 +54,7 @@ class ScitosDrive : public ScitosModule{
 			return std::shared_ptr<ScitosModule>(new ScitosDrive());
 		}
 
-		void initialize();
+		void initialize(const rclcpp::Node::WeakPtr & ros_node);
 
 	private:
 		rclcpp::Publisher<scitos_msgs::msg::BumperStatus>::SharedPtr bumper_pub_;
@@ -77,7 +77,7 @@ class ScitosDrive : public ScitosModule{
 		rclcpp::Service<scitos_msgs::srv::ResetOdometry>::SharedPtr reset_odometry_service_;
 		rclcpp::Service<scitos_msgs::srv::SuspendBumper>::SharedPtr suspend_bumper_service_;
 
-		OnSetParametersCallbackHandle::SharedPtr callback_handle_;
+		rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr dyn_params_handler_;
 
 		scitos_msgs::msg::EmergencyStopStatus emergency_stop_;
 		scitos_msgs::msg::BarrierStatus barrier_status_;
@@ -87,7 +87,8 @@ class ScitosDrive : public ScitosModule{
 
 		ScitosDrive();
 
-		rcl_interfaces::msg::SetParametersResult parameters_callback(const std::vector<rclcpp::Parameter> &parameters);
+		rcl_interfaces::msg::SetParametersResult parameters_callback(
+			const std::vector<rclcpp::Parameter> &parameters);
 
 		void bumper_data_callback(mira::ChannelRead<bool> data);
 		void drive_status_callback(mira::ChannelRead<uint32> data);
@@ -97,22 +98,30 @@ class ScitosDrive : public ScitosModule{
 
 		void velocity_command_callback(const geometry_msgs::msg::Twist& msg);
 
-		bool change_force(const std::shared_ptr<scitos_msgs::srv::ChangeForce::Request> request,
-								std::shared_ptr<scitos_msgs::srv::ChangeForce::Response> response);
-		bool emergency_stop(const std::shared_ptr<scitos_msgs::srv::EmergencyStop::Request> request,
-								std::shared_ptr<scitos_msgs::srv::EmergencyStop::Response> response);
-		bool enable_motors(const std::shared_ptr<scitos_msgs::srv::EnableMotors::Request> request,
-								std::shared_ptr<scitos_msgs::srv::EnableMotors::Response> response);
-		bool enable_rfid(const std::shared_ptr<scitos_msgs::srv::EnableRfid::Request> request,
-								std::shared_ptr<scitos_msgs::srv::EnableRfid::Response> response);
-		bool reset_barrier_stop(const std::shared_ptr<scitos_msgs::srv::ResetBarrierStop::Request> request,
-								std::shared_ptr<scitos_msgs::srv::ResetBarrierStop::Response> response);
-		bool reset_motor_stop(const std::shared_ptr<scitos_msgs::srv::ResetMotorStop::Request> request,
-								std::shared_ptr<scitos_msgs::srv::ResetMotorStop::Response> response);
-		bool reset_odometry(const std::shared_ptr<scitos_msgs::srv::ResetOdometry::Request> request,
-								std::shared_ptr<scitos_msgs::srv::ResetOdometry::Response> response);
-		bool suspend_bumper(const std::shared_ptr<scitos_msgs::srv::SuspendBumper::Request> request,
-								std::shared_ptr<scitos_msgs::srv::SuspendBumper::Response> response);
+		bool change_force(
+			const std::shared_ptr<scitos_msgs::srv::ChangeForce::Request> request,
+			std::shared_ptr<scitos_msgs::srv::ChangeForce::Response> response);
+		bool emergency_stop(
+			const std::shared_ptr<scitos_msgs::srv::EmergencyStop::Request> request,
+			std::shared_ptr<scitos_msgs::srv::EmergencyStop::Response> response);
+		bool enable_motors(
+			const std::shared_ptr<scitos_msgs::srv::EnableMotors::Request> request,
+			std::shared_ptr<scitos_msgs::srv::EnableMotors::Response> response);
+		bool enable_rfid(
+			const std::shared_ptr<scitos_msgs::srv::EnableRfid::Request> request,
+			std::shared_ptr<scitos_msgs::srv::EnableRfid::Response> response);
+		bool reset_barrier_stop(
+			const std::shared_ptr<scitos_msgs::srv::ResetBarrierStop::Request> request,
+			std::shared_ptr<scitos_msgs::srv::ResetBarrierStop::Response> response);
+		bool reset_motor_stop(
+			const std::shared_ptr<scitos_msgs::srv::ResetMotorStop::Request> request,
+			std::shared_ptr<scitos_msgs::srv::ResetMotorStop::Response> response);
+		bool reset_odometry(
+			const std::shared_ptr<scitos_msgs::srv::ResetOdometry::Request> request,
+			std::shared_ptr<scitos_msgs::srv::ResetOdometry::Response> response);
+		bool suspend_bumper(
+			const std::shared_ptr<scitos_msgs::srv::SuspendBumper::Request> request,
+			std::shared_ptr<scitos_msgs::srv::SuspendBumper::Response> response);
 };
 
 #endif // SCITOS_MIRA__SCITOS_DRIVE_HPP_

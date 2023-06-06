@@ -1,7 +1,7 @@
 /*
  * SCITOS MIRA
  *
- * Copyright (c) 2022 Alberto José Tudela Roldán <ajtudela@gmail.com>
+ * Copyright (c) 2022-2023 Alberto José Tudela Roldán <ajtudela@gmail.com>
  * 
  * This file is part of scitos_mira project.
  * 
@@ -29,22 +29,25 @@ ScitosMira::ScitosMira(const std::string& name) : Node(name), framework_({}){
 	MIRA_LOGGER.registerSink(RosLogSink(this->get_logger()));
 
 	// Declare and read parameters
-	nav2_util::declare_parameter_if_not_declared(this, "modules", rclcpp::ParameterValue(std::vector<std::string>{}), 
-							rcl_interfaces::msg::ParameterDescriptor()
-							.set__description("List of the modules exposed by the node"));
+	nav2_util::declare_parameter_if_not_declared(this, "modules", 
+		rclcpp::ParameterValue(std::vector<std::string>{}), 
+		rcl_interfaces::msg::ParameterDescriptor()
+			.set__description("List of the modules exposed by the node"));
 	this->get_parameter("modules", modules_names_);
 	std::string joined = boost::algorithm::join(modules_names_, ", ");
 	if (!joined.empty()){
 		RCLCPP_INFO(this->get_logger(), "Loaded modules: [%s]", joined.c_str());
 	}else{
-		RCLCPP_ERROR(this->get_logger(), "Can't read parameter 'modules'. This MUST be supplied as a space separated list of SCITOS hardware modules to interface into ROS");
+		RCLCPP_ERROR_STREAM(this->get_logger(), "Can't read parameter 'modules'. " 
+			<< "This MUST be supplied as a space separated list of SCITOS "
+			<< "hardware modules to interface into ROS");
 		exit(1);
 	}
 
 	std::string config;
 	nav2_util::declare_parameter_if_not_declared(this, "scitos_config", rclcpp::ParameterValue(""), 
-							rcl_interfaces::msg::ParameterDescriptor()
-							.set__description("Configuration of the robot in XML format"));
+		rcl_interfaces::msg::ParameterDescriptor()
+			.set__description("Configuration of the robot in XML format"));
 	this->get_parameter("scitos_config", config);
 	if (!config.empty()){
 		RCLCPP_INFO(this->get_logger(), "Loaded scitos config: %s", config.c_str());
@@ -62,14 +65,17 @@ ScitosMira::ScitosMira(const std::string& name) : Node(name), framework_({}){
 	ModuleFactory& factory = ModuleFactory::get_instance();
 	for (const auto& name : modules_names_){
 		if (!factory.is_registered(name)){
-			RCLCPP_ERROR_STREAM(this->get_logger(), "A non existent module named '" << name << "' was trying to be created.");
+			RCLCPP_ERROR_STREAM(this->get_logger(), "A non existent module named '" 
+				<< name << "' was trying to be created.");
 		}else{
 			RCLCPP_INFO(this->get_logger(), "Created module: [%s]", name.c_str());
 			modules_.push_back(factory.create_module(name));
 		}
 	}
 
-	initialize();
+	// Create a timer to initialize the modules
+	timer_ = this->create_wall_timer(std::chrono::milliseconds(500), 
+		std::bind(&ScitosMira::initialize, this));
 }
 
 ScitosMira::~ScitosMira(){
@@ -79,8 +85,10 @@ ScitosMira::~ScitosMira(){
 }
 
 void ScitosMira::initialize(){
-	// Initialize all of the modules
+	// Initialize all modules
+	auto node = this->shared_from_this();
 	for (auto& module: modules_){
-		module->initialize();
+		module->initialize(node);
 	}
+	timer_->cancel();
 }

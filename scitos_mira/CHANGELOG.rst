@@ -2,6 +2,11 @@
 Changelog for package scitos_mira
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.5.0 (06-06-2023)
+------------------
+* Pass the main node to the modules instead of heredating from Node.
+* Added nested params.
+
 0.4.2 (04-05-2023)
 ------------------
 * Fix POWER_SUPPLY_STATUS_FULL not set when battery is full.

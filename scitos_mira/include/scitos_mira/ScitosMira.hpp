@@ -1,7 +1,7 @@
 /*
  * SCITOS MIRA
  *
- * Copyright (c) 2022 Alberto José Tudela Roldán <ajtudela@gmail.com>
+ * Copyright (c) 2022-2023 Alberto José Tudela Roldán <ajtudela@gmail.com>
  * 
  * This file is part of scitos_mira project.
  * 
@@ -38,9 +38,9 @@ class ScitosMira: public rclcpp::Node{
 		mira::Framework framework_;
 		std::vector<std::string> modules_names_;
 		std::vector<std::shared_ptr<ScitosModule> > modules_;
+		rclcpp::TimerBase::SharedPtr timer_;
 
 		void initialize();
 };
 
 #endif // SCITOS_MIRA__MIRA_CHARGER_HPP_
-

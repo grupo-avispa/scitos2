@@ -1,7 +1,7 @@
 /*
  * SCITOS DISPLAY
  *
- * Copyright (c) 2022 Alberto José Tudela Roldán <ajtudela@gmail.com>
+ * Copyright (c) 2022-2023 Alberto José Tudela Roldán <ajtudela@gmail.com>
  * 
  * This file is part of scitos_mira project.
  * 
@@ -31,20 +31,20 @@ class ScitosDisplay : public ScitosModule{
 			return std::shared_ptr<ScitosModule>(new ScitosDisplay());
 		}
 
-		void initialize();
+		void initialize(const rclcpp::Node::WeakPtr & ros_node);
 
 	private:
 		rclcpp::Publisher<scitos_msgs::msg::MenuEntry>::SharedPtr display_data_pub_;
 
-		OnSetParametersCallbackHandle::SharedPtr callback_handle_;
+		rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr dyn_params_handler_;
 		bool user_menu_enabled_;
 
 		ScitosDisplay();
 
-		rcl_interfaces::msg::SetParametersResult parameters_callback(const std::vector<rclcpp::Parameter> &parameters);
+		rcl_interfaces::msg::SetParametersResult parameters_callback(
+			const std::vector<rclcpp::Parameter> &parameters);
 		
 		void menu_data_callback(mira::ChannelRead<uint8> data);
 };
 
 #endif // SCITOS_MIRA__SCITOS_DISPLAY_HPP_
-

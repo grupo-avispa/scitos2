@@ -274,7 +274,7 @@ This module controls the power for extra devices.
 
 ## Future work
 - [ ] Convert nodes to LifeCycleNodes.
-- [ ] Improve nodes handling.
+- [x] Improve nodes handling.
 - [x] Add Drive parameters.
 - [x] Add other modules.
 - [x] Improve parameter loading.
