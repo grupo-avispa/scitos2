@@ -1,7 +1,10 @@
 <root>
     <TreeNodesModel>
+        <Action ID="EmergencyStop">
+            <input_port name="service_name" default="emergency_stop">Service name</input_port>
+        </Action>
         <Action ID="ResetMotorStop">
-            <input_port name="service_name" defaul="reset_motorstop">Service name</input_port>
+            <input_port name="service_name" default="reset_motorstop">Service name</input_port>
         </Action>
         <Condition ID="IsBumperActivated">
             <input_port name="bumper_topic" default="bumper">Topic for bumper status</input_port>

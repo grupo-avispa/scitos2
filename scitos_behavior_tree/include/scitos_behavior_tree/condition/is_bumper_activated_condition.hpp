@@ -52,7 +52,7 @@ class IsBumperActivatedCondition : public BT::ConditionNode{
 		static BT::PortsList providedPorts()	{
 			return {
 			BT::InputPort<std::string>(
-				"bumper", std::string("/bumper"), "Bumper topic")
+				"bumper_topic", std::string("/bumper"), "Bumper topic")
 			};
 		}
 

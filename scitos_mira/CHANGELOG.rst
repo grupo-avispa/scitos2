@@ -2,6 +2,23 @@
 Changelog for package scitos_mira
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.0 (06-06-2023)
+------------------
+* Pass the parent node to the modules instead of inheriting from Node.
+* Added nested params.
+* Convert to lyfecycle node.
+
+0.4.2 (04-05-2023)
+------------------
+* Fix POWER_SUPPLY_STATUS_FULL not set when battery is full.
+
+0.4.1 (26-04-2023)
+------------------
+* Replace declare_if_not_declared by using nav2_util.
+* Added log when terminate the node.
+* Reset motorstop if bumper is activated at startup.
+* Reset motorstop when emergency button is released.
+
 0.4.0 (25-04-2023)
 ------------------
 * Prepare for humble release.

@@ -2,6 +2,10 @@
 Changelog for package scitos_behavior_tree
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.3.0 (26-04-2023)
+------------------
+* Added "emergency stop" action BT node.
+
 0.2.0 (25-04-2023)
 ------------------
 * Prepare for humble release.

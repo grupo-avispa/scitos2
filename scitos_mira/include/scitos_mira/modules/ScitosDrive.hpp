@@ -1,7 +1,7 @@
 /*
  * SCITOS DRIVE
  *
- * Copyright (c) 2022 Alberto José Tudela Roldán <ajtudela@gmail.com>
+ * Copyright (c) 2022-2023 Alberto José Tudela Roldán <ajtudela@gmail.com>
  * 
  * This file is part of scitos_mira project.
  * 
@@ -20,6 +20,8 @@
 
 // ROS
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include "rclcpp_lifecycle/lifecycle_publisher.hpp"
 #include "rcl_interfaces/msg/set_parameters_result.hpp"
 #include "tf2_ros/transform_broadcaster.h"
 #include "geometry_msgs/msg/twist.hpp"
@@ -54,17 +56,18 @@ class ScitosDrive : public ScitosModule{
 			return std::shared_ptr<ScitosModule>(new ScitosDrive());
 		}
 
-		void initialize();
+		void configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & ros_node);
+		void reset_publishers();
 
 	private:
-		rclcpp::Publisher<scitos_msgs::msg::BumperStatus>::SharedPtr bumper_pub_;
-		rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr bumper_markers_pub_;
-		rclcpp::Publisher<scitos_msgs::msg::DriveStatus>::SharedPtr drive_status_pub_;
-		rclcpp::Publisher<scitos_msgs::msg::EmergencyStopStatus>::SharedPtr emergency_stop_pub_;
-		rclcpp::Publisher<scitos_msgs::msg::BarrierStatus>::SharedPtr magnetic_barrier_pub_;
-		rclcpp::Publisher<scitos_msgs::msg::Mileage>::SharedPtr mileage_pub_;
-		rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_pub_;
-		rclcpp::Publisher<scitos_msgs::msg::RfidTag>::SharedPtr rfid_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<scitos_msgs::msg::BumperStatus>::SharedPtr bumper_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<visualization_msgs::msg::MarkerArray>::SharedPtr bumper_markers_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<scitos_msgs::msg::DriveStatus>::SharedPtr drive_status_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<scitos_msgs::msg::EmergencyStopStatus>::SharedPtr emergency_stop_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<scitos_msgs::msg::BarrierStatus>::SharedPtr magnetic_barrier_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<scitos_msgs::msg::Mileage>::SharedPtr mileage_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Odometry>::SharedPtr odometry_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<scitos_msgs::msg::RfidTag>::SharedPtr rfid_pub_;
 			
 		rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;
 
@@ -77,16 +80,18 @@ class ScitosDrive : public ScitosModule{
 		rclcpp::Service<scitos_msgs::srv::ResetOdometry>::SharedPtr reset_odometry_service_;
 		rclcpp::Service<scitos_msgs::srv::SuspendBumper>::SharedPtr suspend_bumper_service_;
 
-		OnSetParametersCallbackHandle::SharedPtr callback_handle_;
+		rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr dyn_params_handler_;
 
 		scitos_msgs::msg::EmergencyStopStatus emergency_stop_;
 		scitos_msgs::msg::BarrierStatus barrier_status_;
 		std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 		std::string base_frame_;
+		bool setup_;
 
 		ScitosDrive();
 
-		rcl_interfaces::msg::SetParametersResult parameters_callback(const std::vector<rclcpp::Parameter> &parameters);
+		rcl_interfaces::msg::SetParametersResult parameters_callback(
+			const std::vector<rclcpp::Parameter> &parameters);
 
 		void bumper_data_callback(mira::ChannelRead<bool> data);
 		void drive_status_callback(mira::ChannelRead<uint32> data);
@@ -96,23 +101,30 @@ class ScitosDrive : public ScitosModule{
 
 		void velocity_command_callback(const geometry_msgs::msg::Twist& msg);
 
-		bool change_force(const std::shared_ptr<scitos_msgs::srv::ChangeForce::Request> request,
-								std::shared_ptr<scitos_msgs::srv::ChangeForce::Response> response);
-		bool emergency_stop(const std::shared_ptr<scitos_msgs::srv::EmergencyStop::Request> request,
-								std::shared_ptr<scitos_msgs::srv::EmergencyStop::Response> response);
-		bool enable_motors(const std::shared_ptr<scitos_msgs::srv::EnableMotors::Request> request,
-								std::shared_ptr<scitos_msgs::srv::EnableMotors::Response> response);
-		bool enable_rfid(const std::shared_ptr<scitos_msgs::srv::EnableRfid::Request> request,
-								std::shared_ptr<scitos_msgs::srv::EnableRfid::Response> response);
-		bool reset_barrier_stop(const std::shared_ptr<scitos_msgs::srv::ResetBarrierStop::Request> request,
-								std::shared_ptr<scitos_msgs::srv::ResetBarrierStop::Response> response);
-		bool reset_motor_stop(const std::shared_ptr<scitos_msgs::srv::ResetMotorStop::Request> request,
-								std::shared_ptr<scitos_msgs::srv::ResetMotorStop::Response> response);
-		bool reset_odometry(const std::shared_ptr<scitos_msgs::srv::ResetOdometry::Request> request,
-								std::shared_ptr<scitos_msgs::srv::ResetOdometry::Response> response);
-		bool suspend_bumper(const std::shared_ptr<scitos_msgs::srv::SuspendBumper::Request> request,
-								std::shared_ptr<scitos_msgs::srv::SuspendBumper::Response> response);
+		bool change_force(
+			const std::shared_ptr<scitos_msgs::srv::ChangeForce::Request> request,
+			std::shared_ptr<scitos_msgs::srv::ChangeForce::Response> response);
+		bool emergency_stop(
+			const std::shared_ptr<scitos_msgs::srv::EmergencyStop::Request> request,
+			std::shared_ptr<scitos_msgs::srv::EmergencyStop::Response> response);
+		bool enable_motors(
+			const std::shared_ptr<scitos_msgs::srv::EnableMotors::Request> request,
+			std::shared_ptr<scitos_msgs::srv::EnableMotors::Response> response);
+		bool enable_rfid(
+			const std::shared_ptr<scitos_msgs::srv::EnableRfid::Request> request,
+			std::shared_ptr<scitos_msgs::srv::EnableRfid::Response> response);
+		bool reset_barrier_stop(
+			const std::shared_ptr<scitos_msgs::srv::ResetBarrierStop::Request> request,
+			std::shared_ptr<scitos_msgs::srv::ResetBarrierStop::Response> response);
+		bool reset_motor_stop(
+			const std::shared_ptr<scitos_msgs::srv::ResetMotorStop::Request> request,
+			std::shared_ptr<scitos_msgs::srv::ResetMotorStop::Response> response);
+		bool reset_odometry(
+			const std::shared_ptr<scitos_msgs::srv::ResetOdometry::Request> request,
+			std::shared_ptr<scitos_msgs::srv::ResetOdometry::Response> response);
+		bool suspend_bumper(
+			const std::shared_ptr<scitos_msgs::srv::SuspendBumper::Request> request,
+			std::shared_ptr<scitos_msgs::srv::SuspendBumper::Response> response);
 };
 
 #endif // SCITOS_MIRA__SCITOS_DRIVE_HPP_
-

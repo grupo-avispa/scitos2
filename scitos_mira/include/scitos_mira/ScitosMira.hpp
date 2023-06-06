@@ -1,7 +1,7 @@
 /*
  * SCITOS MIRA
  *
- * Copyright (c) 2022 Alberto José Tudela Roldán <ajtudela@gmail.com>
+ * Copyright (c) 2022-2023 Alberto José Tudela Roldán <ajtudela@gmail.com>
  * 
  * This file is part of scitos_mira project.
  * 
@@ -20,32 +20,36 @@
 
 // ROS
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include "lifecycle_msgs/msg/transition.hpp"
 
 // Scitos Mira
 #include "scitos_mira/ScitosModule.hpp"
 #include "scitos_mira/RosLogSink.hpp"
 
+typedef rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn rclcpp_CallReturn;
+
 /**
  * @brief Main class for the robot. Manages MIRA handle and ROS node.
  * 
  */
-class ScitosMira: public rclcpp::Node{
+class ScitosMira: public rclcpp_lifecycle::LifecycleNode{
 	public:
-		ScitosMira(const std::string& name);
+		ScitosMira(const std::string& name, bool intra_process_comms = false);
 		~ScitosMira();
-		std::vector<std::shared_ptr<ScitosModule> > get_modules(){ return modules_; };
+		rclcpp_CallReturn on_configure(const rclcpp_lifecycle::State &);
+		rclcpp_CallReturn on_activate(const rclcpp_lifecycle::State & state);
+		rclcpp_CallReturn on_deactivate(const rclcpp_lifecycle::State & state);
+		rclcpp_CallReturn on_cleanup(const rclcpp_lifecycle::State &);
+		rclcpp_CallReturn on_shutdown(const rclcpp_lifecycle::State & state);
+
 	private:
 		mira::Framework framework_;
-		std::vector<std::string> args_;
 		std::vector<std::string> modules_names_;
 		std::vector<std::shared_ptr<ScitosModule> > modules_;
 
-		void initialize();
-		void declare_parameter_if_not_declared(const std::string & param_name, 
-			const rclcpp::ParameterType & param_type, 
-			const rcl_interfaces::msg::ParameterDescriptor & param_descriptor =
-			rcl_interfaces::msg::ParameterDescriptor());
+		void configure_modules();
+		void reset_publishers_modules();
 };
 
-#endif // SCITOS_MIRA__MIRA_CHARGER_HPP_
-
+#endif // SCITOS_MIRA__SCITOS_MIRA_HPP_
