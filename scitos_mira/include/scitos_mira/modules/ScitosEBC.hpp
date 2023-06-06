@@ -14,6 +14,7 @@
 
 // ROS
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "rcl_interfaces/msg/set_parameters_result.hpp"
 
 #include "scitos_mira/ScitosModule.hpp"
@@ -28,7 +29,8 @@ class ScitosEBC : public ScitosModule{
 			return std::shared_ptr<ScitosModule>(new ScitosEBC());
 		}
 
-		void initialize(const rclcpp::Node::WeakPtr & ros_node);
+		void configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & ros_node);
+		void reset_publishers();
 
 	private:
 		ScitosEBC();

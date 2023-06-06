@@ -5,9 +5,9 @@
 
 ## Overview
 
-This package contaning drivers for Metralabs Scitos robot base (HG4 version) using the MIRA framework.
+This package contains drivers for Metralabs Scitos robot base (HG4 version) using the MIRA framework. MIRA is a software framework for building robotic applications.
 
-Several sensors and components of SCITOS robots are exposed as ROS  published / subscribed topics and services. At the moment the included ``modules`` are:
+Several sensors and components of SCITOS robots are exposed as ROS published / subscribed topics and services. At this time, the following ``modules`` are supported:
 
 * **Charger**: this module monitor the state of the battery and the charging station.
 * **Display**: this module changes the status display on the base.
@@ -27,9 +27,6 @@ The scitos_mira package has been tested under [ROS2] Humble on [Ubuntu] 22.04. T
 #### Dependencies
 
 - [Robot Operating System (ROS) 2](https://docs.ros.org/en/humble/) (middleware for robotics),
-- [Boost](https://www.boost.org/) (C++ source libraries)
-
-		rosdep install -i --from-path src --rosdistro humble -y
 
 #### Building
 
@@ -39,7 +36,7 @@ To build from source, clone the latest version from this repository into your co
 	git clone https://github.com/grupo-avispa/scitos2.git
 	cd ../
 	rosdep install -i --from-path src --rosdistro humble -y
-	colcon build
+	colcon build --symlink-install
 
 ## Usage
 
@@ -271,13 +268,6 @@ This module controls the power for extra devices.
 * **`port1_24v_max_current`** (double, default: 4)
 
 	Maximum current for port 1 24V in A. The value must be between 0-4A.
-
-## Future work
-- [ ] Convert nodes to LifeCycleNodes.
-- [x] Improve nodes handling.
-- [x] Add Drive parameters.
-- [x] Add other modules.
-- [x] Improve parameter loading.
 
 [Ubuntu]: https://ubuntu.com/
 [ROS2]: https://docs.ros.org/en/humble/

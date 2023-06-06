@@ -15,6 +15,7 @@ endif()
 ## Find ament macros and libraries
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclcpp_lifecycle REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
@@ -51,10 +52,11 @@ add_executable(${PROJECT_NAME}
   src/ModuleFactory.cpp
   src/ScitosMira.cpp
   src/ScitosModule.cpp
-  src/scitos_node.cpp
+  src/main.cpp
 )
 ament_target_dependencies(${PROJECT_NAME}
   rclcpp
+  rclcpp_lifecycle
   tf2
   tf2_ros
   tf2_geometry_msgs

@@ -20,6 +20,8 @@
 
 // ROS
 #include "rclcpp/rclcpp.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
+#include "rclcpp_lifecycle/lifecycle_publisher.hpp"
 #include "rcl_interfaces/msg/set_parameters_result.hpp"
 #include "tf2_ros/transform_broadcaster.h"
 #include "geometry_msgs/msg/twist.hpp"
@@ -54,17 +56,18 @@ class ScitosDrive : public ScitosModule{
 			return std::shared_ptr<ScitosModule>(new ScitosDrive());
 		}
 
-		void initialize(const rclcpp::Node::WeakPtr & ros_node);
+		void configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & ros_node);
+		void reset_publishers();
 
 	private:
-		rclcpp::Publisher<scitos_msgs::msg::BumperStatus>::SharedPtr bumper_pub_;
-		rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr bumper_markers_pub_;
-		rclcpp::Publisher<scitos_msgs::msg::DriveStatus>::SharedPtr drive_status_pub_;
-		rclcpp::Publisher<scitos_msgs::msg::EmergencyStopStatus>::SharedPtr emergency_stop_pub_;
-		rclcpp::Publisher<scitos_msgs::msg::BarrierStatus>::SharedPtr magnetic_barrier_pub_;
-		rclcpp::Publisher<scitos_msgs::msg::Mileage>::SharedPtr mileage_pub_;
-		rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_pub_;
-		rclcpp::Publisher<scitos_msgs::msg::RfidTag>::SharedPtr rfid_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<scitos_msgs::msg::BumperStatus>::SharedPtr bumper_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<visualization_msgs::msg::MarkerArray>::SharedPtr bumper_markers_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<scitos_msgs::msg::DriveStatus>::SharedPtr drive_status_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<scitos_msgs::msg::EmergencyStopStatus>::SharedPtr emergency_stop_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<scitos_msgs::msg::BarrierStatus>::SharedPtr magnetic_barrier_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<scitos_msgs::msg::Mileage>::SharedPtr mileage_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Odometry>::SharedPtr odometry_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<scitos_msgs::msg::RfidTag>::SharedPtr rfid_pub_;
 			
 		rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;
 
@@ -125,4 +128,3 @@ class ScitosDrive : public ScitosModule{
 };
 
 #endif // SCITOS_MIRA__SCITOS_DRIVE_HPP_
-

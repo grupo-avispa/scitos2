@@ -17,7 +17,7 @@
 ScitosCharger::ScitosCharger() : ScitosModule("scitos_charger"){
 }
 
-void ScitosCharger::initialize(const rclcpp::Node::WeakPtr & ros_node){
+void ScitosCharger::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & ros_node){
 	node_ = ros_node;
 
 	// Create ROS publishers
@@ -37,6 +37,11 @@ void ScitosCharger::initialize(const rclcpp::Node::WeakPtr & ros_node){
 							"charger/save_persistent_errors", 
 							std::bind(&ScitosCharger::save_persistent_errors, this, 
 								std::placeholders::_1, std::placeholders::_2));
+}
+
+void ScitosCharger::reset_publishers(){
+	battery_pub_.reset();
+	charger_pub_.reset();
 }
 
 void ScitosCharger::battery_data_callback(mira::ChannelRead<mira::robot::BatteryState> data){

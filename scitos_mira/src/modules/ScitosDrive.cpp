@@ -27,7 +27,7 @@ using namespace std::placeholders;
 ScitosDrive::ScitosDrive() : ScitosModule("scitos_drive"){
 }
 
-void ScitosDrive::initialize(const rclcpp::Node::WeakPtr & ros_node){
+void ScitosDrive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & ros_node){
 	node_ = ros_node;
 
 	// Create ROS publishers
@@ -115,6 +115,17 @@ void ScitosDrive::initialize(const rclcpp::Node::WeakPtr & ros_node){
 
 	// Initialize the transform broadcaster
 	tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(node);
+}
+
+void ScitosDrive::reset_publishers(){
+	bumper_pub_.reset();
+	bumper_markers_pub_.reset();
+	drive_status_pub_.reset();
+	emergency_stop_pub_.reset();
+	magnetic_barrier_pub_.reset();
+	mileage_pub_.reset();
+	odometry_pub_.reset();
+	rfid_pub_.reset();
 }
 
 rcl_interfaces::msg::SetParametersResult ScitosDrive::parameters_callback(

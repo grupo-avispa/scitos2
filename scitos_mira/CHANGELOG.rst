@@ -2,10 +2,11 @@
 Changelog for package scitos_mira
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.5.0 (06-06-2023)
+1.0.0 (06-06-2023)
 ------------------
-* Pass the main node to the modules instead of heredating from Node.
+* Pass the parent node to the modules instead of inheriting from Node.
 * Added nested params.
+* Convert to lyfecycle node.
 
 0.4.2 (04-05-2023)
 ------------------

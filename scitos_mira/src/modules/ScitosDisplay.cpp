@@ -16,7 +16,7 @@
 ScitosDisplay::ScitosDisplay() : ScitosModule("scitos_display"){
 }
 
-void ScitosDisplay::initialize(const rclcpp::Node::WeakPtr & ros_node){
+void ScitosDisplay::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & ros_node){
 	node_ = ros_node;
 
 	// Create publisher
@@ -73,6 +73,10 @@ void ScitosDisplay::initialize(const rclcpp::Node::WeakPtr & ros_node){
 		set_mira_param("StatusDisplay.EnableUserMenu", "false");
 		RCLCPP_INFO(logger_, "The parameter display.user_menu_enabled is set to: false");
 	}
+}
+
+void ScitosDisplay::reset_publishers(){
+	display_data_pub_.reset();
 }
 
 rcl_interfaces::msg::SetParametersResult ScitosDisplay::parameters_callback(

@@ -16,7 +16,7 @@
 ScitosEBC::ScitosEBC() : ScitosModule("scitos_ebc"){
 }
 
-void ScitosEBC::initialize(const rclcpp::Node::WeakPtr & ros_node){
+void ScitosEBC::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & ros_node){
 	node_ = ros_node;
 
 	// Declare and read parameters
@@ -207,6 +207,9 @@ void ScitosEBC::initialize(const rclcpp::Node::WeakPtr & ros_node){
 	// Callback for monitor changes in parameters
 	dyn_params_handler_ = node->add_on_set_parameters_callback(
 						std::bind(&ScitosEBC::parameters_callback, this, std::placeholders::_1));
+}
+
+void ScitosEBC::reset_publishers(){
 }
 
 rcl_interfaces::msg::SetParametersResult ScitosEBC::parameters_callback(

@@ -22,7 +22,13 @@
 #include "scitos_mira/ScitosMira.hpp"
 #include "scitos_mira/ModuleFactory.hpp"
 
-ScitosMira::ScitosMira(const std::string& name) : Node(name), framework_({}){
+ScitosMira::ScitosMira(const std::string& name, bool intra_process_comms) : 
+					rclcpp_lifecycle::LifecycleNode(name, rclcpp::NodeOptions()
+						.use_intra_process_comms(intra_process_comms)), 
+					framework_({}){
+}
+
+rclcpp_CallReturn ScitosMira::on_configure(const rclcpp_lifecycle::State &){
 	RCLCPP_INFO(this->get_logger(), "Configuring the node...");
 
 	// Redirect Mira logger
@@ -41,7 +47,7 @@ ScitosMira::ScitosMira(const std::string& name) : Node(name), framework_({}){
 		RCLCPP_ERROR_STREAM(this->get_logger(), "Can't read parameter 'modules'. " 
 			<< "This MUST be supplied as a space separated list of SCITOS "
 			<< "hardware modules to interface into ROS");
-		exit(1);
+		return rclcpp_CallReturn::FAILURE;
 	}
 
 	std::string config;
@@ -54,7 +60,7 @@ ScitosMira::ScitosMira(const std::string& name) : Node(name), framework_({}){
 		framework_.load(config);
 	}else{
 		RCLCPP_ERROR(this->get_logger(), "Can't read parameter 'scitos_config'");
-		exit(1);
+		return rclcpp_CallReturn::FAILURE;
 	}
 
 	// Sleep for 2 seconds and start Mira framework
@@ -67,15 +73,17 @@ ScitosMira::ScitosMira(const std::string& name) : Node(name), framework_({}){
 		if (!factory.is_registered(name)){
 			RCLCPP_ERROR_STREAM(this->get_logger(), "A non existent module named '" 
 				<< name << "' was trying to be created.");
+			return rclcpp_CallReturn::ERROR;
 		}else{
 			RCLCPP_INFO(this->get_logger(), "Created module: [%s]", name.c_str());
 			modules_.push_back(factory.create_module(name));
 		}
 	}
 
-	// Create a timer to initialize the modules
-	timer_ = this->create_wall_timer(std::chrono::milliseconds(500), 
-		std::bind(&ScitosMira::initialize, this));
+	// Configure MIRA modules
+	configure_modules();
+
+	return rclcpp_CallReturn::SUCCESS;
 }
 
 ScitosMira::~ScitosMira(){
@@ -84,11 +92,49 @@ ScitosMira::~ScitosMira(){
 	}
 }
 
-void ScitosMira::initialize(){
-	// Initialize all modules
+rclcpp_CallReturn ScitosMira::on_activate(const rclcpp_lifecycle::State & state){
+	LifecycleNode::on_activate(state);
+	RCLCPP_INFO(this->get_logger(), "Activating the node...");
+
+	return rclcpp_CallReturn::SUCCESS;
+}
+
+rclcpp_CallReturn ScitosMira::on_deactivate(const rclcpp_lifecycle::State & state){
+	LifecycleNode::on_deactivate(state);
+	RCLCPP_INFO(this->get_logger(), "Deactivating the node...");
+
+	return rclcpp_CallReturn::SUCCESS;
+}
+
+rclcpp_CallReturn ScitosMira::on_cleanup(const rclcpp_lifecycle::State &){
+	RCLCPP_INFO(this->get_logger(), "Cleaning the node...");
+
+	// Release the shared pointers
+	reset_publishers_modules();
+
+	return rclcpp_CallReturn::SUCCESS;
+}
+
+rclcpp_CallReturn ScitosMira::on_shutdown(const rclcpp_lifecycle::State & state){
+	RCLCPP_INFO(this->get_logger(), "Shutdown the node from state %s.", state.label().c_str());
+
+	// Release the shared pointers
+	reset_publishers_modules();
+
+	return rclcpp_CallReturn::SUCCESS;
+}
+
+void ScitosMira::configure_modules(){
+	// Configure all modules
 	auto node = this->shared_from_this();
 	for (auto& module: modules_){
-		module->initialize(node);
+		module->configure(node);
 	}
-	timer_->cancel();
+}
+
+void ScitosMira::reset_publishers_modules(){
+	// Reset the publishers of all modules
+	for (auto& module: modules_){
+		module->reset_publishers();
+	}
 }
