@@ -43,7 +43,7 @@ def generate_launch_description():
         package = 'scitos_mira',
         namespace = '',
         executable = 'scitos_mira',
-        #name = 'scitos_mira',     # Uncomment to 'hide' charger, drive, etc. nodes under scitos mira.
+        name = 'scitos_mira',
         parameters = [mira_param_file, {'scitos_config': scitos_param_file}],
         emulate_tty = True
     )
