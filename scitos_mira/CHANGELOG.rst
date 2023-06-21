@@ -2,6 +2,12 @@
 Changelog for package scitos_mira
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.0 (20-06-2023)
+------------------
+* Split bumper visualization from callback.
+* Added publish_tf parameter.
+* Added reset bumper interval parameter.
+
 1.0.0 (06-06-2023)
 ------------------
 * Pass the parent node to the modules instead of inheriting from Node.

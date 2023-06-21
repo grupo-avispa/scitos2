@@ -191,6 +191,14 @@ This module control the motors (velocity commands, odometry, bumpers, ...).
 
 	This parameter should be set to true to enable the magnetic strip detector to cut out the motors.
 
+* **`publish_tf`** (bool, default: true)
+
+	This parameter should be set to true to publish the TF between `/odom` and `/base_frame`.
+
+* ** `reset_bumper_interval`** (int, default: 0)
+
+	This parameter sets the interval in milliseconds to reset motor stop when the bumper is pressed. If set to 0, the motor stop will not be reset.
+
 ### EBC
 
 This module controls the power for extra devices.
