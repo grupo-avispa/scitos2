@@ -36,7 +36,7 @@ void ScitosDrive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & ros
 	bumper_pub_ 		= node->create_publisher<scitos_msgs::msg::BumperStatus>(
 							"bumper", latch_qos);
 	bumper_markers_pub_ = node->create_publisher<visualization_msgs::msg::MarkerArray>(
-							"bumper_viz", 20);
+							"bumper/visualization", 20);
 	drive_status_pub_ 	= node->create_publisher<scitos_msgs::msg::DriveStatus>(
 							"drive_status", 20);
 	emergency_stop_pub_ = node->create_publisher<scitos_msgs::msg::EmergencyStopStatus>(
