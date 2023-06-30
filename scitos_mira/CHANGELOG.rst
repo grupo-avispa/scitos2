@@ -2,6 +2,10 @@
 Changelog for package scitos_mira
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.1 (30-06-2023)
+------------------
+* Added frame_id to battery messages.
+
 1.1.0 (20-06-2023)
 ------------------
 * Split bumper visualization from callback.

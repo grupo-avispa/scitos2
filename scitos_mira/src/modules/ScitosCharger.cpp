@@ -51,6 +51,7 @@ void ScitosCharger::battery_data_callback(mira::ChannelRead<mira::robot::Battery
 	sensor_msgs::msg::BatteryState battery;
 
 	battery.header.stamp = time;
+	battery.header.frame_id = "base_link";
 	battery.voltage = data->voltage;
 	battery.temperature = std::numeric_limits<float>::quiet_NaN();
 	battery.current = -data->current;
@@ -92,6 +93,7 @@ void ScitosCharger::charger_status_callback(mira::ChannelRead<uint8> data){
 	scitos_msgs::msg::ChargerStatus charger;
 
 	charger.header.stamp = time;
+	charger.header.frame_id = "base_link";
 	charger.charging = (*data) & 1;
 	charger.empty = (*data) & (1 << 1);
 	charger.full = (*data) & (1 << 2);
