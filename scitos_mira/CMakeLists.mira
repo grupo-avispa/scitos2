@@ -52,8 +52,8 @@ mira_require_package(MIRAFramework)
 ##############################################################################
 
 MACRO(cmake_add_mira target)
-# MIRA uses C++14 features
-set_target_properties(${target} PROPERTIES COMPILE_FLAGS -std=c++14)
+# MIRA uses C++17 features
+set_target_properties(${target} PROPERTIES COMPILE_FLAGS -std=c++17)
 # For transitive linking link against all auto liked libraries
 target_link_libraries(${target} ${MIRAAutoLinkLibraries} MIRAFramework)
 ENDMACRO()

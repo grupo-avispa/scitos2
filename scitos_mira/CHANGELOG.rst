@@ -2,6 +2,20 @@
 Changelog for package scitos_mira
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.2 (01-09-2023)
+------------------
+* Update CMakeLists.mira to C++17.
+
+1.1.1 (30-06-2023)
+------------------
+* Added frame_id to battery messages.
+
+1.1.0 (20-06-2023)
+------------------
+* Split bumper visualization from callback.
+* Added publish_tf parameter.
+* Added reset bumper interval parameter.
+
 1.0.0 (06-06-2023)
 ------------------
 * Pass the parent node to the modules instead of inheriting from Node.

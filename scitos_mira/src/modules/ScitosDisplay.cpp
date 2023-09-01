@@ -56,22 +56,22 @@ void ScitosDisplay::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & r
 		std::string menu_entry;
 		node->get_parameter("display.menu_name", menu_entry);
 		set_mira_param("StatusDisplay.UserMenuName", menu_entry);
-		RCLCPP_INFO(logger_, "The parameter display.menu_name is set to: %s", menu_entry.c_str());
+		RCLCPP_INFO(logger_, "The parameter display.menu_name is set to: [%s]", menu_entry.c_str());
 		
 		node->get_parameter("display.menu_entry_name_1", menu_entry);
 		set_mira_param("StatusDisplay.UserMenuEntryName1", menu_entry);
-		RCLCPP_INFO(logger_, "The parameter display.menu_entry_name_1 is set to: %s", menu_entry.c_str());
+		RCLCPP_INFO(logger_, "The parameter display.menu_entry_name_1 is set to: [%s]", menu_entry.c_str());
 		
 		node->get_parameter("display.menu_entry_name_2", menu_entry);
 		set_mira_param("StatusDisplay.UserMenuEntryName2", menu_entry);
-		RCLCPP_INFO(logger_, "The parameter display.menu_entry_name_2 is set to: %s", menu_entry.c_str());
+		RCLCPP_INFO(logger_, "The parameter display.menu_entry_name_2 is set to: [%s]", menu_entry.c_str());
 		
 		node->get_parameter("display.menu_entry_name_3", menu_entry);
 		set_mira_param("StatusDisplay.UserMenuEntryName3", menu_entry);
-		RCLCPP_INFO(logger_, "The parameter display.menu_entry_name_3 is set to: %s", menu_entry.c_str());
+		RCLCPP_INFO(logger_, "The parameter display.menu_entry_name_3 is set to: [%s]", menu_entry.c_str());
 	}else{
 		set_mira_param("StatusDisplay.EnableUserMenu", "false");
-		RCLCPP_INFO(logger_, "The parameter display.user_menu_enabled is set to: false");
+		RCLCPP_INFO(logger_, "The parameter display.user_menu_enabled is set to: [false]");
 	}
 }
 
@@ -91,7 +91,7 @@ rcl_interfaces::msg::SetParametersResult ScitosDisplay::parameters_callback(
 			user_menu_enabled_ = param.as_bool();
 			try{
 				set_mira_param("StatusDisplay.EnableUserMenu", param.as_bool() ? "true" : "false");
-				RCLCPP_INFO(logger_, "The parameter display.user_menu_enabled is set to: %s", 
+				RCLCPP_INFO(logger_, "The parameter display.user_menu_enabled is set to: [%s]", 
 					param.as_bool() ? "true" : "false");
 			}catch(mira::Exception& ex){
 				result.successful = false;
@@ -104,7 +104,7 @@ rcl_interfaces::msg::SetParametersResult ScitosDisplay::parameters_callback(
 			if (user_menu_enabled_){
 				try{
 					set_mira_param("StatusDisplay.UserMenuName", param.as_string());
-					RCLCPP_INFO(logger_, "The parameter display.menu_name is set to: %s", 
+					RCLCPP_INFO(logger_, "The parameter display.menu_name is set to: [%s]", 
 						param.as_string().c_str());
 				}catch(mira::Exception& ex){
 					result.successful = false;
@@ -118,7 +118,7 @@ rcl_interfaces::msg::SetParametersResult ScitosDisplay::parameters_callback(
 			if (user_menu_enabled_){
 				try{
 					set_mira_param("StatusDisplay.UserMenuEntryName1", param.as_string());
-					RCLCPP_INFO(logger_, "The parameter display.menu_entry_name_1 is set to: %s", 
+					RCLCPP_INFO(logger_, "The parameter display.menu_entry_name_1 is set to: [%s]", 
 						param.as_string().c_str());
 				}catch(mira::Exception& ex){
 					result.successful = false;
@@ -132,7 +132,7 @@ rcl_interfaces::msg::SetParametersResult ScitosDisplay::parameters_callback(
 			if (user_menu_enabled_){
 				try{
 					set_mira_param("StatusDisplay.UserMenuEntryName2", param.as_string());
-					RCLCPP_INFO(logger_, "The parameter display.menu_entry_name_2 is set to: %s", 
+					RCLCPP_INFO(logger_, "The parameter display.menu_entry_name_2 is set to: [%s]", 
 						param.as_string().c_str());
 				}catch(mira::Exception& ex){
 					result.successful = false;
@@ -146,7 +146,7 @@ rcl_interfaces::msg::SetParametersResult ScitosDisplay::parameters_callback(
 			if (user_menu_enabled_){
 				try{
 					set_mira_param("StatusDisplay.UserMenuEntryName3", param.as_string());
-					RCLCPP_INFO(logger_, "The parameter display.menu_entry_name_3 is set to: %s", 
+					RCLCPP_INFO(logger_, "The parameter display.menu_entry_name_3 is set to: [%s]", 
 						param.as_string().c_str());
 				}catch(mira::Exception& ex){
 					result.successful = false;
@@ -155,6 +155,8 @@ rcl_interfaces::msg::SetParametersResult ScitosDisplay::parameters_callback(
 			}
 		}
 	}
+
+	return result;
 }
 
 void ScitosDisplay::menu_data_callback(mira::ChannelRead<uint8> data){

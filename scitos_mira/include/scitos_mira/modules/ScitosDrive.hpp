@@ -84,14 +84,20 @@ class ScitosDrive : public ScitosModule{
 
 		scitos_msgs::msg::EmergencyStopStatus emergency_stop_;
 		scitos_msgs::msg::BarrierStatus barrier_status_;
+		scitos_msgs::msg::BumperStatus bumper_status_;
 		std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 		std::string base_frame_;
-		bool setup_;
+		rclcpp::TimerBase::SharedPtr timer_;
+		rclcpp::Time last_bumper_reset_;
+		rclcpp::Duration reset_bumper_interval_;
+		bool publish_tf_;
 
 		ScitosDrive();
 
 		rcl_interfaces::msg::SetParametersResult parameters_callback(
 			const std::vector<rclcpp::Parameter> &parameters);
+
+		void publish_bumper_markers();
 
 		void bumper_data_callback(mira::ChannelRead<bool> data);
 		void drive_status_callback(mira::ChannelRead<uint32> data);

@@ -24,7 +24,7 @@ uint64 MAGNETIC_BARRIER_RFID_CODE = 0xabababab;
 
 using namespace std::placeholders;
 
-ScitosDrive::ScitosDrive() : ScitosModule("scitos_drive"){
+ScitosDrive::ScitosDrive() : ScitosModule("scitos_drive"), reset_bumper_interval_(0, 0){
 }
 
 void ScitosDrive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & ros_node){
@@ -32,31 +32,39 @@ void ScitosDrive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & ros
 
 	// Create ROS publishers
 	auto node = node_.lock();
-	bumper_pub_ 		= node->create_publisher<scitos_msgs::msg::BumperStatus>("bumper", 20);
+	auto latch_qos = rclcpp::QoS(1).transient_local();
+	bumper_pub_ 		= node->create_publisher<scitos_msgs::msg::BumperStatus>(
+							"bumper", latch_qos);
 	bumper_markers_pub_ = node->create_publisher<visualization_msgs::msg::MarkerArray>(
-							"bumper_viz", 20);
+							"bumper/visualization", 20);
 	drive_status_pub_ 	= node->create_publisher<scitos_msgs::msg::DriveStatus>(
 							"drive_status", 20);
 	emergency_stop_pub_ = node->create_publisher<scitos_msgs::msg::EmergencyStopStatus>(
-							"emergency_stop_status", rclcpp::QoS(1).transient_local());
+							"emergency_stop_status", latch_qos);
 	magnetic_barrier_pub_	= node->create_publisher<scitos_msgs::msg::BarrierStatus>(
-							"barrier_status", rclcpp::QoS(1).transient_local());
+							"barrier_status", latch_qos);
 	mileage_pub_ 		= node->create_publisher<scitos_msgs::msg::Mileage>("mileage", 20);
-	odometry_pub_ 		= node->create_publisher<nav_msgs::msg::Odometry>("odom", 20);
+	odometry_pub_ 		= node->create_publisher<nav_msgs::msg::Odometry>("odom", 10);
 	rfid_pub_ 			= node->create_publisher<scitos_msgs::msg::RfidTag>("rfid", 20);
+
+	timer_ = node->create_wall_timer(std::chrono::duration<double>(0.5), 
+		std::bind(&ScitosDrive::publish_bumper_markers, this));
 
 	// Create MIRA subscribers
 	authority_.subscribe<mira::robot::Odometry2>("/robot/Odometry", 
 		&ScitosDrive::odometry_data_callback, this);
-	authority_.subscribe<bool>("/robot/Bumper", &ScitosDrive::bumper_data_callback, this);
-	authority_.subscribe<float>("/robot/Mileage", &ScitosDrive::mileage_data_callback, this);
+	authority_.subscribe<bool>("/robot/Bumper", 
+		&ScitosDrive::bumper_data_callback, this);
+	authority_.subscribe<float>("/robot/Mileage", 
+		&ScitosDrive::mileage_data_callback, this);
 	authority_.subscribe<uint32>("/robot/DriveStatusPlain", 
 		&ScitosDrive::drive_status_callback, this);
-	authority_.subscribe<uint64>("/robot/RFIDUserTag", &ScitosDrive::rfid_status_callback, this);
+	authority_.subscribe<uint64>("/robot/RFIDUserTag", 
+		&ScitosDrive::rfid_status_callback, this);
 
 	// Create ROS subscribers
-	cmd_vel_sub_ = node->create_subscription<geometry_msgs::msg::Twist>("cmd_vel", 1000, 
-									std::bind(&ScitosDrive::velocity_command_callback, this, _1));
+	cmd_vel_sub_ = node->create_subscription<geometry_msgs::msg::Twist>("cmd_vel", 1, 
+						std::bind(&ScitosDrive::velocity_command_callback, this, _1));
 
 	// Create ROS services
 	change_force_service_ 		= node->create_service<scitos_msgs::srv::ChangeForce>(
@@ -81,15 +89,30 @@ void ScitosDrive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & ros
 		rclcpp::ParameterValue("base_footprint"), rcl_interfaces::msg::ParameterDescriptor()
 			.set__description("The name of the base frame of the robot"));
 	node->get_parameter("drive.base_frame", base_frame_);
-	RCLCPP_INFO(logger_, "The parameter drive.base_frame is set to: %s", base_frame_.c_str());
+	RCLCPP_INFO(logger_, "The parameter drive.base_frame is set to: [%s]", base_frame_.c_str());
 
 	bool magnetic_barrier_enabled = true;
 	nav2_util::declare_parameter_if_not_declared(node, "drive.magnetic_barrier_enabled", 
 		rclcpp::ParameterValue(false), rcl_interfaces::msg::ParameterDescriptor()
 			.set__description("Enable the magnetic strip detector to cut out the motors"));
 	node->get_parameter("drive.magnetic_barrier_enabled", magnetic_barrier_enabled);
-	RCLCPP_INFO(logger_, "The parameter drive.magnetic_barrier_enabled is set to: %s", 
+	RCLCPP_INFO(logger_, "The parameter drive.magnetic_barrier_enabled is set to: [%s]", 
 		magnetic_barrier_enabled ? "true" : "false");
+
+	nav2_util::declare_parameter_if_not_declared(node, "drive.publish_tf", 
+		rclcpp::ParameterValue(true), rcl_interfaces::msg::ParameterDescriptor()
+			.set__description("Publish the odometry as a tf2 transform"));
+	node->get_parameter("drive.publish_tf", publish_tf_);
+	RCLCPP_INFO(logger_, "The parameter drive.publish_tf_ is set to: [%s]", 
+		publish_tf_ ? "true" : "false");
+	
+	int rbi = 0;
+	nav2_util::declare_parameter_if_not_declared(node, "drive.reset_bumper_interval", 
+		rclcpp::ParameterValue(0), rcl_interfaces::msg::ParameterDescriptor()
+			.set__description("The interval in milliseconds to reset the bumper"));
+	node->get_parameter("drive.reset_bumper_interval", rbi);
+	RCLCPP_INFO(logger_, "The parameter drive.reset_bumper_interval is set to: [%i]", rbi);
+	reset_bumper_interval_ = rclcpp::Duration::from_seconds(rbi / 1000.0);
 
 	try{
 		set_mira_param("MainControlUnit.RearLaser.Enabled", 
@@ -98,7 +121,7 @@ void ScitosDrive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & ros
 
 	// Callback for monitor changes in parameters
 	dyn_params_handler_ = node->add_on_set_parameters_callback(
-						std::bind(&ScitosDrive::parameters_callback, this, _1));
+		std::bind(&ScitosDrive::parameters_callback, this, _1));
 
 	// Publish initial values
 	emergency_stop_.header.frame_id = base_frame_;
@@ -106,15 +129,10 @@ void ScitosDrive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & ros
 	emergency_stop_.emergency_stop_activated = false;
 	emergency_stop_pub_->publish(emergency_stop_);
 
-	// Publish initial values
-	barrier_status_.header.frame_id = base_frame_;
-	barrier_status_.header.stamp = node->now();
-	barrier_status_.barrier_stopped = false;
-	barrier_status_.last_detection_stamp = rclcpp::Time(0);
-	magnetic_barrier_pub_->publish(barrier_status_);
-
 	// Initialize the transform broadcaster
-	tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(node);
+	if (publish_tf_){
+		tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(node);
+	}
 }
 
 void ScitosDrive::reset_publishers(){
@@ -126,6 +144,7 @@ void ScitosDrive::reset_publishers(){
 	mileage_pub_.reset();
 	odometry_pub_.reset();
 	rfid_pub_.reset();
+	timer_.reset();
 }
 
 rcl_interfaces::msg::SetParametersResult ScitosDrive::parameters_callback(
@@ -159,76 +178,21 @@ rcl_interfaces::msg::SetParametersResult ScitosDrive::parameters_callback(
 }
 
 void ScitosDrive::bumper_data_callback(mira::ChannelRead<bool> data){
-	scitos_msgs::msg::BumperStatus status_msg;
-	status_msg.header.frame_id = base_frame_;
-	status_msg.header.stamp = rclcpp::Time(data->timestamp.toUnixNS());
-	status_msg.bumper_activated = data->value();
-	bumper_pub_->publish(status_msg);
-
-	// Reset motorstop if bumper is activated at startup
-	if (!setup_ && status_msg.bumper_activated){
-		call_mira_service("resetMotorStop");
-		setup_ = true;
+	rclcpp::Time stamp = rclcpp::Time(data->timestamp.toUnixNS());
+	bumper_status_.header.frame_id = base_frame_;
+	bumper_status_.header.stamp = stamp;
+	bumper_status_.bumper_activated = data->value();
+	bumper_pub_->publish(bumper_status_);
+	
+	// Reset motorstop if bumper is activated after a certain time
+	if (!bumper_status_.bumper_activated || 
+		reset_bumper_interval_ == rclcpp::Duration::from_seconds(0) || 
+		(stamp - last_bumper_reset_) < reset_bumper_interval_){
+		return;
 	}
 
-	// Note: Only perform visualization if there's any subscriber
-	if (bumper_markers_pub_->get_subscription_count() == 0) return;
-
-	// Publish markers
-	visualization_msgs::msg::MarkerArray bumper_markers_;
-	visualization_msgs::msg::Marker cylinder;
-	cylinder.header = status_msg.header;
-	cylinder.lifetime = rclcpp::Duration(0, 10);
-	cylinder.ns = "bumpers";
-	cylinder.type = visualization_msgs::msg::Marker::CYLINDER;
-	cylinder.action = visualization_msgs::msg::Marker::ADD;
-	cylinder.scale.x = 0.05;
-	cylinder.scale.y = 0.05;
-	cylinder.scale.z = 0.45;
-	cylinder.pose.position.z = 0.03;
-
-	// Change color depending on the state: red if activated, white otherwise
-	if (data->value()){
-		cylinder.color.r = 1.0;
-		cylinder.color.g = 0.0;
-		cylinder.color.b = 0.0;
-		cylinder.color.a = 1.0;
-	}else{
-		cylinder.color.r = 1.0;
-		cylinder.color.g = 1.0;
-		cylinder.color.b = 1.0;
-		cylinder.color.a = 1.0;
-	}
-
-	// Left bumper
-	cylinder.id = 0;
-	cylinder.pose.position.x = -0.10;
-	cylinder.pose.position.y = 0.20;
-	cylinder.pose.orientation = tf2::toMsg(tf2::Quaternion({0, 1, 0}, M_PI / 2.0));
-	bumper_markers_.markers.push_back(cylinder);
-
-	// Right bumper
-	cylinder.id = 1;
-	cylinder.pose.position.x = -0.10;
-	cylinder.pose.position.y = -0.20;
-	cylinder.pose.orientation = tf2::toMsg(tf2::Quaternion({0, 1, 0}, M_PI / 2.0));
-	bumper_markers_.markers.push_back(cylinder);
-
-	// Front bumper
-	cylinder.id = 2;
-	cylinder.pose.position.y = 0.0;
-	cylinder.pose.position.x = 0.15;
-	cylinder.pose.orientation = tf2::toMsg(tf2::Quaternion({1, 0, 0}, M_PI / 2.0));
-	bumper_markers_.markers.push_back(cylinder);
-
-	// Rear bumper
-	cylinder.id = 3;
-	cylinder.pose.position.y = 0.0;
-	cylinder.pose.position.x = -0.35;
-	cylinder.pose.orientation = tf2::toMsg(tf2::Quaternion({1, 0, 0}, M_PI / 2.0));
-	bumper_markers_.markers.push_back(cylinder);
-
-	bumper_markers_pub_->publish(bumper_markers_);
+	last_bumper_reset_ = stamp;
+	call_mira_service("resetMotorStop");
 }
 
 void ScitosDrive::drive_status_callback(mira::ChannelRead<uint32> data){
@@ -301,17 +265,17 @@ void ScitosDrive::odometry_data_callback(mira::ChannelRead<mira::robot::Odometry
 	odometry_pub_->publish(odom_msg);
 
 	// Publish a TF
-	geometry_msgs::msg::TransformStamped tf_msg;
-	tf_msg.header.stamp = odom_time;
-	tf_msg.header.frame_id = "odom";
-	tf_msg.child_frame_id = base_frame_;
-
-	tf_msg.transform.translation.x = data->value().pose.x();
-	tf_msg.transform.translation.y = data->value().pose.y();
-	tf_msg.transform.translation.z = 0.0;
-	tf_msg.transform.rotation = orientation;
-
-	tf_broadcaster_->sendTransform(tf_msg);
+	if (publish_tf_){
+		geometry_msgs::msg::TransformStamped tf_msg;
+		tf_msg.header.stamp = odom_time;
+		tf_msg.header.frame_id = "odom";
+		tf_msg.child_frame_id = base_frame_;
+		tf_msg.transform.translation.x = data->value().pose.x();
+		tf_msg.transform.translation.y = data->value().pose.y();
+		tf_msg.transform.translation.z = 0.0;
+		tf_msg.transform.rotation = orientation;
+		tf_broadcaster_->sendTransform(tf_msg);
+	}
 }
 
 void ScitosDrive::velocity_command_callback(const geometry_msgs::msg::Twist& msg){
@@ -419,10 +383,70 @@ bool ScitosDrive::reset_barrier_stop(
 	std::shared_ptr<scitos_msgs::srv::ResetBarrierStop::Response> response){
 
 	auto node = node_.lock();
-
 	barrier_status_.header.frame_id = base_frame_;
 	barrier_status_.header.stamp = node->now();
 	barrier_status_.barrier_stopped = false;
 	magnetic_barrier_pub_->publish(barrier_status_);
 	return true;
+}
+
+void ScitosDrive::publish_bumper_markers(){
+	// Note: Only perform visualization if there's any subscriber
+	if (bumper_markers_pub_->get_subscription_count() == 0) return;
+
+	// Publish markers
+	visualization_msgs::msg::MarkerArray markers_msg;
+	visualization_msgs::msg::Marker cylinder;
+	cylinder.header = bumper_status_.header;
+	cylinder.lifetime = rclcpp::Duration(0, 10);
+	cylinder.ns = "bumpers";
+	cylinder.type = visualization_msgs::msg::Marker::CYLINDER;
+	cylinder.action = visualization_msgs::msg::Marker::ADD;
+	cylinder.scale.x = 0.05;
+	cylinder.scale.y = 0.05;
+	cylinder.scale.z = 0.45;
+	cylinder.pose.position.z = 0.03;
+
+	// Change color depending on the state: red if activated, white otherwise
+	if (bumper_status_.bumper_activated){
+		cylinder.color.r = 1.0;
+		cylinder.color.g = 0.0;
+		cylinder.color.b = 0.0;
+		cylinder.color.a = 1.0;
+	}else{
+		cylinder.color.r = 1.0;
+		cylinder.color.g = 1.0;
+		cylinder.color.b = 1.0;
+		cylinder.color.a = 1.0;
+	}
+
+	// Left bumper
+	cylinder.id = 0;
+	cylinder.pose.position.x = -0.10;
+	cylinder.pose.position.y = 0.20;
+	cylinder.pose.orientation = tf2::toMsg(tf2::Quaternion({0, 1, 0}, M_PI / 2.0));
+	markers_msg.markers.push_back(cylinder);
+
+	// Right bumper
+	cylinder.id = 1;
+	cylinder.pose.position.x = -0.10;
+	cylinder.pose.position.y = -0.20;
+	cylinder.pose.orientation = tf2::toMsg(tf2::Quaternion({0, 1, 0}, M_PI / 2.0));
+	markers_msg.markers.push_back(cylinder);
+
+	// Front bumper
+	cylinder.id = 2;
+	cylinder.pose.position.y = 0.0;
+	cylinder.pose.position.x = 0.15;
+	cylinder.pose.orientation = tf2::toMsg(tf2::Quaternion({1, 0, 0}, M_PI / 2.0));
+	markers_msg.markers.push_back(cylinder);
+
+	// Rear bumper
+	cylinder.id = 3;
+	cylinder.pose.position.y = 0.0;
+	cylinder.pose.position.x = -0.35;
+	cylinder.pose.orientation = tf2::toMsg(tf2::Quaternion({1, 0, 0}, M_PI / 2.0));
+	markers_msg.markers.push_back(cylinder);
+
+	bumper_markers_pub_->publish(markers_msg);
 }
