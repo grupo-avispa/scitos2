@@ -2,6 +2,10 @@
 Changelog for package scitos_mira
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.2 (01-09-2023)
+------------------
+* Update CMakeLists.mira to C++17.
+
 1.1.1 (30-06-2023)
 ------------------
 * Added frame_id to battery messages.

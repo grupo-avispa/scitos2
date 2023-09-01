@@ -155,6 +155,8 @@ rcl_interfaces::msg::SetParametersResult ScitosDisplay::parameters_callback(
 			}
 		}
 	}
+
+	return result;
 }
 
 void ScitosDisplay::menu_data_callback(mira::ChannelRead<uint8> data){

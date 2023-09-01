@@ -74,7 +74,7 @@ target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
 ## MIRA ##
 ##########
 
-# For mira support (auto linking, enabling C++14 support,...)
+# For MIRA support (auto linking, enabling C++17 support,...)
 cmake_add_mira(${PROJECT_NAME})
 
 #############
