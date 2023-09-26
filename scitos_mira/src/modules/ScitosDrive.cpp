@@ -32,17 +32,17 @@ void ScitosDrive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & ros
 
 	// Create ROS publishers
 	auto node = node_.lock();
-	auto latch_qos = rclcpp::QoS(1).transient_local();
+	auto latched_profile = rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable();
 	bumper_pub_ 		= node->create_publisher<scitos_msgs::msg::BumperStatus>(
-							"bumper", latch_qos);
+							"bumper", latched_profile);
 	bumper_markers_pub_ = node->create_publisher<visualization_msgs::msg::MarkerArray>(
 							"bumper/visualization", 20);
 	drive_status_pub_ 	= node->create_publisher<scitos_msgs::msg::DriveStatus>(
 							"drive_status", 20);
 	emergency_stop_pub_ = node->create_publisher<scitos_msgs::msg::EmergencyStopStatus>(
-							"emergency_stop_status", latch_qos);
+							"emergency_stop_status", latched_profile);
 	magnetic_barrier_pub_	= node->create_publisher<scitos_msgs::msg::BarrierStatus>(
-							"barrier_status", latch_qos);
+							"barrier_status", latched_profile);
 	mileage_pub_ 		= node->create_publisher<scitos_msgs::msg::Mileage>("mileage", 20);
 	odometry_pub_ 		= node->create_publisher<nav_msgs::msg::Odometry>("odom", 10);
 	rfid_pub_ 			= node->create_publisher<scitos_msgs::msg::RfidTag>("rfid", 20);
