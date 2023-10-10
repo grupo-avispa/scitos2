@@ -1,6 +1,7 @@
 # Scitos Mira
 scitos_mira:
   ros__parameters:
+    scitos_config: ''
     modules: ['Charger', 'Drive']
     drive:
       base_frame: base_link

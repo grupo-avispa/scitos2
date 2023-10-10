@@ -92,16 +92,8 @@ install(DIRECTORY include/${PROJECT_NAME}/
 #   PATTERN ".svn" EXCLUDE
 )
 
-install(DIRECTORY launch
+install(DIRECTORY launch params
   DESTINATION share/${PROJECT_NAME}/
-)
-
-install(DIRECTORY params
-  DESTINATION share/${PROJECT_NAME}
-)
-
-install(DIRECTORY resources
-  DESTINATION share/${PROJECT_NAME}
 )
 
 #############
