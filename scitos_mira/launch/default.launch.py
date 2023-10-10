@@ -15,6 +15,7 @@ from launch_ros.actions import Node
 from launch.substitutions import LaunchConfiguration
 from launch_ros.event_handlers import OnStateTransition
 from launch_ros.events.lifecycle import ChangeState
+from nav2_common.launch import RewrittenYaml
 
 import launch.events
 import lifecycle_msgs.msg
@@ -26,22 +27,35 @@ def generate_launch_description():
 
     # Read the YAML parameters file.
     default_mira_param_file = os.path.join(scitos_dir, 'params', 'default.yaml')
-    default_scitos_param_file = os.path.join(scitos_dir, 'resources', 'CLARC', 'SCITOSDriver.xml')
+    default_scitos_config_file = os.path.join('/opt/SCITOS/', 'SCITOSRobotAttributes.xml')
 
     # Create the launch configuration variables.
-    mira_param_file = LaunchConfiguration('mira_param_file', default=default_mira_param_file)
-    scitos_param_file = LaunchConfiguration('scitos_param_file', default=default_scitos_param_file)
+    mira_param_file = LaunchConfiguration('mira_param_file', default = default_mira_param_file)
+    scitos_config_file = LaunchConfiguration('scitos_config_file', default = default_scitos_config_file)
+
+    # Create our own temporary YAML files that include substitutions
+    param_substitutions = {
+        'scitos_config': scitos_config_file
+    }
+
+    configured_params = RewrittenYaml(
+        source_file = mira_param_file,
+        root_key = '',
+        param_rewrites = param_substitutions,
+        convert_types = True
+    )
 
     # Map these variables to arguments: can be set from the command line or a default will be used
     mira_param_file_launch_arg = DeclareLaunchArgument(
         'mira_param_file',
-        default_value=default_mira_param_file,
-        description='Full path to the Mira parameter file to use'
+        default_value = default_mira_param_file,
+        description = 'Full path to the Mira parameter file to use'
     )
-    scitos_param_file_launch_arg = DeclareLaunchArgument(
-        'scitos_param_file',
-        default_value=default_scitos_param_file,
-        description='Full path to the Scitos parameter file to use'
+
+    scitos_config_file_launch_arg = DeclareLaunchArgument(
+        'scitos_config_file',
+        default_value = default_scitos_config_file,
+        description = 'Full path to the Scitos parameter file to use'
     )
 
     # Prepare the Scitos mira
@@ -50,7 +64,7 @@ def generate_launch_description():
         namespace = '',
         executable = 'scitos_mira',
         name = 'scitos_mira',
-        parameters = [mira_param_file, {'scitos_config': scitos_param_file}],
+        parameters = [configured_params],
         emulate_tty = True
     )
 
@@ -78,7 +92,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         mira_param_file_launch_arg,
-        scitos_param_file_launch_arg,
+        scitos_config_file_launch_arg,
         register_event_handler_for_node_reaches_inactive_state,
         emit_event_to_request_that_node_does_configure_transition,
         scitos_mira_node,

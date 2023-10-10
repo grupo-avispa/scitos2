@@ -2,6 +2,12 @@
 Changelog for package scitos_mira
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.3 (10-10-2023)
+------------------
+* Remove SCITOS robot configuration files.
+* Update launch file.
+* Update README.md.
+
 1.1.2 (01-09-2023)
 ------------------
 * Update CMakeLists.mira to C++17.

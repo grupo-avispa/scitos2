@@ -7,4 +7,5 @@ scitos_mira:
       magnetic_barrier_enabled: true
       publish_tf: true
       reset_bumper_interval: 1000
+      scitos_config: ''
 
