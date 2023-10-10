@@ -33,18 +33,6 @@ def generate_launch_description():
     mira_param_file = LaunchConfiguration('mira_param_file', default = default_mira_param_file)
     scitos_config_file = LaunchConfiguration('scitos_config_file', default = default_scitos_config_file)
 
-    # Create our own temporary YAML files that include substitutions
-    param_substitutions = {
-        'scitos_config': scitos_config_file
-    }
-
-    configured_params = RewrittenYaml(
-        source_file = mira_param_file,
-        root_key = '',
-        param_rewrites = param_substitutions,
-        convert_types = True
-    )
-
     # Map these variables to arguments: can be set from the command line or a default will be used
     mira_param_file_launch_arg = DeclareLaunchArgument(
         'mira_param_file',
@@ -56,6 +44,18 @@ def generate_launch_description():
         'scitos_config_file',
         default_value = default_scitos_config_file,
         description = 'Full path to the Scitos parameter file to use'
+    )
+
+    # Create our own temporary YAML files that include substitutions
+    param_substitutions = {
+        'scitos_config': scitos_config_file
+    }
+
+    configured_params = RewrittenYaml(
+        source_file = mira_param_file,
+        root_key = '',
+        param_rewrites = param_substitutions,
+        convert_types = True
     )
 
     # Prepare the Scitos mira
