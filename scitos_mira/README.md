@@ -40,9 +40,9 @@ To build from source, clone the latest version from this repository into your co
 
 ## Usage
 
-First, edit the configuration file *default.yaml* in the ``params`` folder. You MUST edit the modules you want to use in your robot.
+First, edit the configuration file *default.yaml* in the ``params`` folder with the modules you want to use in your robot. The modules are: charger, display, drive and ebc. By default, all modules are disabled.
 
-Second, edit the launch file *default.launch.py* in the ``launch`` folder. Change the path of the configuration of your SCITOS robot in XML format.
+Second, edit the launch file *default.launch.py* in the ``launch`` folder and change the value of the ``scitos_config`` parameter with the path of the configuration of your SCITOS robot in XML format. This parameter must point to your SCITOSDriver.xml robot config file that must be installed when you installed MIRA software. Usually, this file is located in the ``/opt/SCITOS/`` folder.
 
 Then, run the scitos_mira node with:
 
