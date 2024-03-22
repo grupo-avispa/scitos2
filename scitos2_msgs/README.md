@@ -1,8 +1,5 @@
 # scitos2_msgs
 
-![ROS2](https://img.shields.io/badge/ros2-humble-blue?logo=ros&logoColor=white)
-![License](https://img.shields.io/github/license/grupo-avispa/scitos2)
-
 ## Overview
 This package provides messages and services relating to Metralabs Scitos robot base.
 

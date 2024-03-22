@@ -1,8 +1,5 @@
 # scitos_behavior_tree
 
-![ROS2](https://img.shields.io/badge/ros2-humble-blue?logo=ros&logoColor=white)
-![License](https://img.shields.io/badge/license-GPL-green)
-
 ## Overview
 
 This package contaning several behavior trees plugins for the SCITOS robots. The behavior trees are implemented using the [BehaviorTree.CPP] for the core Behavior Tree processing.
