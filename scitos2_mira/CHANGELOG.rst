@@ -6,6 +6,11 @@ Changelog for package scitos2_mira
 ------------------
 * Rename package to scitos2_mira.
 * Rename header and source files.
+* Improve formatting.
+* Converted to Lifecycle node.
+* Converted to component.
+* Remove modules factory and use ROS 2 plugin loader.
+* Move modules to its own package.
 
 1.1.3 (10-10-2023)
 ------------------

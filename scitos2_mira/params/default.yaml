@@ -1,11 +1,13 @@
 # Scitos Mira
-scitos_mira:
+mira:
   ros__parameters:
     scitos_config: ''
-    modules: ['Charger', 'Drive']
+    module_plugins: ['charger', 'drive']
+    charger:
+      plugin: 'scitos2_modules::Charger'
     drive:
+      plugin: 'scitos2_modules::Drive'
       base_frame: base_link
       magnetic_barrier_enabled: true
       publish_tf: true
       reset_bumper_interval: 1000
-
