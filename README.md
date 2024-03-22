@@ -9,8 +9,10 @@ A ROS 2 stack that contains drivers, messages and services for Metralabs robots 
 
  * [scitos_behavior_tree]: behavior tree nodes used to add functionality to your behaviors (emergency stop, reset motor stop, etc.).
  * [scitos_mira]: drivers for Metralabs Scitos robot base (HG4 version) using the MIRA framework.
+ * [scitos2_core]: abstract interface (virtual base classes) for the Scitos Modules.
  * [scitos2_msgs]: messages and services relating to Metralabs Scitos robot base.
 
 [scitos_behavior_tree]: /scitos_behavior_tree
 [scitos_mira]: /scitos_mira
+[scitos2_core]: /scitos2_core
 [scitos2_msgs]: /scitos2_msgs
