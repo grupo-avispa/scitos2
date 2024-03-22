@@ -10,6 +10,7 @@ A ROS 2 stack that contains modules, messages and services for Metralabs robots 
  * [scitos_behavior_tree]: behavior tree nodes used to add functionality to your behaviors (emergency stop, reset motor stop, etc.).
  * [scitos2_core]: abstract interface (virtual base classes) for the Scitos Modules.
  * [scitos2_mira]: main node that interfaces with the MIRA framework.
+ * [scitos2_modules]: implementation of the MIRA authorities as modules.
  * [scitos2_msgs]: messages and services relating to Metralabs Scitos robot base.
 
 **Keywords:** ROS, ROS2, metralabs, mira, scitos
@@ -41,5 +42,6 @@ To build from source, clone the latest version from this repository into your co
 [ROS2]: https://docs.ros.org/en/humble/
 [scitos_behavior_tree]: /scitos_behavior_tree
 [scitos2_mira]: /scitos2_mira
+[scitos2_modules]: /scitos2_modules
 [scitos2_core]: /scitos2_core
 [scitos2_msgs]: /scitos2_msgs

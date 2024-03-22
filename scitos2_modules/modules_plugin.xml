@@ -1,0 +1,22 @@
+<class_libraries>
+    <library path="scitos2_charger">
+        <class type="scitos2_modules::Charger" base_class_type="scitos2_core::Module">
+            <description>Charger module</description>
+        </class>
+    </library>
+    <library path="scitos2_display">
+        <class type="scitos2_modules::Display" base_class_type="scitos2_core::Module">
+            <description>DrivDisplaye module</description>
+        </class>
+    </library>
+    <library path="scitos2_drive">
+        <class type="scitos2_modules::Drive" base_class_type="scitos2_core::Module">
+            <description>Drive module</description>
+        </class>
+    </library>
+    <library path="scitos2_ebc">
+        <class type="scitos2_modules::EBC" base_class_type="scitos2_core::Module">
+            <description>EBC module</description>
+        </class>
+    </library>
+</class_libraries>
