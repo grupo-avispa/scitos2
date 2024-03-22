@@ -19,6 +19,7 @@
 #include <rpc/RPCError.h>
 
 #include <memory>
+#include <optional>
 #include <string>
 
 #include "rclcpp/rclcpp.hpp"
@@ -80,6 +81,47 @@ protected:
       return false;
     }
     mira::RPCFuture<void> rpc = sharedAuthority->callService<void>("/robot/Robot", service_name);
+    rpc.timedWait(mira::Duration::seconds(1));
+    try {
+      rpc.get();
+      RCLCPP_DEBUG(rclcpp::get_logger("Mira"), "service_name: %i", true);
+    } catch (mira::XRPC & e) {
+      RCLCPP_WARN(
+        rclcpp::get_logger("Mira"),
+        "Mira RPC error caught when calling the service: %s", e.what() );
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * @brief Call a MIRA service with a timeout of 1 second.
+   *
+   * @param authority The MIRA authority
+   * @param service_name The name of the service
+   * @param request The request to send. Empty by default
+   * @return bool If the service was called successfully
+   */
+  template<typename T>
+  bool call_mira_service(
+    const std::weak_ptr<mira::Authority> & authority, std::string service_name,
+    std::optional<T> request = std::nullopt)
+  {
+    // Convert weak_ptr to shared_ptr
+    auto sharedAuthority = authority.lock();
+    if (!sharedAuthority) {
+      return false;
+    }
+
+    mira::RPCFuture<void> rpc;
+    if (request.has_value()) {
+      rpc = sharedAuthority->callService<void>(
+        "/robot/Robot", service_name, request.value());
+    } else {
+      rpc = sharedAuthority->callService<void>(
+        "/robot/Robot", service_name);
+    }
+
     rpc.timedWait(mira::Duration::seconds(1));
     try {
       rpc.get();
