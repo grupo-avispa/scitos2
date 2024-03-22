@@ -3,18 +3,18 @@
  *
  * Copyright (c) 2022 Alberto José Tudela Roldán <ajtudela@gmail.com>
  * 
- * This file is part of scitos_mira project.
+ * This file is part of scitos2_mira project.
  * 
  * All rights reserved.
  *
  */
 
-#include "scitos_mira/ModuleFactory.hpp"
-#include "scitos_mira/ScitosModule.hpp"
-#include "scitos_mira/modules/ScitosCharger.hpp"
-#include "scitos_mira/modules/ScitosDisplay.hpp"
-#include "scitos_mira/modules/ScitosDrive.hpp"
-#include "scitos_mira/modules/ScitosEBC.hpp"
+#include "scitos2_mira/ModuleFactory.hpp"
+#include "scitos2_mira/ScitosModule.hpp"
+#include "scitos2_mira/modules/ScitosCharger.hpp"
+#include "scitos2_mira/modules/ScitosDisplay.hpp"
+#include "scitos2_mira/modules/ScitosDrive.hpp"
+#include "scitos2_mira/modules/ScitosEBC.hpp"
 
 // Constructor
 ModuleFactory::ModuleFactory(){

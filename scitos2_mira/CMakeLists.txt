@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(scitos_mira)
+project(scitos2_mira)
 
 # Default to C++17
 if(NOT CMAKE_CXX_STANDARD)

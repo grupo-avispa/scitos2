@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2022-2023 Alberto José Tudela Roldán <ajtudela@gmail.com>
  * 
- * This file is part of scitos_mira project.
+ * This file is part of scitos2_mira project.
  * 
  * All rights reserved.
  *
@@ -12,7 +12,7 @@
 // MIRA
 #include <rpc/RPCError.h>
 
-#include "scitos_mira/ScitosModule.hpp"
+#include "scitos2_mira/ScitosModule.hpp"
 
 ScitosModule::ScitosModule(const std::string & name) : 
 				logger_(rclcpp::get_logger(name)),

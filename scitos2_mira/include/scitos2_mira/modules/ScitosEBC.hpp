@@ -17,7 +17,7 @@
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "rcl_interfaces/msg/set_parameters_result.hpp"
 
-#include "scitos_mira/ScitosModule.hpp"
+#include "scitos2_mira/ScitosModule.hpp"
 
 /**
  * @brief Module for the EBC power board control.

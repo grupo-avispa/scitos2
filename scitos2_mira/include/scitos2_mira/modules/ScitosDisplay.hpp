@@ -19,9 +19,9 @@
 #include "rcl_interfaces/msg/set_parameters_result.hpp"
 
 // SCITOS MSGS
-#include "scitos_msgs/msg/menu_entry.hpp"
+#include "scitos2_msgs/msg/menu_entry.hpp"
 
-#include "scitos_mira/ScitosModule.hpp"
+#include "scitos2_mira/ScitosModule.hpp"
 
 /**
  * @brief Module for interfacing the status on the mini embedded display.
@@ -37,7 +37,7 @@ class ScitosDisplay : public ScitosModule{
 		void reset_publishers();
 
 	private:
-		rclcpp_lifecycle::LifecyclePublisher<scitos_msgs::msg::MenuEntry>::SharedPtr display_data_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<scitos2_msgs::msg::MenuEntry>::SharedPtr display_data_pub_;
 
 		rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr dyn_params_handler_;
 		bool user_menu_enabled_;

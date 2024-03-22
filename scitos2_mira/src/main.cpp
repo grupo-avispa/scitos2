@@ -13,7 +13,7 @@
 #include "rclcpp/rclcpp.hpp"
 
 // Scitos Mira
-#include "scitos_mira/ScitosMira.hpp"
+#include "scitos2_mira/ScitosMira.hpp"
 
 int main(int argc, char** argv){
 	rclcpp::init(argc, argv);

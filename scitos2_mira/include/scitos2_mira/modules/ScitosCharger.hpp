@@ -22,10 +22,10 @@
 #include "sensor_msgs/msg/battery_state.hpp"
 
 // SCITOS MSGS
-#include "scitos_msgs/msg/charger_status.hpp"
-#include "scitos_msgs/srv/save_persistent_errors.hpp"
+#include "scitos2_msgs/msg/charger_status.hpp"
+#include "scitos2_msgs/srv/save_persistent_errors.hpp"
 
-#include "scitos_mira/ScitosModule.hpp"
+#include "scitos2_mira/ScitosModule.hpp"
 
 /**
  * @brief Module for interfacing all the charger topics, service and params.
@@ -42,9 +42,9 @@ class ScitosCharger : public ScitosModule{
 
 	private:
 		rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::BatteryState>::SharedPtr battery_pub_;
-		rclcpp_lifecycle::LifecyclePublisher<scitos_msgs::msg::ChargerStatus>::SharedPtr charger_pub_;
+		rclcpp_lifecycle::LifecyclePublisher<scitos2_msgs::msg::ChargerStatus>::SharedPtr charger_pub_;
 		
-		rclcpp::Service<scitos_msgs::srv::SavePersistentErrors>::SharedPtr 
+		rclcpp::Service<scitos2_msgs::srv::SavePersistentErrors>::SharedPtr 
 			save_persistent_errors_service_;
 		
 		ScitosCharger();
@@ -53,8 +53,8 @@ class ScitosCharger : public ScitosModule{
 		void charger_status_callback(mira::ChannelRead<uint8> data);
 
 		bool save_persistent_errors(
-			const std::shared_ptr<scitos_msgs::srv::SavePersistentErrors::Request> request,
-			std::shared_ptr<scitos_msgs::srv::SavePersistentErrors::Response> response);
+			const std::shared_ptr<scitos2_msgs::srv::SavePersistentErrors::Request> request,
+			std::shared_ptr<scitos2_msgs::srv::SavePersistentErrors::Response> response);
 };
 
 #endif // SCITOS_MIRA__SCITOS_CHARGER_HPP_

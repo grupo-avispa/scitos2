@@ -1,4 +1,4 @@
-# scitos_mira
+# scitos2_mira
 
 ## Overview
 

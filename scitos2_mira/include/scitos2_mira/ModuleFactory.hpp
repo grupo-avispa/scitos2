@@ -17,7 +17,7 @@
 #include <memory>
 
 // SCITOS MIRA
-#include "scitos_mira/ScitosModule.hpp"
+#include "scitos2_mira/ScitosModule.hpp"
 
 /**
  * @brief Factory pattern design class for the creation of Scitos modules.

@@ -24,8 +24,8 @@
 #include "lifecycle_msgs/msg/transition.hpp"
 
 // Scitos Mira
-#include "scitos_mira/ScitosModule.hpp"
-#include "scitos_mira/RosLogSink.hpp"
+#include "scitos2_mira/ScitosModule.hpp"
+#include "scitos2_mira/RosLogSink.hpp"
 
 typedef rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn rclcpp_CallReturn;
 
