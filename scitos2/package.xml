@@ -5,11 +5,12 @@
 	<version>0.0.1</version>
 	<description>Scitos stack</description>
 	<maintainer email="ajtudela@gmail.com">Alberto Tudela</maintainer>
-	<license>TODO</license>
+  <license>Apache-2.0</license>
 	<author email="ajtudela@gmail.com">Alberto Tudela</author>
 	<buildtool_depend>ament_cmake</buildtool_depend>
+	<exec_depend>scitos_behavior_tree</exec_depend>
 	<exec_depend>scitos_mira</exec_depend>
-    <exec_depend>scitos_msgs</exec_depend>
+	<exec_depend>scitos2_msgs</exec_depend>
 	<export>
 		<build_type>ament_cmake</build_type>
 	</export>
