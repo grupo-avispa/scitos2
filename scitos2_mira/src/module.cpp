@@ -12,7 +12,7 @@
 // MIRA
 #include <rpc/RPCError.h>
 
-#include "scitos2_mira/ScitosModule.hpp"
+#include "scitos2_mira/module.hpp"
 
 ScitosModule::ScitosModule(const std::string & name) : 
 				logger_(rclcpp::get_logger(name)),

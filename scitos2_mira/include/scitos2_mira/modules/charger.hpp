@@ -25,7 +25,7 @@
 #include "scitos2_msgs/msg/charger_status.hpp"
 #include "scitos2_msgs/srv/save_persistent_errors.hpp"
 
-#include "scitos2_mira/ScitosModule.hpp"
+#include "scitos2_mira/module.hpp"
 
 /**
  * @brief Module for interfacing all the charger topics, service and params.

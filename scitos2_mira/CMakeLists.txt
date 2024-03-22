@@ -24,7 +24,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(nav2_util REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(scitos_msgs REQUIRED)
+find_package(scitos2_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 
 ## Find system libraries
@@ -45,13 +45,13 @@ include(CMakeLists.mira)
 MIRA_REQUIRE_PACKAGE(SCITOS)
 
 add_executable(${PROJECT_NAME}
-  src/modules/ScitosCharger.cpp
-  src/modules/ScitosDisplay.cpp
-  src/modules/ScitosDrive.cpp
-  src/modules/ScitosEBC.cpp
-  src/ModuleFactory.cpp
-  src/ScitosMira.cpp
-  src/ScitosModule.cpp
+  src/modules/charger.cpp
+  src/modules/display.cpp
+  src/modules/drive.cpp
+  src/modules/ebc.cpp
+  src/module_factory.cpp
+  src/scitos_mira.cpp
+  src/module.cpp
   src/main.cpp
 )
 ament_target_dependencies(${PROJECT_NAME}
@@ -65,7 +65,7 @@ ament_target_dependencies(${PROJECT_NAME}
   nav_msgs
   nav2_util
   sensor_msgs
-  scitos_msgs
+  scitos2_msgs
   visualization_msgs
 )
 target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})

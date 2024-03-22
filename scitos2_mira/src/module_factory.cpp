@@ -9,12 +9,12 @@
  *
  */
 
-#include "scitos2_mira/ModuleFactory.hpp"
-#include "scitos2_mira/ScitosModule.hpp"
-#include "scitos2_mira/modules/ScitosCharger.hpp"
-#include "scitos2_mira/modules/ScitosDisplay.hpp"
-#include "scitos2_mira/modules/ScitosDrive.hpp"
-#include "scitos2_mira/modules/ScitosEBC.hpp"
+#include "scitos2_mira/module_factory.hpp"
+#include "scitos2_mira/module.hpp"
+#include "scitos2_mira/modules/charger.hpp"
+#include "scitos2_mira/modules/display.hpp"
+#include "scitos2_mira/modules/drive.hpp"
+#include "scitos2_mira/modules/ebc.hpp"
 
 // Constructor
 ModuleFactory::ModuleFactory(){

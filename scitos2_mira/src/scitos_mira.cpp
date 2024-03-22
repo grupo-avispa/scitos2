@@ -19,8 +19,8 @@
 // ROS
 #include "nav2_util/node_utils.hpp"
 
-#include "scitos2_mira/ScitosMira.hpp"
-#include "scitos2_mira/ModuleFactory.hpp"
+#include "scitos2_mira/scitos_mira.hpp"
+#include "scitos2_mira/module_factory.hpp"
 
 ScitosMira::ScitosMira(const std::string& name, bool intra_process_comms) : 
 					rclcpp_lifecycle::LifecycleNode(name, rclcpp::NodeOptions()

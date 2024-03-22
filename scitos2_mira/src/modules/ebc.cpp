@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2022-2023 Alberto José Tudela Roldán <ajtudela@gmail.com>
  * 
- * This file is part of scitos_mira project.
+ * This file is part of scitos2_mira project.
  * 
  * All rights reserved.
  *
@@ -11,7 +11,7 @@
 
 #include "nav2_util/node_utils.hpp"
 
-#include "scitos_mira/modules/ScitosEBC.hpp"
+#include "scitos2_mira/modules/ebc.hpp"
 
 ScitosEBC::ScitosEBC() : ScitosModule("scitos_ebc"){
 }

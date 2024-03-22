@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2022-2023 Alberto José Tudela Roldán <ajtudela@gmail.com>
  * 
- * This file is part of scitos_mira project.
+ * This file is part of scitos2_mira project.
  * 
  * All rights reserved.
  *
@@ -11,7 +11,7 @@
 
 #include "nav2_util/node_utils.hpp"
 
-#include "scitos_mira/modules/ScitosDisplay.hpp"
+#include "scitos2_mira/modules/display.hpp"
 
 ScitosDisplay::ScitosDisplay() : ScitosModule("scitos_display"){
 }
@@ -21,7 +21,7 @@ void ScitosDisplay::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & r
 
 	// Create publisher
 	auto node = node_.lock();
-	display_data_pub_ = node->create_publisher<scitos_msgs::msg::MenuEntry>("user_menu_selected", 1);
+	display_data_pub_ = node->create_publisher<scitos2_msgs::msg::MenuEntry>("user_menu_selected", 1);
 
 	// Callback for monitor changes in parameters
 	dyn_params_handler_ = node->add_on_set_parameters_callback(
@@ -162,7 +162,7 @@ rcl_interfaces::msg::SetParametersResult ScitosDisplay::parameters_callback(
 void ScitosDisplay::menu_data_callback(mira::ChannelRead<uint8> data){
 	auto node = node_.lock();
 
-	scitos_msgs::msg::MenuEntry msg;
+	scitos2_msgs::msg::MenuEntry msg;
 	msg.header.stamp = node->now();
 	msg.entry = data->value();
 	display_data_pub_->publish(msg);

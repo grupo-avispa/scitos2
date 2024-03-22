@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2022-2023 Alberto José Tudela Roldán <ajtudela@gmail.com>
  * 
- * This file is part of scitos_mira project.
+ * This file is part of scitos2_mira project.
  * 
  * All rights reserved.
  *
@@ -12,7 +12,7 @@
 // C++
 #include <limits>
 
-#include "scitos_mira/modules/ScitosCharger.hpp"
+#include "scitos2_mira/modules/charger.hpp"
 
 ScitosCharger::ScitosCharger() : ScitosModule("scitos_charger"){
 }
@@ -23,7 +23,7 @@ void ScitosCharger::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & r
 	// Create ROS publishers
 	auto node = node_.lock();
 	battery_pub_ 		= node->create_publisher<sensor_msgs::msg::BatteryState>("battery", 20);
-	charger_pub_ 		= node->create_publisher<scitos_msgs::msg::ChargerStatus>(
+	charger_pub_ 		= node->create_publisher<scitos2_msgs::msg::ChargerStatus>(
 							"charger_status", 20);
 
 	// Create MIRA subscribers
@@ -33,7 +33,7 @@ void ScitosCharger::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & r
 		&ScitosCharger::charger_status_callback, this);
 
 	// Create ROS services
-	save_persistent_errors_service_  = node->create_service<scitos_msgs::srv::SavePersistentErrors>(
+	save_persistent_errors_service_  = node->create_service<scitos2_msgs::srv::SavePersistentErrors>(
 							"charger/save_persistent_errors", 
 							std::bind(&ScitosCharger::save_persistent_errors, this, 
 								std::placeholders::_1, std::placeholders::_2));
@@ -90,7 +90,7 @@ void ScitosCharger::charger_status_callback(mira::ChannelRead<uint8> data){
 	// Get time data from mira
 	rclcpp::Time time = rclcpp::Time(data->timestamp.toUnixNS());
 
-	scitos_msgs::msg::ChargerStatus charger;
+	scitos2_msgs::msg::ChargerStatus charger;
 
 	charger.header.stamp = time;
 	charger.header.frame_id = "base_link";
@@ -107,8 +107,8 @@ void ScitosCharger::charger_status_callback(mira::ChannelRead<uint8> data){
 }
 
 bool ScitosCharger::save_persistent_errors(
-	const std::shared_ptr<scitos_msgs::srv::SavePersistentErrors::Request> request,
-		std::shared_ptr<scitos_msgs::srv::SavePersistentErrors::Response> response){
+	const std::shared_ptr<scitos2_msgs::srv::SavePersistentErrors::Request> request,
+		std::shared_ptr<scitos2_msgs::srv::SavePersistentErrors::Response> response){
 	RCLCPP_INFO_STREAM(logger_, "Saving persistent error log to '" << request->filename << "'");
 	
 	// Call mira service

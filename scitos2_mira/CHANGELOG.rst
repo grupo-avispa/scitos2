@@ -5,6 +5,7 @@ Changelog for package scitos2_mira
 2.0.0 (22-03-2024)
 ------------------
 * Rename package to scitos2_mira.
+* Rename header and source files.
 
 1.1.3 (10-10-2023)
 ------------------

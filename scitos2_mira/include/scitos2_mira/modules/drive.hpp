@@ -44,7 +44,7 @@
 #include "scitos2_msgs/srv/reset_odometry.hpp"
 #include "scitos2_msgs/srv/suspend_bumper.hpp"
 
-#include "scitos2_mira/ScitosModule.hpp"
+#include "scitos2_mira/module.hpp"
 
 /**
  * @brief Module for interfacing all related to drive: odometry, motor controller, state etc.
