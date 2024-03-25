@@ -1,25 +1,36 @@
 cmake_minimum_required(VERSION 3.8)
-project(scitos_behavior_tree)
+project(scitos2_behavior_tree)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
+# Default to C++17
+if(NOT CMAKE_CXX_STANDARD)
+  if("cxx_std_17" IN_LIST CMAKE_CXX_COMPILE_FEATURES)
+    set(CMAKE_CXX_STANDARD 17)
+  else()
+    message(FATAL_ERROR "cxx_std_17 could not be found.")
+  endif()
 endif()
 
-################################################
-## Find  dependencies                         ##
-################################################
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic -Werror -Wdeprecated -fPIC -Wshadow -Wnull-dereference)
+  add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-Wnon-virtual-dtor>")
+endif()
+
+# ###############################################
+# # Find  dependencies                         ##
+# ###############################################
+# # Find ament macros and libraries
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(scitos_msgs REQUIRED)
+find_package(scitos2_msgs REQUIRED)
 find_package(behaviortree_cpp_v3 REQUIRED)
 find_package(nav2_behavior_tree REQUIRED)
 
-###########
-## Build ##
-###########
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
+# ##########
+# # Build ##
+# ##########
+# # Specify additional locations of header files
+# # Your package locations should be listed before other locations
 include_directories(
   include
 )
@@ -27,7 +38,7 @@ include_directories(
 set(dependencies
   rclcpp
   sensor_msgs
-  scitos_msgs
+  scitos2_msgs
   behaviortree_cpp_v3
   nav2_behavior_tree
 )
@@ -55,26 +66,29 @@ install(TARGETS ${plugin_libs}
   RUNTIME DESTINATION bin
 )
 
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION include/${PROJECT_NAME}
-  FILES_MATCHING PATTERN "*.hpp"
-#   PATTERN ".svn" EXCLUDE
+install(DIRECTORY include/
+  DESTINATION include/
 )
 
-install(FILES scitos_tree_nodes.xml DESTINATION share/${PROJECT_NAME})
+install(FILES scitos2_tree_nodes.xml DESTINATION share/${PROJECT_NAME})
 
-#############
-## Testing ##
-#############
+# ###########
+# Testing  ##
+# ###########
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
+
   # the following line skips the linter which checks for copyrights
-  # uncomment the line when a copyright and license is not present in all source files
-  #set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # uncomment the line when this package is not in a git repo
-  #set(ament_cmake_cpplint_FOUND TRUE)
+  set(ament_cmake_copyright_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
+
+  # add_subdirectory(test)
 endif()
 
+# ##################################
+# # ament specific configuration  ##
+# ##################################
+ament_export_include_directories(include)
+ament_export_libraries(${plugin_libs})
+ament_export_dependencies(${dependencies})
 ament_package()

@@ -1,6 +1,11 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package scitos_behavior_tree
+Changelog for package scitos2_behavior_tree
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+2.0.0 (25-03-2024)
+------------------
+* Rename package to scitos2_behavior_tree.
+* Improve formatting.
 
 0.3.0 (26-04-2023)
 ------------------
