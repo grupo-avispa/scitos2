@@ -45,11 +45,8 @@ set(dependencies
 # ############
 # # Install ##
 # ############
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION include/${PROJECT_NAME}
-  FILES_MATCHING PATTERN "*.hpp"
-
-  # PATTERN ".svn" EXCLUDE
+install(DIRECTORY include/
+  DESTINATION include/
 )
 
 # ###########

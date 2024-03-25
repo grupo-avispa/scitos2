@@ -2,7 +2,7 @@
 Changelog for package scitos2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.4.1 (22-03-2024)
+2.0.0 (25-03-2024)
 ------------------
 * Update license to Apache 2.0.
 * Rename package to scitos2_msgs.
