@@ -2,125 +2,127 @@
 
 ## Overview
 
-This package contains MIRA authorities encapsulated as modules. Some of this modules expose the functionality of the robot to ROS 2 through topics and services. At this time, the following ``modules`` are supported:
+This package encapsulates MIRA authorities as modules, some of which expose the robot's functionality to ROS 2 via topics and services. Currently, the following `modules` are supported:
 
-* **Charger**: this module monitor the state of the battery and the charging station.
-* **Display**: this module changes the status display on the base.
-* **Drive**: this module controls the motors (velocity commands, odometry, bumpers, ...).
-* **EBC**: this module controls the power for extra devices.
+* **Charger**: Monitors the state of the battery and the charging station, providing real-time updates on battery levels and charging status.
+
+* **Display**: Manages the status display on the robot's base, allowing for dynamic updates to the displayed information.
+
+* **Drive**: Controls the robot's motors. This includes handling velocity commands, tracking odometry, managing bumpers, and more.
+
+* **EBC**: Manages the power supply for additional devices connected to the robot, ensuring efficient power distribution and usage.
 
 ## Modules
 
 ### Charger
 
-This module monitor the state of the battery and the charging station.
+The Charger module monitors the state of the battery and the charging station.
 
 #### Published Topics
 
 * **`battery_state`** ([sensor_msgs/BatteryState])
 
-	State of the battery.
+	Publishes the current state of the battery.
 
 * **`charger_status`** ([scitos2_msgs/ChargerStatus])
 
-	State of the charger.
+	Publishes the current state of the charger.
 
 #### Services
 
 * **`charger/save_persistent_errors`** ([scitos2_msgs/SavePersistentErrors])
 
-	This services takes a filename as a string and saves the persistent errors of the charger.
+	This service takes a filename as a string and saves the persistent errors of the charger to the specified file.
 
 ### Display
 
-This module changes the status display on the base.
+The Display module manages the status display on the robot's base.
 
 #### Subscribed Topics
 
 * **`user_menu_selected`** ([scitos2_msgs/MenuEntry])
 
-	This topic is published when one of the user sub-menus is selected.
+	This topic is published when a user selects one of the sub-menus.
 
 #### Parameters
 
 * **`user_menu_enabled`** (bool, default: false)
 
-	Enable / disable the user menu entry.
+	Enables or disables the user menu entry.
 
 * **`menu_name`** (string, default: "User Menu")
 
-	The name of the user menu entry in the main menu of the status display.
+	Specifies the name of the user menu entry in the main menu of the status display.
 
 * **`menu_entry_name_1`** (string, default: "Menu Entry 1")
 
-	The name of the first sub menu entry in the user menu of the status display.
+	Specifies the name of the first sub-menu entry in the user menu of the status display.
 
 * **`menu_entry_name_2`** (string, default: "Menu Entry 2")
 
-	The name of the second sub menu entry in the user menu of the status display.
+	Specifies the name of the second sub-menu entry in the user menu of the status display.
 
 * **`menu_entry_name_3`** (string, default: "Menu Entry 3")
 
-	The name of the third sub menu entry in the user menu of the status display.
+	Specifies the name of the third sub-menu entry in the user menu of the status display.
 
 ### Drive
 
-This module control the motors (velocity commands, odometry, bumpers, ...).
+The Drive module controls the robot's motors, handling velocity commands, odometry, bumpers, and more.
 
 #### Subscribed Topics
 
 * **`cmd_vel`** ([geometry_msgs/Twist])
 
-	Velocity of the robot sent to the motor controller.
+	Subscribes to the velocity of the robot sent to the motor controller.
 
 #### Published Topics
 
 * **`odom`** ([nav_msgs/Odometry])
 
-	Odometry of the robot. This is also published as a TF between `/odom` and `/base_footprint`.
+	Publishes the robot's odometry. This is also published as a TF between `/odom` and `/base_footprint`.
 
 * **`bumper`** ([scitos2_msgs/BumperStatus])
 
-	State of the robot bumper.
+	Publishes the current state of the robot's bumper.
 
 * **`bumper_viz`** ([visualization_msgs/MarkerArray])
 
-	Markers with the state of the robot bumper: red if is activate, white otherwise.
+	Publishes markers with the state of the robot's bumper: red if it is activated, white otherwise.
 
 * **`mileage`** ([scitos2_msgs/Mileage])
 
-	The distance in metres that the robot has travelled since the beginning of time.
+	Publishes the distance in meters that the robot has traveled since the beginning of time.
 
 * **`drive_status`** ([scitos2_msgs/DriveStatus])
 
-	The state of the motors, free-run mode, emergency button status, bumper status, ...
+	Publishes the state of the motors, free-run mode, emergency button status, bumper status, and more.
 
 * **`emergency_stop_status`** ([scitos2_msgs/EmergencyStopStatus])
 
-	The state of the emergency buttons.
+	Publishes the current state of the emergency buttons.
 
 * **`barrier_status`** ([scitos2_msgs/BarrierStatus])
 
-	The state of the magnetic barrier.
+	Publishes the current state of the magnetic barrier.
 
 * **`rfid`** ([scitos2_msgs/RfidTag])
 
-	The readings of the RFID sensor.
-
+ 	Publishes the readings of the RFID sensor.
 
 #### Services
 
 * **`change_force`** ([scitos2_msgs/ChangeForce])
 
-	Change the force applied to the motors.
+	This service changes the force applied to the motors.
 
 * **`emergency_stop`** ([scitos2_msgs/EmergencyStop])
 
-	This empty request/response service stops the robot. It is equivalent to the bumper being pressed - the motor stop is engaged, and can be reset with /reset_motorstop.
+	This service stops the robot. It is equivalent to the bumper being pressed - the motor stop is engaged, and can be reset with /reset_motorstop.
 
 * **`enable_rfid`** ([scitos2_msgs/EnableRfid])
 
-	This service takes a `std_msgs::Bool enabled` in the request, and gives an empty response. It used to enable / disable the RFID sensor.
+	This service takes a `std_msgs::Bool enabled` in the request, and gives an empty response. It is used to enable or disable the RFID sensor.
 
 * **`enable_motors`** ([scitos2_msgs/EnableMotors])
 
@@ -136,17 +138,17 @@ This module control the motors (velocity commands, odometry, bumpers, ...).
 
 * **`reset_odometry`** ([scitos2_msgs/ResetOdometry])
 
-	This empty request/response service sets the robot odometry to zero.
+	This service sets the robot's odometry to zero.
 
 * **`suspend_bumper`** ([scitos2_msgs/SuspendBumper])
 
-	This service requests temporarily disable the bumper.
+	This service requests to temporarily disable the bumper.
 
 #### Parameters
 
 * **`base_frame`** (string, default: base_footprint)
 
-	The name of the base frame of the robot.
+	Specifies the name of the base frame of the robot.
 
 * **`magnetic_barrier_enabled`** (bool, default: false)
 
@@ -162,81 +164,82 @@ This module control the motors (velocity commands, odometry, bumpers, ...).
 
 ### EBC
 
-This module controls the power for extra devices.
+The EBC module controls the power for extra devices.
 
 #### Parameters
 
 * **`mcu_5v_enabled`** (bool, default: true)
 
-	Enable / disable 5V enabled at MCU.
+	Enables or disables 5V at MCU.
 
 * **`mcu_12v_enabled`** (bool, default: true)
 
-	Enable / disable 12V enabled at MCU.
+	Enables or disables 12V at MCU.
 
 * **`mcu_24v_enabled`** (bool, default: true)
 
-	Enable / disable 24V enabled at MCU.
+	Enables or disables 24V at MCU.
 
 * **`port0_5v_enabled`** (bool, default: true)
 
-	Enable / disable 5V enabled at port 0.
+	Enables or disables 5V at port 0.
 
 * **`port0_12v_enabled`** (bool, default: true)
 
-	Enable / disable 12V enabled at port 0.
+	Enables or disables 12V at port 0.
 
 * **`port0_24v_enabled`** (bool, default: true)
 
-	Enable / disable 24V enabled at port 0.
+	Enables or disables 24V at port 0.
 
 * **`port1_5v_enabled`** (bool, default: true)
 
-	Enable / disable 5V enabled at port 1.
+	Enables or disables 5V at port 1.
 
 * **`port1_12v_enabled`** (bool, default: true)
 
-	Enable / disable 12V enabled at port 1.
+	Enables or disables 12V at port 1.
 
 * **`port1_24v_enabled`** (bool, default: true)
 
-	Enable / disable 24V enabled at port 1.
+	Enables or disables 24V at port 1.
 
 * **`mcu_5v_max_current`** (double, default: 2.5)
 
-	Maximum current for MCU 5V in A. The value must be between 0-2.5A.
+	Sets the maximum current for MCU 5V in A. The value must be between 0-2.5A.
 
 * **`mcu_12v_max_current`** (double, default: 2.5)
 
-	Maximum current for MCU 12V in A. The value must be between 0-2.5A.
+	Sets the maximum current for MCU 12V in A. The value must be between 0-2.5A.
 
 * **`mcu_24v_max_current`** (double, default: 2.5)
 
-	Maximum current for MCU 24V in A. The value must be between 0-2.5A.
+	Sets the maximum current for MCU 24V in A. The value must be between 0-2.5A.
 
 * **`port0_5v_max_current`** (double, default: 2.5)
 
-	Maximum current for port 0 5V in A. The value must be between 0-2.5A.
+	Sets the maximum current for port 0 5V in A. The value must be between 0-2.5A.
 
 * **`port0_12v_max_current`** (double, default: 2.5)
 
-	Maximum current for port 0 12V in A. The value must be between 0-2.5A.
+	Sets the maximum current for port 0 12V in A. The value must be between 0-2.5A.
 
 * **`port0_24v_max_current`** (double, default: 2.5)
 
-	Maximum current for port 0 24V in A. The value must be between 0-2.5A.
+	Sets the maximum current for port 0 24V in A. The value must be between 0-2.5A.
 
 * **`port1_5v_max_current`** (double, default: 2.5)
 
-	Maximum current for port 1 5V in A. The value must be between 0-2.5A.
+	Sets the maximum current for port 1 5V in A. The value must be between 0-2.5A.
 
 * **`port1_12v_max_current`** (double, default: 2.5)
 
-	Maximum current for port 1 12V in A. The value must be between 0-4A.
+	Sets the maximum current for port 1 12V in A. The value must be between 0-4A.
 
 * **`port1_24v_max_current`** (double, default: 4)
 
-	Maximum current for port 1 24V in A. The value must be between 0-4A.
+	Sets the maximum current for port 1 24V in A. The value must be between 0-4A.
+
 
 [nav_msgs/Odometry]: http://docs.ros2.org/humble/api/nav_msgs/msg/Odometry.html
 [geometry_msgs/Twist]: http://docs.ros2.org/humble/api/geometry_msgs/msg/Twist.html

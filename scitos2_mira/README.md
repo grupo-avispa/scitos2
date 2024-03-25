@@ -2,30 +2,32 @@
 
 ## Overview
 
-This package contains the main lifecycle node to interface with the MIRA framework for Metralabs robots. The node is responsible for starting and stopping the MIRA framework, as well as loading the configuration files for the robot. The node also interfaces with the MIRA framework to provide the ROS 2 interface for the robot's modules.
+The `scitos2_mira` package serves as the primary interface between the MIRA framework and Metralabs robots. This package contains the main lifecycle node responsible for initiating and terminating the MIRA framework, loading the robot's configuration files, and providing a ROS 2 interface for the robot's modules.
 
 ## Usage
 
-First, edit the configuration file *default.yaml* in the ``params`` folder with the modules you want to use in your robot.
+1. Modify the *default.yaml* configuration file located in the `params` directory to specify the modules you wish to utilize with your robot.
 
-Second, edit the launch file *default.launch.py* in the ``launch`` folder and change the value of the ``scitos_config`` parameter with the path of the configuration of your SCITOS robot.
+2. Update the *default.launch.py* launch file in the `launch` directory. Change the `scitos_config` parameter to the path of your SCITOS robot's configuration.
 
-Then, run the scitos2_mira node with:
+3. Launch the `scitos2_mira` node using the following command:
 
-	ros2 launch scitos2_mira mira_launch.py
+```bash
+ros2 launch scitos2_mira mira_launch.py
+```
 
 ## Nodes
 
 ### mira_framework
 
-Lifecycle node to interface with the MIRA framework.
+A lifecycle node that interfaces with the MIRA framework.
 
 #### Parameters
 
 * **`module_plugins`** (string array, default: "")
 
-	List of modules to load.
+	Specifies the modules to be loaded.
 
 * **`scitos_config`** (string, default: "")
 
-	Path to the SCITOS robot configuration file in XML format. This parameter must point to your SCITOSDriver.xml robot config file that must be installed when you installed MIRA software. Usually, this file is located in the ``/opt/SCITOS/`` folder.
+	Specifies the path to the SCITOS robot configuration file in XML format. This parameter should point to your SCITOSDriver.xml robot config file, which should have been installed during the MIRA software installation. Typically, this file is located in the ``/opt/SCITOS/ directory``.

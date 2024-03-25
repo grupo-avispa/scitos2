@@ -2,4 +2,4 @@
 
 ## Overview
 
-This package hosts the abstrac interface (virtual base classes) for the Scitos Modules. It is used by the scitos2_mira package to communicate with the differents Scitos modules.
+This package provides the abstract interfaces (virtual base classes) for the Scitos Modules. These interfaces are utilized by the `scitos2_mira` package to facilitate communication with the various Scitos modules.
