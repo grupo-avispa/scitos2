@@ -6,6 +6,7 @@ Changelog for package scitos2_behavior_tree
 ------------------
 * Rename package to scitos2_behavior_tree.
 * Improve formatting.
+* Add generate_scitos2_tree_nodes_xml.
 
 0.3.0 (26-04-2023)
 ------------------

@@ -57,20 +57,32 @@ foreach(bt_plugin ${plugin_libs})
   target_compile_definitions(${bt_plugin} PRIVATE BT_PLUGIN_EXPORT)
 endforeach()
 
-#############
-## Install ##
-#############
+# ############
+# # Install ##
+# ############
 install(TARGETS ${plugin_libs}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
 
+# we will embed the list of plugin names inside a header file
+set(GENERATED_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
+configure_file(plugins_list.hpp.in ${GENERATED_DIR}/plugins_list.hpp)
+
+add_executable(generate_scitos2_tree_nodes_xml src/generate_scitos2_tree_nodes_xml.cpp)
+ament_target_dependencies(generate_scitos2_tree_nodes_xml ${dependencies})
+
+# allow generate_scitos2_tree_nodes_xml to find plugins_list.hpp
+target_include_directories(generate_scitos2_tree_nodes_xml PRIVATE ${GENERATED_DIR})
+install(TARGETS generate_scitos2_tree_nodes_xml DESTINATION lib/${PROJECT_NAME})
+
 install(DIRECTORY include/
   DESTINATION include/
 )
 
 install(FILES scitos2_tree_nodes.xml DESTINATION share/${PROJECT_NAME})
+install(FILES ${GENERATED_DIR}/plugins_list.hpp DESTINATION include/${PROJECT_NAME})
 
 # ###########
 # Testing  ##
