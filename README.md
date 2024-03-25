@@ -32,11 +32,11 @@ The `scitos2` package has been tested under [ROS2] Humble on [Ubuntu] 22.04. Ple
 
 To build from source, clone the latest version from this repository into your colcon workspace and compile the package using the following command:
 ```bash
-	cd colcon_workspace/src
-	git clone https://github.com/grupo-avispa/scitos2.git
-	cd ../
-	rosdep install -i --from-path src --rosdistro humble -y
-	colcon build --symlink-install
+cd colcon_workspace/src
+git clone https://github.com/grupo-avispa/scitos2.git
+cd ../
+rosdep install -i --from-path src --rosdistro humble -y
+colcon build --symlink-install
 ```
 
 [Ubuntu]: https://ubuntu.com/
