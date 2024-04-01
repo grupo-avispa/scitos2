@@ -379,7 +379,7 @@ rcl_interfaces::msg::SetParametersResult EBC::dynamicParametersCallback(
             logger_, "The parameter mcu_12v_max_current is set to: [%f]",
             parameter.as_double());
         } else {
-          RCLCPP_WARN(logger_, "The parameter mcu_5v_max_current is out of range");
+          RCLCPP_WARN(logger_, "The parameter mcu_12v_max_current is out of range");
         }
       } else if (name == plugin_name_ + ".mcu_24v_max_current") {
         if (parameter.as_double() >= 0.0 && parameter.as_double() <= 2.5) {
@@ -390,7 +390,7 @@ rcl_interfaces::msg::SetParametersResult EBC::dynamicParametersCallback(
             logger_, "The parameter mcu_24v_max_current is set to: [%f]",
             parameter.as_double());
         } else {
-          RCLCPP_WARN(logger_, "The parameter mcu_5v_max_current is out of range");
+          RCLCPP_WARN(logger_, "The parameter mcu_24v_max_current is out of range");
         }
       } else if (name == plugin_name_ + ".port0_5v_max_current") {
         if (parameter.as_double() >= 0.0 && parameter.as_double() <= 2.5) {
@@ -400,7 +400,7 @@ rcl_interfaces::msg::SetParametersResult EBC::dynamicParametersCallback(
             logger_, "The parameter port0_5v_max_current is set to: [%f]",
             parameter.as_double());
         } else {
-          RCLCPP_WARN(logger_, "The parameter mcu_5v_max_current is out of range");
+          RCLCPP_WARN(logger_, "The parameter port0_5v_max_current is out of range");
         }
       } else if (name == plugin_name_ + ".port0_12v_max_current") {
         if (parameter.as_double() >= 0.0 && parameter.as_double() <= 2.5) {
@@ -410,7 +410,7 @@ rcl_interfaces::msg::SetParametersResult EBC::dynamicParametersCallback(
             logger_, "The parameter port0_12v_max_current is set to: [%f]",
             parameter.as_double());
         } else {
-          RCLCPP_WARN(logger_, "The parameter mcu_5v_max_current is out of range");
+          RCLCPP_WARN(logger_, "The parameter port0_12v_max_current is out of range");
         }
       } else if (name == plugin_name_ + ".port0_24v_max_current") {
         if (parameter.as_double() >= 0.0 && parameter.as_double() <= 2.5) {
@@ -420,7 +420,7 @@ rcl_interfaces::msg::SetParametersResult EBC::dynamicParametersCallback(
             logger_, "The parameter port0_24v_max_current is set to: [%f]",
             parameter.as_double());
         } else {
-          RCLCPP_WARN(logger_, "The parameter mcu_5v_max_current is out of range");
+          RCLCPP_WARN(logger_, "The parameter port0_24v_max_current is out of range");
         }
       } else if (name == plugin_name_ + ".port1_5v_max_current") {
         if (parameter.as_double() >= 0.0 && parameter.as_double() <= 4.0) {
@@ -430,7 +430,7 @@ rcl_interfaces::msg::SetParametersResult EBC::dynamicParametersCallback(
             logger_, "The parameter port1_5v_max_current is set to: [%f]",
             parameter.as_double());
         } else {
-          RCLCPP_WARN(logger_, "The parameter mcu_5v_max_current is out of range");
+          RCLCPP_WARN(logger_, "The parameter port1_5v_max_current is out of range");
         }
       } else if (name == plugin_name_ + ".port1_12v_max_current") {
         if (parameter.as_double() >= 0.0 && parameter.as_double() <= 4.0) {
@@ -440,7 +440,7 @@ rcl_interfaces::msg::SetParametersResult EBC::dynamicParametersCallback(
             logger_, "The parameter port1_12v_max_current is set to: [%f]",
             parameter.as_double());
         } else {
-          RCLCPP_WARN(logger_, "The parameter mcu_5v_max_current is out of range");
+          RCLCPP_WARN(logger_, "The parameter port1_12v_max_current is out of range");
         }
       } else if (name == plugin_name_ + ".port1_24v_max_current") {
         if (parameter.as_double() >= 0.0 && parameter.as_double() <= 4.0) {
@@ -450,7 +450,7 @@ rcl_interfaces::msg::SetParametersResult EBC::dynamicParametersCallback(
             logger_, "The parameter port1_24v_max_current is set to: [%f]",
             parameter.as_double());
         } else {
-          RCLCPP_WARN(logger_, "The parameter mcu_5v_max_current is out of range");
+          RCLCPP_WARN(logger_, "The parameter port1_24v_max_current is out of range");
         }
       }
     }
