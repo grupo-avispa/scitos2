@@ -35,6 +35,8 @@ void ResetMotorStopService::on_tick()
 }  // namespace scitos2_behavior_tree
 
 #include "behaviortree_cpp_v3/bt_factory.h"
+// LCOV_EXCL_START
 BT_REGISTER_NODES(factory) {
   factory.registerNodeType<scitos2_behavior_tree::ResetMotorStopService>("ResetMotorStop");
 }
+// LCOV_EXCL_STOP
