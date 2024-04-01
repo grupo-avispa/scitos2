@@ -16,7 +16,7 @@
 #include <string>
 #include <memory>
 
-#include "scitos2_behavior_tree/action/reset_motorstop_service.hpp"
+#include "scitos2_behavior_tree/action/reset_motor_stop_service.hpp"
 
 namespace scitos2_behavior_tree
 {

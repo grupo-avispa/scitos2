@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SCITOS2_BEHAVIOR_TREE__ACTION__RESET_MOTORSTOP_SERVICE_HPP_
-#define SCITOS2_BEHAVIOR_TREE__ACTION__RESET_MOTORSTOP_SERVICE_HPP_
+#ifndef SCITOS2_BEHAVIOR_TREE__ACTION__RESET_MOTOR_STOP_SERVICE_HPP_
+#define SCITOS2_BEHAVIOR_TREE__ACTION__RESET_MOTOR_STOP_SERVICE_HPP_
 
 #include <string>
 
@@ -49,4 +49,4 @@ public:
 
 }  // namespace scitos2_behavior_tree
 
-#endif  // SCITOS2_BEHAVIOR_TREE__ACTION__RESET_MOTORSTOP_SERVICE_HPP_
+#endif  // SCITOS2_BEHAVIOR_TREE__ACTION__RESET_MOTOR_STOP_SERVICE_HPP_
