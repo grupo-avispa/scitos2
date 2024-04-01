@@ -19,15 +19,10 @@ import os
 
 from ament_index_python import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, EmitEvent, RegisterEventHandler
+from launch.actions import DeclareLaunchArgument
 
-import launch.events
 from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import LifecycleNode
-from launch_ros.event_handlers import OnStateTransition
-from launch_ros.events.lifecycle import ChangeState
-
-import lifecycle_msgs.msg
+from launch_ros.actions import Node
 
 from nav2_common.launch import RewrittenYaml
 
@@ -73,7 +68,7 @@ def generate_launch_description():
     )
 
     # Prepare the Scitos mira
-    scitos_mira_node = LifecycleNode(
+    scitos_mira = Node(
         package='scitos2_mira',
         namespace='',
         executable='mira_framework',
@@ -82,32 +77,17 @@ def generate_launch_description():
         emulate_tty=True
     )
 
-    # When the scitos node reaches the 'inactive' state, make it take the 'activate' transition.
-    register_event_handler_for_node_reaches_inactive_state = RegisterEventHandler(
-        OnStateTransition(
-            target_lifecycle_node=scitos_mira_node,
-            goal_state='inactive',
-            entities=[
-                EmitEvent(event=ChangeState(
-                    lifecycle_node_matcher=launch.events.matches_action(scitos_mira_node),
-                    transition_id=lifecycle_msgs.msg.Transition.TRANSITION_ACTIVATE,
-                )),
-            ],
-        )
-    )
-
-    # Make the scitos node take the 'configure' transition.
-    emit_event_to_request_that_node_does_configure_transition = EmitEvent(
-        event=ChangeState(
-            lifecycle_node_matcher=launch.events.matches_action(scitos_mira_node),
-            transition_id=lifecycle_msgs.msg.Transition.TRANSITION_CONFIGURE,
-        )
+    lifecycle_manager = Node(
+        package='nav2_lifecycle_manager',
+        executable='lifecycle_manager',
+        name='lifecycle_manager_scitos',
+        output='screen',
+        parameters=[{'autostart': True}, {'node_names': ['mira']}],
     )
 
     return LaunchDescription([
         params_file_launch_arg,
         scitos_config_file_launch_arg,
-        register_event_handler_for_node_reaches_inactive_state,
-        emit_event_to_request_that_node_does_configure_transition,
-        scitos_mira_node,
+        scitos_mira,
+        lifecycle_manager
     ])

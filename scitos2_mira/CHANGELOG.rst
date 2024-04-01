@@ -12,6 +12,7 @@ Changelog for package scitos2_mira
 * Remove modules factory and use ROS 2 plugin loader.
 * Move modules to its own package.
 * Remove CMakeLists.mira and added dependency to scitos2_common.
+* Rename default.launch.py to mira.launch.py and added lifecycle manager.
 
 1.1.3 (10-10-2023)
 ------------------
@@ -37,7 +38,7 @@ Changelog for package scitos2_mira
 ------------------
 * Pass the parent node to the modules instead of inheriting from Node.
 * Added nested params.
-* Convert to lyfecycle node.
+* Convert to lifecycle node.
 
 0.4.2 (04-05-2023)
 ------------------
