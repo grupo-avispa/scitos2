@@ -26,7 +26,10 @@ find_package(rclcpp_components REQUIRED)
 find_package(nav2_util REQUIRED)
 find_package(scitos2_msgs REQUIRED)
 find_package(scitos2_core REQUIRED)
+find_package(scitos2_common REQUIRED)
 find_package(pluginlib REQUIRED)
+
+find_mira_path()
 
 # ##########
 # # Build ##
@@ -37,8 +40,7 @@ include_directories(
   include
 )
 
-# Include cmake file for MIRA
-include(CMakeLists.mira)
+include_mira_packages()
 
 set(dependencies
   rclcpp
@@ -55,6 +57,7 @@ set(executable_name mira_framework)
 # Add library
 add_library(${library_name} SHARED src/mira_framework.cpp)
 ament_target_dependencies(${library_name} ${dependencies})
+target_link_mira_libraries(${library_name})
 
 # Add executable
 add_executable(${executable_name} src/main.cpp)
@@ -62,13 +65,6 @@ ament_target_dependencies(${executable_name} ${dependencies})
 target_link_libraries(${executable_name} ${library_name})
 
 rclcpp_components_register_nodes(${library_name} "scitos2_mira::MiraFramework")
-
-# #########
-# # MIRA ##
-# #########
-
-# For MIRA support (auto linking, enabling C++17 support,...)
-cmake_add_mira(${library_name})
 
 # ############
 # # Install ##

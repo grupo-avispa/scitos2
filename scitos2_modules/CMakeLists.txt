@@ -31,7 +31,10 @@ find_package(tf2_ros REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(scitos2_msgs REQUIRED)
 find_package(scitos2_core REQUIRED)
+find_package(scitos2_common REQUIRED)
 find_package(pluginlib REQUIRED)
+
+find_mira_path()
 
 # ##########
 # # Build ##
@@ -42,9 +45,7 @@ include_directories(
   include
 )
 
-# Include cmake file for MIRA
-include(CMakeLists.mira)
-mira_require_package(SCITOS)
+include_mira_packages()
 
 set(dependencies
   rclcpp
@@ -75,14 +76,8 @@ list(APPEND plugin_libs scitos2_ebc)
 
 foreach(module_plugin ${plugin_libs})
   ament_target_dependencies(${module_plugin} ${dependencies})
+  target_link_mira_libraries(${module_plugin})
 endforeach()
-
-# #########
-# # MIRA ##
-# #########
-
-# For MIRA support (auto linking, enabling C++17 support,...)
-cmake_add_mira(${plugin_libs})
 
 # ############
 # # Install ##
@@ -102,11 +97,9 @@ install(DIRECTORY include/
 # ###########
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
-
   # the following line skips the linter which checks for copyrights
   set(ament_cmake_copyright_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
-
   # add_subdirectory(test)
 endif()
 

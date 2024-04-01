@@ -2,7 +2,7 @@
 Changelog for package scitos2_mira
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.0.0 (25-03-2024)
+2.0.0 (XX-04-2024)
 ------------------
 * Rename package to scitos2_mira.
 * Rename header and source files.
@@ -11,6 +11,7 @@ Changelog for package scitos2_mira
 * Converted to component.
 * Remove modules factory and use ROS 2 plugin loader.
 * Move modules to its own package.
+* Remove CMakeLists.mira and added dependency to scitos2_common.
 
 1.1.3 (10-10-2023)
 ------------------

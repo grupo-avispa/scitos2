@@ -12,6 +12,7 @@
   <depend>nav2_util</depend>
   <depend>scitos2_msgs</depend>
   <depend>scitos2_core</depend>
+  <depend>scitos2_common</depend>
   <depend>pluginlib</depend>
 
   <test_depend>ament_lint_auto</test_depend>

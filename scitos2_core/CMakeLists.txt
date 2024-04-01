@@ -23,6 +23,9 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(scitos2_common REQUIRED)
+
+find_mira_path()
 
 # ##########
 # # Build ##
@@ -32,9 +35,6 @@ find_package(std_msgs REQUIRED)
 include_directories(
   include
 )
-
-# Include cmake file for MIRA
-include(CMakeLists.mira)
 
 set(dependencies
   rclcpp

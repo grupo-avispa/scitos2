@@ -1,4 +1,9 @@
-# CMakelists for MIRA
+#
+# Find MIRA path
+#
+# @public
+#
+macro(find_mira_path)
 message(STATUS "Detecting MIRA root directory")
 
 # Examines each path in MIRA_PATH in order to find the MIRA root directory, which
@@ -38,9 +43,16 @@ ELSE()
 	message("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!") 
 	message(FATAL_ERROR)
 ENDIF()
+endmacro()
 
 ##############################################################################
 
+#
+# Include MIRA packages
+#
+# @public
+#
+macro(include_mira_packages)
 set(CMAKE_MODULE_PATH ${MIRA_ROOT_DIR}/make)
 
 include(Prerequisites)
@@ -48,35 +60,17 @@ include(Dependencies)
 
 # Require MIRAFramework package
 mira_require_package(MIRAFramework)
+mira_require_package(RobotDataTypes)
+endmacro()
 
 ##############################################################################
 
-MACRO(cmake_add_mira target)
-# MIRA uses C++17 features
-set_target_properties(${target} PROPERTIES COMPILE_FLAGS -std=c++17)
+#
+# Target link for MIRA libraries
+#
+# @public
+#
+macro(target_link_mira_libraries target)
 # For transitive linking link against all auto liked libraries
 target_link_libraries(${target} ${MIRAAutoLinkLibraries} MIRAFramework)
-ENDMACRO()
-
-
-# use, i.e. don't skip the full RPATH for the build tree
-SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
-
-# when building, don't use the install RPATH already
-# (but later on when installing)
-SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
-
-SET(CMAKE_INSTALL_RPATH "${MIRA_ROOT_DIR}/lib")
-
-# add the automatically determined parts of the RPATH
-# which point to directories outside the build tree to the install RPATH
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-
-# the RPATH to be used when installing, but only if it's not a system directory
-LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
-IF("${isSystemDir}" STREQUAL "-1")
-   SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-ENDIF("${isSystemDir}" STREQUAL "-1")
-
-
+endmacro()
