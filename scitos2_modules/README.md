@@ -146,7 +146,7 @@ The Drive module controls the robot's motors, handling velocity commands, odomet
 
 #### Parameters
 
-* **`base_frame`** (string, default: base_footprint)
+* **`base_frame`** (string, default: base_link)
 
 	Specifies the name of the base frame of the robot.
 

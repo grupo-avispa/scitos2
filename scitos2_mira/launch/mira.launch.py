@@ -34,7 +34,7 @@ def generate_launch_description():
 
     # Read the YAML parameters file.
     default_params_file = os.path.join(scitos_dir, 'params', 'default.yaml')
-    default_scitos_config_file = os.path.join('/opt/SCITOS/', 'SCITOSRobotAttributes.xml')
+    default_scitos_config_file = os.path.join('/opt/SCITOS/', 'SCITOSDriver.xml')
 
     # Create the launch configuration variables.
     params_file = LaunchConfiguration('params_file', default=default_params_file)

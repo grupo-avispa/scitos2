@@ -102,37 +102,37 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
 
   // Declare and read parameters
   nav2_util::declare_parameter_if_not_declared(
-    node, plugin_name_ + "base_frame",
-    rclcpp::ParameterValue("base_footprint"), rcl_interfaces::msg::ParameterDescriptor()
+    node, plugin_name_ + ".base_frame",
+    rclcpp::ParameterValue("base_link"), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("The name of the base frame of the robot"));
-  node->get_parameter(plugin_name_ + "base_frame", base_frame_);
+  node->get_parameter(plugin_name_ + ".base_frame", base_frame_);
   RCLCPP_INFO(logger_, "The parameter base_frame is set to: [%s]", base_frame_.c_str());
 
   bool magnetic_barrier_enabled;
   nav2_util::declare_parameter_if_not_declared(
-    node, plugin_name_ + "magnetic_barrier_enabled",
+    node, plugin_name_ + ".magnetic_barrier_enabled",
     rclcpp::ParameterValue(false), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Enable the magnetic strip detector to cut out the motors"));
-  node->get_parameter(plugin_name_ + "magnetic_barrier_enabled", magnetic_barrier_enabled);
+  node->get_parameter(plugin_name_ + ".magnetic_barrier_enabled", magnetic_barrier_enabled);
   RCLCPP_INFO(
     logger_, "The parameter magnetic_barrier_enabled is set to: [%s]",
     magnetic_barrier_enabled ? "true" : "false");
 
   nav2_util::declare_parameter_if_not_declared(
-    node, plugin_name_ + "publish_tf",
+    node, plugin_name_ + ".publish_tf",
     rclcpp::ParameterValue(true), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Publish the odometry as a tf2 transform"));
-  node->get_parameter(plugin_name_ + "publish_tf", publish_tf_);
+  node->get_parameter(plugin_name_ + ".publish_tf", publish_tf_);
   RCLCPP_INFO(
     logger_, "The parameter publish_tf_ is set to: [%s]",
     publish_tf_ ? "true" : "false");
 
   int rbi = 0;
   nav2_util::declare_parameter_if_not_declared(
-    node, plugin_name_ + "reset_bumper_interval",
+    node, plugin_name_ + ".reset_bumper_interval",
     rclcpp::ParameterValue(0), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("The interval in milliseconds to reset the bumper"));
-  node->get_parameter(plugin_name_ + "reset_bumper_interval", rbi);
+  node->get_parameter(plugin_name_ + ".reset_bumper_interval", rbi);
   RCLCPP_INFO(logger_, "The parameter reset_bumper_interval is set to: [%i]", rbi);
   reset_bumper_interval_ = rclcpp::Duration::from_seconds(rbi / 1000.0);
 

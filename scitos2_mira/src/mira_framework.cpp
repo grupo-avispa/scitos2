@@ -56,7 +56,7 @@ nav2_util::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::St
   // Load the configuration of the robot
   std::string config;
   nav2_util::declare_parameter_if_not_declared(
-    this, "scitos_config", rclcpp::ParameterValue(""),
+    this, "scitos_config", rclcpp::ParameterValue("/opt/SCITOS/SCITOSDriver.xml"),
     rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Configuration of the robot in XML format"));
   this->get_parameter("scitos_config", config);

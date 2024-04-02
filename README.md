@@ -8,6 +8,7 @@
 `scitos2` is a ROS 2 stack designed for Metralabs robots that utilize the MIRA framework, including models such as SCITOS, TORY, MORPHIA, etc. This stack comprises several packages, each serving a unique purpose:
 
  * [scitos2_behavior_tree]: This package contains behavior tree nodes that extend your robot's functionalities, such as emergency stop, reset motor stop, etc.
+ * [scitos2_common]: This package provides common functionalities for the scitos2 stack.
  * [scitos2_core]: This package provides the abstract interface (virtual base classes) for the Scitos Modules.
  * [scitos2_mira]: This is the main node that interfaces with the MIRA framework.
  * [scitos2_modules]: This package implements the MIRA authorities as modules.
@@ -42,7 +43,8 @@ colcon build --symlink-install
 [Ubuntu]: https://ubuntu.com/
 [ROS2]: https://docs.ros.org/en/humble/
 [scitos2_behavior_tree]: /scitos2_behavior_tree
+[scitos2_common]: /scitos2_common
+[scitos2_core]: /scitos2_core
 [scitos2_mira]: /scitos2_mira
 [scitos2_modules]: /scitos2_modules
-[scitos2_core]: /scitos2_core
 [scitos2_msgs]: /scitos2_msgs
