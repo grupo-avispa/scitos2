@@ -9,4 +9,5 @@ Changelog for package scitos2_core
 * Added Module class (.hpp file).
 * Added SinkLogger class (.hpp file).
 * Added dependency to scitos2_common.
+* Inserted all RPC calls inside try-catching blocks.
 * Contributors: Alberto Tudela

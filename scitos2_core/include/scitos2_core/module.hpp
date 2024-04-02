@@ -81,15 +81,16 @@ protected:
     if (!sharedAuthority) {
       return false;
     }
-    mira::RPCFuture<void> rpc = sharedAuthority->callService<void>("/robot/Robot", service_name);
-    rpc.timedWait(mira::Duration::seconds(1));
+
     try {
+      mira::RPCFuture<void> rpc = sharedAuthority->callService<void>("/robot/Robot", service_name);
+      rpc.timedWait(mira::Duration::seconds(1));
       rpc.get();
-      RCLCPP_DEBUG(rclcpp::get_logger("Mira"), "service_name: %i", true);
+      RCLCPP_DEBUG(rclcpp::get_logger("MIRA"), "service_name: %i", true);
     } catch (mira::XRPC & e) {
       RCLCPP_WARN(
-        rclcpp::get_logger("Mira"),
-        "Mira RPC error caught when calling the service: %s", e.what() );
+        rclcpp::get_logger("MIRA"),
+        "MIRA RPC error caught when calling the service: %s", e.what() );
       return false;
     }
     return true;
@@ -114,23 +115,20 @@ protected:
       return false;
     }
 
-    mira::RPCFuture<void> rpc;
-    if (request.has_value()) {
-      rpc = sharedAuthority->callService<void>(
-        "/robot/Robot", service_name, request.value());
-    } else {
-      rpc = sharedAuthority->callService<void>(
-        "/robot/Robot", service_name);
-    }
-
-    rpc.timedWait(mira::Duration::seconds(1));
     try {
+      mira::RPCFuture<void> rpc;
+      if (request.has_value()) {
+        rpc = sharedAuthority->callService<void>("/robot/Robot", service_name, request.value());
+      } else {
+        rpc = sharedAuthority->callService<void>("/robot/Robot", service_name);
+      }
+      rpc.timedWait(mira::Duration::seconds(1));
       rpc.get();
-      RCLCPP_DEBUG(rclcpp::get_logger("Mira"), "service_name: %i", true);
+      RCLCPP_DEBUG(rclcpp::get_logger("MIRA"), "service_name: %i", true);
     } catch (mira::XRPC & e) {
       RCLCPP_WARN(
-        rclcpp::get_logger("Mira"),
-        "Mira RPC error caught when calling the service: %s", e.what() );
+        rclcpp::get_logger("MIRA"),
+        "MIRA RPC error caught when calling the service: %s", e.what() );
       return false;
     }
     return true;
@@ -153,15 +151,15 @@ protected:
     if (!sharedAuthority) {
       return false;
     }
-    mira::RPCFuture<void> rpc = sharedAuthority->callService<void>(
-      "/robot/Robot#builtin", std::string("setProperty"), param_name, value);
-    rpc.timedWait(mira::Duration::seconds(1));
     try {
+      mira::RPCFuture<void> rpc = sharedAuthority->callService<void>(
+        "/robot/Robot#builtin", std::string("setProperty"), param_name, value);
+      rpc.timedWait(mira::Duration::seconds(1));
       rpc.get();
     } catch (mira::XRPC & e) {
       RCLCPP_WARN(
-        rclcpp::get_logger("Mira"),
-        "Mira RPC error caught when setting parameter: %s", e.what() );
+        rclcpp::get_logger("MIRA"),
+        "MIRA RPC error caught when setting parameter: %s", e.what() );
       return false;
     }
     return true;
@@ -183,10 +181,17 @@ protected:
     if (!sharedAuthority) {
       return "";
     }
-    mira::RPCFuture<std::string> rpc = sharedAuthority->callService<std::string>(
-      "/robot/Robot#builtin", std::string("getProperty"), param_name);
-    rpc.timedWait(mira::Duration::seconds(1));
-    return rpc.get();
+    try {
+      mira::RPCFuture<std::string> rpc = sharedAuthority->callService<std::string>(
+        "/robot/Robot#builtin", std::string("getProperty"), param_name);
+      rpc.timedWait(mira::Duration::seconds(1));
+      return rpc.get();
+    } catch (mira::XRPC & e) {
+      RCLCPP_WARN(
+        rclcpp::get_logger("MIRA"),
+        "MIRA RPC error caught when getting parameter: %s", e.what() );
+      return "";
+    }
   }
 };
 
