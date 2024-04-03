@@ -13,6 +13,7 @@ Changelog for package scitos2_mira
 * Move modules to its own package.
 * Remove CMakeLists.mira and added dependency to scitos2_common.
 * Rename default.launch.py to mira.launch.py and added lifecycle manager.
+* Added drive as a default module.
 
 1.1.3 (10-10-2023)
 ------------------

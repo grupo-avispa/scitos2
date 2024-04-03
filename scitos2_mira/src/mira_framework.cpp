@@ -28,7 +28,9 @@ namespace scitos2_mira
 
 MiraFramework::MiraFramework(const rclcpp::NodeOptions & options)
 : nav2_util::LifecycleNode("scitos_mira", "", options),
-  module_loader_("scitos2_core", "scitos2_core::Module")
+  module_loader_("scitos2_core", "scitos2_core::Module"),
+  default_ids_{"drive"},
+  default_types_{"scitos2_modules::Drive"}
 {
   RCLCPP_INFO(get_logger(), "Creating MIRA framework");
 
@@ -70,14 +72,20 @@ nav2_util::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::St
 
   nav2_util::declare_parameter_if_not_declared(
     this, "module_plugins",
-    rclcpp::ParameterValue(std::vector<std::string>{}),
+    rclcpp::ParameterValue(default_ids_),
     rcl_interfaces::msg::ParameterDescriptor()
     .set__description("List of the modules exposed by the node"));
   this->get_parameter("module_plugins", module_ids_);
-  if (module_ids_.empty()) {
-    RCLCPP_ERROR(get_logger(), "No modules specified in the parameter 'module_plugins'");
-    return nav2_util::CallbackReturn::FAILURE;
+  if (module_ids_ == default_ids_) {
+    for (size_t i = 0; i != default_ids_.size(); ++i) {
+      nav2_util::declare_parameter_if_not_declared(
+        this, default_ids_[i] + ".plugin",
+        rclcpp::ParameterValue(default_types_[i]),
+        rcl_interfaces::msg::ParameterDescriptor()
+        .set__description("Type of the module"));
+    }
   }
+
   module_types_.resize(module_ids_.size());
 
   // Create MIRA modules

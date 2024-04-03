@@ -113,6 +113,8 @@ protected:
   // Modules Plugins
   pluginlib::ClassLoader<scitos2_core::Module> module_loader_;
   ModuleMap modules_;
+  std::vector<std::string> default_ids_;
+  std::vector<std::string> default_types_;
   std::vector<std::string> module_ids_;
   std::vector<std::string> module_types_;
   std::string module_ids_concat_;
