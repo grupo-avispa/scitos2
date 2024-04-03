@@ -84,21 +84,21 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
 
   // Create ROS services
   change_force_service_ = node->create_service<scitos2_msgs::srv::ChangeForce>(
-    "change_force", std::bind(&Drive::changeForce, this, _1, _2));
+    "drive/change_force", std::bind(&Drive::changeForce, this, _1, _2));
   emergency_stop_service_ = node->create_service<scitos2_msgs::srv::EmergencyStop>(
-    "emergency_stop", std::bind(&Drive::emergencyStop, this, _1, _2));
+    "drive/emergency_stop", std::bind(&Drive::emergencyStop, this, _1, _2));
   enable_motors_service_ = node->create_service<scitos2_msgs::srv::EnableMotors>(
-    "enable_motors", std::bind(&Drive::enableMotors, this, _1, _2));
+    "drive/enable_motors", std::bind(&Drive::enableMotors, this, _1, _2));
   enable_rfid_service_ = node->create_service<scitos2_msgs::srv::EnableRfid>(
-    "enable_rfid", std::bind(&Drive::enableRfid, this, _1, _2));
+    "drive/enable_rfid", std::bind(&Drive::enableRfid, this, _1, _2));
   reset_barrier_stop_service_ = node->create_service<scitos2_msgs::srv::ResetBarrierStop>(
-    "reset_barrier_stop", std::bind(&Drive::resetBarrierStop, this, _1, _2));
+    "drive/reset_barrier_stop", std::bind(&Drive::resetBarrierStop, this, _1, _2));
   reset_motor_stop_service_ = node->create_service<scitos2_msgs::srv::ResetMotorStop>(
-    "reset_motorstop", std::bind(&Drive::resetMotorStop, this, _1, _2));
+    "drive/reset_motor_stop", std::bind(&Drive::resetMotorStop, this, _1, _2));
   reset_odometry_service_ = node->create_service<scitos2_msgs::srv::ResetOdometry>(
-    "reset_odometry", std::bind(&Drive::resetOdometry, this, _1, _2));
+    "drive/reset_odometry", std::bind(&Drive::resetOdometry, this, _1, _2));
   suspend_bumper_service_ = node->create_service<scitos2_msgs::srv::SuspendBumper>(
-    "suspend_bumper", std::bind(&Drive::suspendBumper, this, _1, _2));
+    "drive/suspend_bumper", std::bind(&Drive::suspendBumper, this, _1, _2));
 
   // Declare and read parameters
   nav2_util::declare_parameter_if_not_declared(
@@ -211,7 +211,7 @@ rcl_interfaces::msg::SetParametersResult Drive::dynamicParametersCallback(
     const auto & name = parameter.get_name();
 
     if (type == ParameterType::PARAMETER_BOOL) {
-      if (name == plugin_name_ + "magnetic_barrier_enabled") {
+      if (name == plugin_name_ + ".magnetic_barrier_enabled") {
         bool magnetic_barrier_enabled = parameter.as_bool();
         set_mira_param(
           authority_, "MainControlUnit.RearLaser.Enabled",
@@ -221,7 +221,7 @@ rcl_interfaces::msg::SetParametersResult Drive::dynamicParametersCallback(
           magnetic_barrier_enabled ? "true" : "false");
       }
     } else if (type == ParameterType::PARAMETER_STRING) {
-      if (name == plugin_name_ + "base_frame") {
+      if (name == plugin_name_ + ".base_frame") {
         base_frame_ = parameter.as_string();
         RCLCPP_INFO(logger_, "The parameter base_frame is set to: [%s]", base_frame_.c_str());
       }

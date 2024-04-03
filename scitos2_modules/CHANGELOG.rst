@@ -6,4 +6,5 @@ Changelog for package scitos2_modules
 ------------------
 * Import modules from scitos_mira package.
 * Remove CMakeLists.mira and added dependency to scitos2_common.
+* Rename drive services.
 * Contributors: Alberto Tudela.
