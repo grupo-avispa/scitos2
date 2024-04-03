@@ -310,8 +310,7 @@ rcl_interfaces::msg::SetParametersResult EBC::dynamicParametersCallback(
           parameter.as_bool() ? "true" : "false");
       } else if (name == plugin_name_ + ".mcu_12v_enabled") {
         set_mira_param(
-          authority_,
-          "MainControlUnit.EBC_12V.Enabled", parameter.as_bool() ? "true" : "false");
+          authority_, "MainControlUnit.EBC_12V.Enabled", parameter.as_bool() ? "true" : "false");
         RCLCPP_INFO(
           logger_, "The parameter mcu_12v_enabled is set to: [%s]",
           parameter.as_bool() ? "true" : "false");
@@ -333,7 +332,7 @@ rcl_interfaces::msg::SetParametersResult EBC::dynamicParametersCallback(
         RCLCPP_INFO(
           logger_, "The parameter port0_12v_enabled is set to: [%s]",
           parameter.as_bool() ? "true" : "false");
-      } else if (name == plugin_name_ + ".port0_5v_enabled") {
+      } else if (name == plugin_name_ + ".port0_24v_enabled") {
         set_mira_param(
           authority_, "EBC7.Port0_24V.Enabled", parameter.as_bool() ? "true" : "false");
         RCLCPP_INFO(
@@ -372,8 +371,7 @@ rcl_interfaces::msg::SetParametersResult EBC::dynamicParametersCallback(
       } else if (name == plugin_name_ + ".mcu_12v_max_current") {
         if (parameter.as_double() >= 0.0 && parameter.as_double() <= 2.5) {
           set_mira_param(
-            authority_,
-            "MainControlUnit.EBC_12V.MaxCurrent",
+            authority_, "MainControlUnit.EBC_12V.MaxCurrent",
             std::to_string(parameter.as_double()));
           RCLCPP_INFO(
             logger_, "The parameter mcu_12v_max_current is set to: [%f]",

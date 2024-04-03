@@ -53,56 +53,46 @@ void Display::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
     rclcpp::ParameterValue(false), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Enable / disable the user menu entry"));
   node->get_parameter(plugin_name_ + ".user_menu_enabled", user_menu_enabled_);
+  RCLCPP_INFO(
+    logger_, "The parameter user_menu_enabled is set to: [%s]",
+    user_menu_enabled_ ? "true" : "false");
+
   nav2_util::declare_parameter_if_not_declared(
     node, plugin_name_ + ".menu_name",
     rclcpp::ParameterValue("User Menu"), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("The name of the user menu entry in the main menu of the status display"));
+  node->get_parameter(plugin_name_ + ".menu_name", menu_name_);
+  RCLCPP_INFO(logger_, "The parameter menu_name is set to: [%s]", menu_name_);
+
   nav2_util::declare_parameter_if_not_declared(
     node, plugin_name_ + ".menu_entry_name_1",
     rclcpp::ParameterValue("Entry 1"), rcl_interfaces::msg::ParameterDescriptor()
     .set__description(
       "The name of the first sub menu entry in the user menu of the status "));
+  node->get_parameter(plugin_name_ + ".menu_entry_name_1", menu_entry_name_1_);
+  RCLCPP_INFO(
+    logger_, "The parameter menu_entry_name_1 is set to: [%s]", menu_entry_name_1_.c_str());
+
   nav2_util::declare_parameter_if_not_declared(
     node, plugin_name_ + ".menu_entry_name_2",
     rclcpp::ParameterValue("Entry 2"), rcl_interfaces::msg::ParameterDescriptor()
     .set__description(
       "The name of the second sub menu entry in the user menu of the status "));
+  node->get_parameter(plugin_name_ + ".menu_entry_name_2", menu_entry_name_2_);
+  RCLCPP_INFO(
+    logger_, "The parameter menu_entry_name_2 is set to: [%s]", menu_entry_name_2_.c_str());
+
   nav2_util::declare_parameter_if_not_declared(
     node, plugin_name_ + ".menu_entry_name_3",
     rclcpp::ParameterValue("Entry 3"), rcl_interfaces::msg::ParameterDescriptor()
     .set__description(
       "The name of the third sub menu entry in the user menu of the status "));
+  node->get_parameter(plugin_name_ + ".menu_entry_name_3", menu_entry_name_3_);
+  RCLCPP_INFO(
+    logger_, "The parameter menu_entry_name_3 is set to: [%s]", menu_entry_name_3_.c_str());
 
-  if (user_menu_enabled_) {
-    set_mira_param(authority_, "StatusDisplay.EnableUserMenu", "true");
-
-    // Read menu entries
-    std::string menu_entry;
-    node->get_parameter(plugin_name_ + ".menu_name", menu_entry);
-    set_mira_param(authority_, "StatusDisplay.UserMenuName", menu_entry);
-    RCLCPP_INFO(logger_, "The parameter menu_name is set to: [%s]", menu_entry.c_str());
-
-    node->get_parameter(plugin_name_ + ".menu_entry_name_1", menu_entry);
-    set_mira_param(authority_, "StatusDisplay.UserMenuEntryName1", menu_entry);
-    RCLCPP_INFO(
-      logger_, "The parameter menu_entry_name_1 is set to: [%s]",
-      menu_entry.c_str());
-
-    node->get_parameter(plugin_name_ + ".menu_entry_name_2", menu_entry);
-    set_mira_param(authority_, "StatusDisplay.UserMenuEntryName2", menu_entry);
-    RCLCPP_INFO(
-      logger_, "The parameter menu_entry_name_2 is set to: [%s]",
-      menu_entry.c_str());
-
-    node->get_parameter(plugin_name_ + ".menu_entry_name_3", menu_entry);
-    set_mira_param(authority_, "StatusDisplay.UserMenuEntryName3", menu_entry);
-    RCLCPP_INFO(
-      logger_, "The parameter menu_entry_name_3 is set to: [%s]",
-      menu_entry.c_str());
-  } else {
-    set_mira_param(authority_, "StatusDisplay.EnableUserMenu", "false");
-    RCLCPP_INFO(logger_, "The parameter user_menu_enabled is set to: [false]");
-  }
+  // Change the menu entries
+  changeMenuEntries();
 }
 
 void Display::cleanup()
@@ -147,36 +137,31 @@ rcl_interfaces::msg::SetParametersResult Display::dynamicParametersCallback(
     if (type == ParameterType::PARAMETER_BOOL) {
       if (name == plugin_name_ + ".user_menu_enabled") {
         user_menu_enabled_ = parameter.as_bool();
-        set_mira_param(
-          authority_, "StatusDisplay.EnableUserMenu", user_menu_enabled_ ? "true" : "false");
         RCLCPP_INFO(
           logger_, "The parameter user_menu_enabled is set to: [%s]",
           user_menu_enabled_ ? "true" : "false");
       }
     } else if (type == ParameterType::PARAMETER_STRING) {
       if (name == plugin_name_ + ".menu_name") {
-        set_mira_param(authority_, "StatusDisplay.UserMenuName", parameter.as_string());
-        RCLCPP_INFO(
-          logger_, "The parameter menu_name is set to: [%s]",
-          parameter.as_string().c_str());
+        menu_name_ = parameter.as_string();
+        RCLCPP_INFO(logger_, "The parameter menu_name is set to: [%s]", menu_name_.c_str());
       } else if (name == plugin_name_ + ".menu_entry_name_1") {
-        set_mira_param(authority_, "StatusDisplay.UserMenuEntryName1", parameter.as_string());
+        menu_entry_name_1_ = parameter.as_string();
         RCLCPP_INFO(
-          logger_, "The parameter menu_entry_name_1 is set to: [%s]",
-          parameter.as_string().c_str());
+          logger_, "The parameter menu_entry_name_1 is set to: [%s]", menu_entry_name_1_.c_str());
       } else if (name == plugin_name_ + ".menu_entry_name_2") {
-        set_mira_param(authority_, "StatusDisplay.UserMenuEntryName2", parameter.as_string());
+        menu_entry_name_2_ = parameter.as_string();
         RCLCPP_INFO(
-          logger_, "The parameter menu_entry_name_2 is set to: [%s]",
-          parameter.as_string().c_str());
+          logger_, "The parameter menu_entry_name_2 is set to: [%s]", menu_entry_name_2_.c_str());
       } else if (name == plugin_name_ + ".menu_entry_name_3") {
-        set_mira_param(authority_, "StatusDisplay.UserMenuEntryName3", parameter.as_string());
+        menu_entry_name_3_ = parameter.as_string();
         RCLCPP_INFO(
-          logger_, "The parameter menu_entry_name_3 is set to: [%s]",
-          parameter.as_string().c_str());
+          logger_, "The parameter menu_entry_name_3 is set to: [%s]", menu_entry_name_3_.c_str());
       }
     }
   }
+
+  changeMenuEntries();
 
   result.successful = true;
   return result;
@@ -188,6 +173,19 @@ void Display::menuDataCallback(mira::ChannelRead<uint8> data)
   msg.header.stamp = clock_->now();
   msg.entry = data->value();
   display_data_pub_->publish(msg);
+}
+
+void Display::changeMenuEntries()
+{
+  if (user_menu_enabled_) {
+    set_mira_param(authority_, "StatusDisplay.EnableUserMenu", "true");
+    set_mira_param(authority_, "StatusDisplay.UserMenuName", menu_name_);
+    set_mira_param(authority_, "StatusDisplay.UserMenuEntryName1", menu_entry_name_1_);
+    set_mira_param(authority_, "StatusDisplay.UserMenuEntryName2", menu_entry_name_2_);
+    set_mira_param(authority_, "StatusDisplay.UserMenuEntryName3", menu_entry_name_3_);
+  } else {
+    set_mira_param(authority_, "StatusDisplay.EnableUserMenu", "false");
+  }
 }
 
 }  // namespace scitos2_modules

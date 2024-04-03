@@ -96,6 +96,12 @@ protected:
    */
   void menuDataCallback(mira::ChannelRead<uint8> data);
 
+  /**
+   * @brief Change the menu entries
+   *
+   */
+  void changeMenuEntries();
+
   // MIRA Authority
   std::shared_ptr<mira::Authority> authority_;
 
@@ -111,6 +117,10 @@ protected:
   display_data_pub_;
 
   bool user_menu_enabled_;
+  std::string menu_name_;
+  std::string menu_entry_name_1_;
+  std::string menu_entry_name_2_;
+  std::string menu_entry_name_3_;
 };
 
 }  // namespace scitos2_modules
