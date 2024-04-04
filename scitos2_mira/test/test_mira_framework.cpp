@@ -33,6 +33,9 @@ TEST(ScitosMiraFrameworkTest, configure) {
   node->configure();
   node->activate();
 
+  // Check results: the node should be in the active state as all plugins are loaded
+  EXPECT_EQ(node->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE);
+
   // Cleaning up
   node->deactivate();
   node->cleanup();
