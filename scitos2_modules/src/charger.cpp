@@ -92,66 +92,13 @@ void Charger::deactivate()
 
 void Charger::batteryDataCallback(mira::ChannelRead<mira::robot::BatteryState> data)
 {
-  // Get time data from mira
-  rclcpp::Time time = rclcpp::Time(data->timestamp.toUnixNS());
-
-  sensor_msgs::msg::BatteryState battery;
-
-  battery.header.stamp = time;
-  battery.header.frame_id = "base_link";
-  battery.voltage = data->voltage;
-  battery.temperature = std::numeric_limits<float>::quiet_NaN();
-  battery.current = -data->current;
-  battery.charge = (data->lifeTime == -1) ? std::numeric_limits<float>::quiet_NaN() :
-    (static_cast<float>(data->lifeTime) / 60.0 * battery.current);
-  battery.capacity = std::numeric_limits<float>::quiet_NaN();
-  battery.design_capacity = 40.0;
-  battery.percentage = (data->lifePercent == 255) ? std::numeric_limits<float>::quiet_NaN() :
-    static_cast<float>(data->lifePercent) / 100.0;
-
-  if (data->charging) {
-    battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_CHARGING;
-  } else if (battery.percentage == 1.0) {
-    battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_FULL;
-  } else if (data->powerSupplyPresent) {
-    battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_NOT_CHARGING;
-  } else if (battery.current < 0) {
-    battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_DISCHARGING;
-  } else {
-    battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_UNKNOWN;
-  }
-
-  battery.power_supply_health = sensor_msgs::msg::BatteryState::POWER_SUPPLY_HEALTH_UNKNOWN;
-  battery.power_supply_technology = sensor_msgs::msg::BatteryState::POWER_SUPPLY_TECHNOLOGY_LIFE;
-  battery.present = (data->cellVoltage).empty() ? false : true;
-  battery.cell_voltage = data->cellVoltage;
-  battery.cell_temperature.resize(
-    battery.cell_voltage.size(),
-    std::numeric_limits<float>::quiet_NaN());
-  battery.location = "Slot 1";
-  battery.serial_number = "Unknown";
-
+  sensor_msgs::msg::BatteryState battery = miraToRosBatteryState(*data, data->timestamp);
   battery_pub_->publish(battery);
 }
 
 void Charger::chargerStatusCallback(mira::ChannelRead<uint8> data)
 {
-  // Get time data from mira
-  rclcpp::Time time = rclcpp::Time(data->timestamp.toUnixNS());
-
-  scitos2_msgs::msg::ChargerStatus charger;
-
-  charger.header.stamp = time;
-  charger.header.frame_id = "base_link";
-  charger.charging = (*data) & 1;
-  charger.empty = (*data) & (1 << 1);
-  charger.full = (*data) & (1 << 2);
-  charger.derating = (*data) & (1 << 3);
-  charger.charging_disabled = (*data) & (1 << 4);
-  charger.const_volt_mode = (*data) & (1 << 5);
-  charger.const_current_mode = (*data) & (1 << 6);
-  charger.internal_error_flag = (*data) & (1 << 7);
-
+  scitos2_msgs::msg::ChargerStatus charger = miraToRosChargerStatus(*data, data->timestamp);
   charger_pub_->publish(charger);
 }
 
@@ -164,6 +111,67 @@ bool Charger::savePersistentErrors(
   // Call mira service
   return call_mira_service(
     authority_, "savePersistentErrors", std::optional<std::string>(request->filename));
+}
+
+sensor_msgs::msg::BatteryState Charger::miraToRosBatteryState(
+  const mira::robot::BatteryState & state, const mira::Time & timestamp)
+{
+  sensor_msgs::msg::BatteryState battery;
+
+  battery.header.frame_id = "base_link";
+  battery.header.stamp = rclcpp::Time(timestamp.toUnixNS());
+  battery.voltage = state.voltage;
+  battery.temperature = std::numeric_limits<float>::quiet_NaN();
+  battery.current = -state.current;
+  battery.charge = (state.lifeTime == -1) ? std::numeric_limits<float>::quiet_NaN() :
+    (static_cast<float>(state.lifeTime) / 60.0 * state.current);
+  battery.capacity = std::numeric_limits<float>::quiet_NaN();
+  battery.design_capacity = 40.0;
+  battery.percentage = (state.lifePercent == 255) ? std::numeric_limits<float>::quiet_NaN() :
+    static_cast<float>(state.lifePercent) / 100.0;
+
+  if (state.charging) {
+    battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_CHARGING;
+  } else if (battery.percentage == 1.0) {
+    battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_FULL;
+  } else if (state.powerSupplyPresent) {
+    battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_NOT_CHARGING;
+  } else if (battery.current < 0) {
+    battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_DISCHARGING;
+  } else {
+    battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_UNKNOWN;
+  }
+
+  battery.power_supply_health = sensor_msgs::msg::BatteryState::POWER_SUPPLY_HEALTH_UNKNOWN;
+  battery.power_supply_technology = sensor_msgs::msg::BatteryState::POWER_SUPPLY_TECHNOLOGY_LIFE;
+  battery.present = (state.cellVoltage).empty() ? false : true;
+  battery.cell_voltage = state.cellVoltage;
+  battery.cell_temperature.resize(
+    battery.cell_voltage.size(), std::numeric_limits<float>::quiet_NaN());
+  battery.location = "Slot 1";
+  battery.serial_number = "Unknown";
+
+  return battery;
+}
+
+scitos2_msgs::msg::ChargerStatus Charger::miraToRosChargerStatus(
+  const uint8 & status,
+  const mira::Time & timestamp)
+{
+  scitos2_msgs::msg::ChargerStatus charger;
+
+  charger.header.frame_id = "base_link";
+  charger.header.stamp = rclcpp::Time(timestamp.toUnixNS());
+  charger.charging = static_cast<bool>(status & 1);
+  charger.empty = static_cast<bool>(status & (1 << 1));
+  charger.full = static_cast<bool>(status & (1 << 2));
+  charger.derating = static_cast<bool>(status & (1 << 3));
+  charger.charging_disabled = static_cast<bool>(status & (1 << 4));
+  charger.const_volt_mode = static_cast<bool>(status & (1 << 5));
+  charger.const_current_mode = static_cast<bool>(status & (1 << 6));
+  charger.internal_error_flag = static_cast<bool>(status & (1 << 7));
+
+  return charger;
 }
 
 }  // namespace scitos2_modules

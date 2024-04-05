@@ -233,10 +233,33 @@ protected:
     std::shared_ptr<scitos2_msgs::srv::SuspendBumper::Response> response);
 
   /**
-   * @brief Publish bumper markers.
+   * @brief Check if the emergency stop button is released.
+   *
+   * @param msg EmergencyStopStatus status message
+   * @return bool If the emergency stop button is released
+   */
+  bool isEmergencyStopReleased(scitos2_msgs::msg::EmergencyStopStatus msg);
+
+  /**
+   * @brief Check if the code is a barrier code.
+   *
+   * @param code Rfid code
+   * @return bool If the code is a barrier code
+   */
+  bool isBarrierCode(uint64 code) {return code == MAGNETIC_BARRIER_RFID_CODE;}
+
+  /**
+   * @brief Reset tje motor stop if the bumper is activated after a certain time.
+   *
+   * @param current_time
+   */
+  void resetMotorStopAfterTimeout(rclcpp::Time current_time);
+
+  /**
+   * @brief Create the bumper markers.
    *
    */
-  void publishBumperMarkers();
+  visualization_msgs::msg::MarkerArray createBumperMarkers();
 
   /**
    * @brief Callback executed when a parameter change is detected.
@@ -245,9 +268,60 @@ protected:
   rcl_interfaces::msg::SetParametersResult
   dynamicParametersCallback(std::vector<rclcpp::Parameter> parameters);
 
+  /**
+   * @brief Convert MIRA Odometry2 to ROS Odometry.
+   *
+   * @param odometry Odometry from MIRA
+   * @param timestamp Timestamp of the state
+   * @return nav_msgs::msg::Odometry Odometry for ROS
+   */
+  nav_msgs::msg::Odometry miraToRosOdometry(
+    const mira::robot::Odometry2 & odometry, const mira::Time & timestamp);
+
+  /**
+   * @brief Convert MIRA Odometry2 to ROS TF.
+   *
+   * @param odometry Odometry from MIRA
+   * @param timestamp Timestamp of the state
+   * @return geometry_msgs::msg::TransformStamped Transform for ROS
+   */
+  geometry_msgs::msg::TransformStamped miraToRosTf(
+    const mira::robot::Odometry2 & odometry, const mira::Time & timestamp);
+
+  /**
+   * @brief Convert MIRA DriveStatus to ROS DriveStatus.
+   *
+   * @param status DriveStatus from MIRA
+   * @param timestamp Timestamp of the state
+   * @return scitos2_msgs::msg::DriveStatus DriveStatus for ROS
+   */
+  scitos2_msgs::msg::DriveStatus miraToRosDriveStatus(
+    const uint32 & status, const mira::Time & timestamp);
+
+  /**
+   * @brief Convert MIRA DriveStatus to ROS EmergencyStopStatus.
+   *
+   * @param status EmergencyStopStatus from MIRA
+   * @param timestamp Timestamp of the state
+   * @return scitos2_msgs::msg::EmergencyStopStatus EmergencyStopStatus for ROS
+   */
+  scitos2_msgs::msg::EmergencyStopStatus miraToRosEmergencyStopStatus(
+    const uint32 & status, const mira::Time & timestamp);
+
+  /**
+   * @brief Convert MIRA BarrierStatus to ROS BarrierStatus.
+   *
+   * @param status BarrierStatus from MIRA
+   * @param timestamp Timestamp of the state
+   * @return scitos2_msgs::msg::BarrierStatus BarrierStatus for ROS
+   */
+  scitos2_msgs::msg::BarrierStatus miraToRosBarrierStatus(
+    const uint64 & status, const mira::Time & timestamp);
+
   // MIRA Authority
   std::shared_ptr<mira::Authority> authority_;
 
+  // Plugin related
   std::string plugin_name_;
   rclcpp::Clock::SharedPtr clock_;
   rclcpp::Logger logger_{rclcpp::get_logger("Drive")};
@@ -256,6 +330,7 @@ protected:
   std::mutex mutex_;
   rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr dyn_params_handler_;
 
+  // ROS Publishers
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<scitos2_msgs::msg::BumperStatus>>
   bumper_pub_;
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<visualization_msgs::msg::MarkerArray>>
@@ -272,6 +347,7 @@ protected:
 
   std::shared_ptr<rclcpp::Subscription<geometry_msgs::msg::Twist>> cmd_vel_sub_;
 
+  // ROS Services
   std::shared_ptr<rclcpp::Service<scitos2_msgs::srv::ChangeForce>> change_force_service_;
   std::shared_ptr<rclcpp::Service<scitos2_msgs::srv::EmergencyStop>> emergency_stop_service_;
   std::shared_ptr<rclcpp::Service<scitos2_msgs::srv::EnableMotors>> enable_motors_service_;
@@ -281,14 +357,18 @@ protected:
   std::shared_ptr<rclcpp::Service<scitos2_msgs::srv::ResetOdometry>> reset_odometry_service_;
   std::shared_ptr<rclcpp::Service<scitos2_msgs::srv::SuspendBumper>> suspend_bumper_service_;
 
-  scitos2_msgs::msg::EmergencyStopStatus emergency_stop_;
-  scitos2_msgs::msg::BarrierStatus barrier_status_;
-  scitos2_msgs::msg::BumperStatus bumper_status_;
-  std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
   std::string base_frame_;
+  bool emergency_stop_activated_;
+  scitos2_msgs::msg::BarrierStatus barrier_status_;
+
+  // Bumper
+  bool bumper_activated_;
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Time last_bumper_reset_;
   rclcpp::Duration reset_bumper_interval_{0, 0};
+
+  // TF
+  std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
   bool publish_tf_;
 };
 

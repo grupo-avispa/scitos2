@@ -108,6 +108,28 @@ protected:
     const std::shared_ptr<scitos2_msgs::srv::SavePersistentErrors::Request> request,
     std::shared_ptr<scitos2_msgs::srv::SavePersistentErrors::Response> response);
 
+  /**
+   * @brief Convert MIRA BatteryState to ROS BatteryState.
+   *
+   * @param state BatteryState from MIRA
+   * @param timestamp Timestamp of the state
+   * @return sensor_msgs::msg::BatteryState BatteryState for ROS
+   */
+  sensor_msgs::msg::BatteryState miraToRosBatteryState(
+    const mira::robot::BatteryState & state,
+    const mira::Time & timestamp);
+
+  /**
+   * @brief Convert MIRA ChargerStatus to ROS ChargerStatus.
+   *
+   * @param status ChargerStatus from MIRA
+   * @param timestamp Timestamp of the status
+   * @return scitos2_msgs::msg::ChargerStatus ChargerStatus for ROS
+   */
+  scitos2_msgs::msg::ChargerStatus miraToRosChargerStatus(
+    const uint8 & status,
+    const mira::Time & timestamp);
+
   // MIRA Authority
   std::shared_ptr<mira::Authority> authority_;
 

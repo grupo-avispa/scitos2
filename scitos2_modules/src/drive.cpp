@@ -62,8 +62,10 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
   rfid_pub_ = node->create_publisher<scitos2_msgs::msg::RfidTag>("rfid", 20);
 
   timer_ = node->create_wall_timer(
-    std::chrono::duration<double>(0.5),
-    std::bind(&Drive::publishBumperMarkers, this));
+    std::chrono::milliseconds(50), [this]() -> void
+    {
+      bumper_markers_pub_->publish(createBumperMarkers());
+    });
 
   // Create MIRA subscribers
   authority_->subscribe<mira::robot::Odometry2>(
@@ -147,6 +149,10 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
   if (publish_tf_) {
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(node);
   }
+
+  // Initialize the bumper and emergency stop status
+  bumper_activated_ = false;
+  emergency_stop_activated_ = false;
 }
 
 void Drive::cleanup()
@@ -234,42 +240,12 @@ rcl_interfaces::msg::SetParametersResult Drive::dynamicParametersCallback(
 
 void Drive::odometryDataCallback(mira::ChannelRead<mira::robot::Odometry2> data)
 {
-  // Get odometry data from mira
-  rclcpp::Time odom_time = rclcpp::Time(data->timestamp.toUnixNS());
-
-  // Create quaternion from yaw
-  geometry_msgs::msg::Quaternion orientation = tf2::toMsg(
-    tf2::Quaternion(
-      {0, 0, 1},
-      data->value().pose.phi()));
-
-  // Publish as a nav_msgs::Odometry
-  nav_msgs::msg::Odometry odom_msg;
-  odom_msg.header.stamp = odom_time;
-  odom_msg.header.frame_id = "odom";
-  odom_msg.child_frame_id = base_frame_;
-
-  // Set the position
-  odom_msg.pose.pose.position.x = data->value().pose.x();
-  odom_msg.pose.pose.position.y = data->value().pose.y();
-  odom_msg.pose.pose.orientation = orientation;
-
-  // Set the velocity
-  odom_msg.twist.twist.linear.x = data->value().velocity.x();
-  odom_msg.twist.twist.angular.z = data->value().velocity.phi();
-
+  auto odom_msg = miraToRosOdometry(data->value(), data->timestamp);
   odometry_pub_->publish(odom_msg);
 
-  // Publish a TF
+  // Publish the TF
   if (publish_tf_) {
-    geometry_msgs::msg::TransformStamped tf_msg;
-    tf_msg.header.stamp = odom_time;
-    tf_msg.header.frame_id = "odom";
-    tf_msg.child_frame_id = base_frame_;
-    tf_msg.transform.translation.x = data->value().pose.x();
-    tf_msg.transform.translation.y = data->value().pose.y();
-    tf_msg.transform.translation.z = 0.0;
-    tf_msg.transform.rotation = orientation;
+    auto tf_msg = miraToRosTf(data->value(), data->timestamp);
     tf_broadcaster_->sendTransform(tf_msg);
   }
 }
@@ -277,21 +253,17 @@ void Drive::odometryDataCallback(mira::ChannelRead<mira::robot::Odometry2> data)
 void Drive::bumperDataCallback(mira::ChannelRead<bool> data)
 {
   rclcpp::Time stamp = rclcpp::Time(data->timestamp.toUnixNS());
-  bumper_status_.header.frame_id = base_frame_;
-  bumper_status_.header.stamp = stamp;
-  bumper_status_.bumper_activated = data->value();
-  bumper_pub_->publish(bumper_status_);
 
-  // Reset motorstop if bumper is activated after a certain time
-  if (!bumper_status_.bumper_activated ||
-    reset_bumper_interval_ == rclcpp::Duration::from_seconds(0) ||
-    (stamp - last_bumper_reset_) < reset_bumper_interval_)
-  {
-    return;
-  }
+  scitos2_msgs::msg::BumperStatus bumper_status;
+  bumper_status.header.frame_id = base_frame_;
+  bumper_status.header.stamp = stamp;
+  bumper_status.bumper_activated = data->value();
+  bumper_status.bumper_status = data->value();
+  bumper_pub_->publish(bumper_status);
 
-  last_bumper_reset_ = stamp;
-  call_mira_service(authority_, "resetMotorStop");
+  bumper_activated_ = bumper_status.bumper_activated;
+
+  resetMotorStopAfterTimeout(stamp);
 }
 
 void Drive::mileageDataCallback(mira::ChannelRead<float> data)
@@ -305,59 +277,39 @@ void Drive::mileageDataCallback(mira::ChannelRead<float> data)
 
 void Drive::driveStatusCallback(mira::ChannelRead<uint32> data)
 {
-  scitos2_msgs::msg::DriveStatus status_msg;
-  status_msg.header.stamp = rclcpp::Time(data->timestamp.toUnixNS());
-  status_msg.header.frame_id = base_frame_;
-  status_msg.mode_normal = static_cast<bool>((*data) & 1);
-  status_msg.mode_forced_stopped = static_cast<bool>((*data) & (1 << 1));
-  status_msg.mode_freerun = static_cast<bool>((*data) & (1 << 2));
-
-  status_msg.emergency_stop_activated = static_cast<bool>((*data) & (1 << 7));
-  status_msg.emergency_stop_status = static_cast<bool>((*data) & (1 << 8));
-  status_msg.bumper_front_activated = static_cast<bool>((*data) & (1 << 9));
-  status_msg.bumper_front_status = static_cast<bool>((*data) & (1 << 10));
-  status_msg.bumper_rear_activated = static_cast<bool>((*data) & (1 << 11));
-  status_msg.bumper_rear_status = static_cast<bool>((*data) & (1 << 12));
-
-  status_msg.safety_field_rear_laser = static_cast<bool>((*data) & (1 << 26));
-  status_msg.safety_field_front_laser = static_cast<bool>((*data) & (1 << 27));
-
-  // Reset motorstop when emergency button is released
-  if (status_msg.emergency_stop_activated && !status_msg.emergency_stop_status) {
-    call_mira_service(authority_, "resetMotorStop");
-  }
+  auto drive_status_msg = miraToRosDriveStatus(data->value(), data->timestamp);
+  auto emergency_stop_msg = miraToRosEmergencyStopStatus(data->value(), data->timestamp);
 
   RCLCPP_DEBUG_STREAM(
     logger_, "Drive controller status "
-      << "(Nor: " << status_msg.mode_normal
-      << ", MStop: " << status_msg.mode_forced_stopped
-      << ", FreeRun: " << status_msg.mode_freerun
-      << ", EmBut: " << status_msg.emergency_stop_activated
-      << ", BumpPres: " << status_msg.bumper_front_activated
-      << ", BusErr: " << status_msg.error_sifas_communication
-      << ", Stall: " << status_msg.error_stall_mode
-      << ", InterErr: " << status_msg.error_sifas_internal << ")");
+      << "(Nor: " << drive_status_msg.mode_normal
+      << ", MStop: " << drive_status_msg.mode_forced_stopped
+      << ", FreeRun: " << drive_status_msg.mode_freerun
+      << ", EmBut: " << drive_status_msg.emergency_stop_activated
+      << ", BumpPres: " << drive_status_msg.bumper_front_activated
+      << ", BusErr: " << drive_status_msg.error_sifas_communication
+      << ", Stall: " << drive_status_msg.error_stall_mode
+      << ", InterErr: " << drive_status_msg.error_sifas_internal << ")");
 
-  drive_status_pub_->publish(status_msg);
+  drive_status_pub_->publish(drive_status_msg);
+  emergency_stop_pub_->publish(emergency_stop_msg);
 }
 
 void Drive::rfidStatusCallback(mira::ChannelRead<uint64> data)
 {
-  scitos2_msgs::msg::RfidTag tag_msg;
-  if (data->value() == MAGNETIC_BARRIER_RFID_CODE) {
-    barrier_status_.header.frame_id = base_frame_;
-    barrier_status_.header.stamp = rclcpp::Time(data->timestamp.toUnixNS());
-    barrier_status_.barrier_stopped = true;
-    barrier_status_.last_detection_stamp = rclcpp::Time(data->timestamp.toUnixNS());
+  if (isBarrierCode(data->value())) {
+    auto barrier_status = miraToRosBarrierStatus(data->value(), data->timestamp);
     magnetic_barrier_pub_->publish(barrier_status_);
   }
+
+  scitos2_msgs::msg::RfidTag tag_msg;
   tag_msg.tag = data->value();
   rfid_pub_->publish(tag_msg);
 }
 
 void Drive::velocityCommandCallback(const geometry_msgs::msg::Twist & msg)
 {
-  if (!emergency_stop_.emergency_stop_activated) {
+  if (!emergency_stop_activated_) {
     mira::Velocity2 speed(msg.linear.x, 0, msg.angular.z);
     call_mira_service(authority_, "setVelocity", std::optional<mira::Velocity2>(speed));
   }
@@ -374,13 +326,6 @@ bool Drive::emergencyStop(
   const std::shared_ptr<scitos2_msgs::srv::EmergencyStop::Request> request,
   std::shared_ptr<scitos2_msgs::srv::EmergencyStop::Response> response)
 {
-  // Publish emergency stop
-  emergency_stop_.header.frame_id = base_frame_;
-  emergency_stop_.header.stamp = clock_->now();
-  emergency_stop_.emergency_stop_activated = true;
-  emergency_stop_pub_->publish(emergency_stop_);
-
-  // Call mira service
   return call_mira_service(authority_, "emergencyStop");
 }
 
@@ -415,13 +360,6 @@ bool Drive::resetMotorStop(
   const std::shared_ptr<scitos2_msgs::srv::ResetMotorStop::Request> request,
   std::shared_ptr<scitos2_msgs::srv::ResetMotorStop::Response> response)
 {
-  // Publish emergency stop
-  emergency_stop_.header.frame_id = base_frame_;
-  emergency_stop_.header.stamp = clock_->now();
-  emergency_stop_.emergency_stop_activated = false;
-  emergency_stop_pub_->publish(emergency_stop_);
-
-  // Call mira service
   return call_mira_service(authority_, "resetMotorStop");
 }
 
@@ -439,15 +377,13 @@ bool Drive::suspendBumper(
   return call_mira_service(authority_, "suspendBumper");
 }
 
-void Drive::publishBumperMarkers()
+visualization_msgs::msg::MarkerArray Drive::createBumperMarkers()
 {
-  // Note: Only perform visualization if there's any subscriber
-  if (bumper_markers_pub_->get_subscription_count() == 0) {return;}
-
-  // Publish markers
+  // Create markers
   visualization_msgs::msg::MarkerArray markers_msg;
   visualization_msgs::msg::Marker cylinder;
-  cylinder.header = bumper_status_.header;
+  cylinder.header.frame_id = base_frame_;
+  cylinder.header.stamp = clock_->now();
   cylinder.lifetime = rclcpp::Duration(0, 10);
   cylinder.ns = "bumpers";
   cylinder.type = visualization_msgs::msg::Marker::CYLINDER;
@@ -458,7 +394,7 @@ void Drive::publishBumperMarkers()
   cylinder.pose.position.z = 0.03;
 
   // Change color depending on the state: red if activated, white otherwise
-  if (bumper_status_.bumper_activated) {
+  if (bumper_activated_) {
     cylinder.color.r = 1.0;
     cylinder.color.g = 0.0;
     cylinder.color.b = 0.0;
@@ -498,7 +434,99 @@ void Drive::publishBumperMarkers()
   cylinder.pose.orientation = tf2::toMsg(tf2::Quaternion({1, 0, 0}, M_PI / 2.0));
   markers_msg.markers.push_back(cylinder);
 
-  bumper_markers_pub_->publish(markers_msg);
+  return markers_msg;
+}
+
+bool Drive::isEmergencyStopReleased(scitos2_msgs::msg::EmergencyStopStatus msg)
+{
+  return msg.emergency_stop_activated && !msg.emergency_stop_status;
+}
+
+void Drive::resetMotorStopAfterTimeout(rclcpp::Time current_time)
+{
+  if (bumper_activated_ && (current_time - last_bumper_reset_) > reset_bumper_interval_) {
+    call_mira_service(authority_, "resetMotorStop");
+    last_bumper_reset_ = current_time;
+  }
+}
+
+nav_msgs::msg::Odometry Drive::miraToRosOdometry(
+  const mira::robot::Odometry2 & odometry, const mira::Time & timestamp)
+{
+  nav_msgs::msg::Odometry odom_msg;
+  odom_msg.header.frame_id = "odom";
+  odom_msg.header.stamp = rclcpp::Time(timestamp.toUnixNS());
+  odom_msg.child_frame_id = base_frame_;
+
+  // Set the position
+  odom_msg.pose.pose.position.x = odometry.pose.x();
+  odom_msg.pose.pose.position.y = odometry.pose.y();
+  odom_msg.pose.pose.orientation = tf2::toMsg(tf2::Quaternion({0, 0, 1}, odometry.pose.phi()));
+
+  // Set the velocity
+  odom_msg.twist.twist.linear.x = odometry.velocity.x();
+  odom_msg.twist.twist.angular.z = odometry.velocity.phi();
+
+  return odom_msg;
+}
+
+geometry_msgs::msg::TransformStamped Drive::miraToRosTf(
+  const mira::robot::Odometry2 & odometry, const mira::Time & timestamp)
+{
+  geometry_msgs::msg::TransformStamped tf_msg;
+  tf_msg.header.frame_id = "odom";
+  tf_msg.header.stamp = rclcpp::Time(timestamp.toUnixNS());
+  tf_msg.child_frame_id = base_frame_;
+  tf_msg.transform.translation.x = odometry.pose.x();
+  tf_msg.transform.translation.y = odometry.pose.y();
+  tf_msg.transform.translation.z = 0.0;
+  tf_msg.transform.rotation = tf2::toMsg(tf2::Quaternion({0, 0, 1}, odometry.pose.phi()));
+  return tf_msg;
+}
+
+scitos2_msgs::msg::DriveStatus Drive::miraToRosDriveStatus(
+  const uint32 & status, const mira::Time & timestamp)
+{
+  scitos2_msgs::msg::DriveStatus drive_status;
+  drive_status.header.frame_id = base_frame_;
+  drive_status.header.stamp = rclcpp::Time(timestamp.toUnixNS());
+  drive_status.mode_normal = static_cast<bool>(status & 1);
+  drive_status.mode_forced_stopped = static_cast<bool>(status & (1 << 1));
+  drive_status.mode_freerun = static_cast<bool>(status & (1 << 2));
+
+  drive_status.emergency_stop_activated = static_cast<bool>(status & (1 << 7));
+  drive_status.emergency_stop_status = static_cast<bool>(status & (1 << 8));
+  drive_status.bumper_front_activated = static_cast<bool>(status & (1 << 9));
+  drive_status.bumper_front_status = static_cast<bool>(status & (1 << 10));
+  drive_status.bumper_rear_activated = static_cast<bool>(status & (1 << 11));
+  drive_status.bumper_rear_status = static_cast<bool>(status & (1 << 12));
+
+  drive_status.safety_field_rear_laser = static_cast<bool>(status & (1 << 26));
+  drive_status.safety_field_front_laser = static_cast<bool>(status & (1 << 27));
+
+  return drive_status;
+}
+
+scitos2_msgs::msg::EmergencyStopStatus Drive::miraToRosEmergencyStopStatus(
+  const uint32 & status, const mira::Time & timestamp)
+{
+  scitos2_msgs::msg::EmergencyStopStatus emergency_stop_status;
+  emergency_stop_status.header.frame_id = base_frame_;
+  emergency_stop_status.header.stamp = rclcpp::Time(timestamp.toUnixNS());
+  emergency_stop_status.emergency_stop_activated = static_cast<bool>(status & (1 << 7));
+  emergency_stop_status.emergency_stop_status = static_cast<bool>(status & (1 << 8));
+  return emergency_stop_status;
+}
+
+scitos2_msgs::msg::BarrierStatus Drive::miraToRosBarrierStatus(
+  const uint64 & status, const mira::Time & timestamp)
+{
+  scitos2_msgs::msg::BarrierStatus barrier;
+  barrier.header.frame_id = base_frame_;
+  barrier.header.stamp = rclcpp::Time(timestamp.toUnixNS());
+  barrier.barrier_stopped = true;
+  barrier.last_detection_stamp = rclcpp::Time(timestamp.toUnixNS());
+  return barrier;
 }
 
 }  // namespace scitos2_modules

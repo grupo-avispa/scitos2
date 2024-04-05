@@ -62,7 +62,7 @@ void Display::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
     rclcpp::ParameterValue("User Menu"), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("The name of the user menu entry in the main menu of the status display"));
   node->get_parameter(plugin_name_ + ".menu_name", menu_name_);
-  RCLCPP_INFO(logger_, "The parameter menu_name is set to: [%s]", menu_name_);
+  RCLCPP_INFO(logger_, "The parameter menu_name is set to: [%s]", menu_name_.c_str());
 
   nav2_util::declare_parameter_if_not_declared(
     node, plugin_name_ + ".menu_entry_name_1",
