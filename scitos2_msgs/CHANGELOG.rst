@@ -2,10 +2,12 @@
 Changelog for package scitos2_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.0.0 (25-03-2024)
+2.0.0 (XX-03-2024)
 ------------------
 * Update license to Apache 2.0.
 * Rename package to scitos2_msgs.
+* Added emergency_stop_status to EmergencyStopStatus.msg.
+* Added bumper_status to BumperStatus.msg.
 
 1.4.0 (25-04-2023)
 ------------------
