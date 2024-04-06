@@ -1,3 +1,6 @@
+codecov:
+  disable_default_path_fixes: true
+
 fixes:
   - "ros_ws/src/scitos2/::"
   - "ros_ws/install/::"
