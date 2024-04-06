@@ -1,6 +1,6 @@
 # scitos2
 
-![ROS2](https://img.shields.io/badge/ros2-rolling-darkgreen?logo=ros&logoColor=white)
+![ROS2](https://img.shields.io/badge/ros2-humble-blue?logo=ros&logoColor=white)
 ![License](https://img.shields.io/github/license/grupo-avispa/scitos2)
 [![Build](https://github.com/grupo-avispa/scitos2/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/grupo-avispa/scitos2/actions/workflows/build.yml)
 [![codecov](https://codecov.io/gh/grupo-avispa/scitos2/graph/badge.svg)](https://codecov.io/gh/grupo-avispa/scitos2)
