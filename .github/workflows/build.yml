@@ -28,12 +28,13 @@ jobs:
       - name: Setup ROS 2
         uses: ros-tooling/setup-ros@v0.7
         with:
-          required-ros-distributions: humble
+          required-ros-distributions: rolling
       - name: Install dependencies
         uses: ros-tooling/action-ros-ci@v0.3
         with:
           package-name: scitos2
-          target-ros2-distro: humble
+          target-ros2-distro: rolling
+          vcs-repo-file-url: ./.github/repos.repos # Until nav2 is released in rolling
           colcon-defaults: |
             {
               "build": {
