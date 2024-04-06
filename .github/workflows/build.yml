@@ -22,7 +22,7 @@ jobs:
         run: |
             cd MIRA
             export MIRA_PATH=$(pwd)
-            make -j$(nproc-2)
+            make
       - name: Checkout Repository
         uses: actions/checkout@v2
       - name: Setup ROS 2
