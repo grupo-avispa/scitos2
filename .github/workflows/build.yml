@@ -17,18 +17,12 @@ jobs:
         uses: awalsh128/cache-apt-pkgs-action@v1.4.2
         with:
           packages: g++ cmake subversion doxygen libxml2-dev libssl-dev libsqlite3-dev libboost-all-dev libogre-1.9-dev libsvn-dev libopencv-dev binutils-dev libiberty-dev libcurl4-gnutls-dev libprocps-dev libqwt-qt5-dev libqt5webkit5-dev libqwtmathml-qt5-dev libqt5opengl5-dev libqt5svg5-dev qt*5-dev qttools5-dev-tools git
-      - name: Download and extract MIRA
-        run: |
-            curl -o mira.tar.gz https://www.mira-project.org/downloads/MIRA-2023-12-15_r10375.tar.gz
-            tar -zxvf mira.tar.gz
-            rm mira.tar.gz
-      - name: Install MIRA
-        run: |
-            cd MIRA
-            export MIRA_PATH=$(pwd)
-            make -j8
       - name: Checkout Repository
         uses: actions/checkout@v2
+      - name: Install MIRA
+        run: ./.github/mira-installer-binary.sh -s ubuntu-2204lts-x64 -d mira
+      - name: MIRA Environment
+        run: source $(pwd)/mira/start.bash
       - name: Setup ROS 2
         uses: ros-tooling/setup-ros@v0.7
         with:
