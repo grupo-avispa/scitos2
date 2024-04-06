@@ -9,6 +9,10 @@ on:
       - main
   pull_request:
 
+env:
+  MIRA_PATH: ${{ github.workspace }}/mira
+  LD_LIBRARY_PATH: $LD_LIBRARY_PATH:${{ github.workspace }}/mira
+
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -20,9 +24,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
       - name: Install MIRA
-        run: ./.github/mira-installer-binary.sh -s ubuntu-2204lts-x64 -d mira
-      - name: MIRA Environment
-        run: source $(pwd)/mira/start.bash
+        run: ./.github/mira-installer-binary.sh -s ubuntu-2204lts-x64 -d ${{ github.workspace }}/mira
       - name: Setup ROS 2
         uses: ros-tooling/setup-ros@v0.7
         with:
