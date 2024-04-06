@@ -73,6 +73,7 @@ def generate_launch_description():
         namespace='',
         executable='mira_framework',
         name='mira',
+        output='screen',
         parameters=[configured_params],
         emulate_tty=True
     )

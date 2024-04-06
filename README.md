@@ -1,7 +1,9 @@
 # scitos2
 
-![ROS2](https://img.shields.io/badge/ros2-humble-blue?logo=ros&logoColor=white)
+![ROS2](https://img.shields.io/badge/ros2-rolling-darkgreen?logo=ros&logoColor=white)
 ![License](https://img.shields.io/github/license/grupo-avispa/scitos2)
+[![Build](https://github.com/grupo-avispa/scitos2/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/grupo-avispa/scitos2/actions/workflows/build.yml)
+[![codecov](https://codecov.io/gh/grupo-avispa/scitos2/graph/badge.svg)](https://codecov.io/gh/grupo-avispa/scitos2)
 
 ## Overview
 
@@ -14,19 +16,13 @@
  * [scitos2_modules]: This package implements the MIRA authorities as modules.
  * [scitos2_msgs]: This package contains messages and services related to the Metralabs Scitos robot base.
 
-**Keywords:** ROS, ROS2, metralabs, mira, scitos
-
-**Author: Alberto Tudela<br />**
-
-The `scitos2` package has been tested under [ROS2] Humble on [Ubuntu] 22.04. Please note that this is research code and is subject to frequent changes. Its suitability for any specific purpose is not guaranteed.
-
 ## Installation
 
 ### Building from Source
 
 #### Dependencies
 
-- [Robot Operating System (ROS) 2](https://docs.ros.org/en/humble/) (middleware for robotics)
+- [Robot Operating System (ROS) 2](https://docs.ros.org/en/rolling/) (middleware for robotics)
 - [MIRA](https://www.mira-project.org/) (Metralabs middleware for robotic applications)
 
 #### Building
@@ -36,12 +32,12 @@ To build from source, clone the latest version from this repository into your co
 cd colcon_workspace/src
 git clone https://github.com/grupo-avispa/scitos2.git
 cd ../
-rosdep install -i --from-path src --rosdistro humble -y
+rosdep install -i --from-path src --rosdistro rolling -y
 colcon build --symlink-install
 ```
 
 [Ubuntu]: https://ubuntu.com/
-[ROS2]: https://docs.ros.org/en/humble/
+[ROS2]: https://docs.ros.org/en/rolling/
 [scitos2_behavior_tree]: /scitos2_behavior_tree
 [scitos2_common]: /scitos2_common
 [scitos2_core]: /scitos2_core
