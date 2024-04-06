@@ -1,6 +1,6 @@
 fixes:
-  - "src/scitos2/::"
-  - "install/::"
+  - "ros_ws/src/scitos2/::"
+  - "ros_ws/install/::"
 
 ignore:
   - "*/**/test/*"  # ignore package test directories
