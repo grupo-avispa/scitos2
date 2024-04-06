@@ -1,9 +1,6 @@
-codecov:
-  disable_default_path_fixes: true
-
 fixes:
-  - "ros_ws/src/scitos2/::"
-  - "ros_ws/install/::"
+  - "src/scitos2/::"
+  - "install/::"
 
 ignore:
   - "*/**/test/*"  # ignore package test directories
