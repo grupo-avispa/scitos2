@@ -21,7 +21,7 @@
 
 #include "scitos2_msgs/msg/bumper_status.hpp"
 
-#include "nav2_behavior_tree/utils/test_behavior_tree_fixture.hpp"
+#include "utils/test_behavior_tree_fixture.hpp"
 #include "scitos2_behavior_tree/condition/is_bumper_activated_condition.hpp"
 
 class IsBumperActivatedConditionTestFixture : public ::testing::Test

@@ -22,7 +22,7 @@
 
 #include "behaviortree_cpp_v3/bt_factory.h"
 
-#include "nav2_behavior_tree/utils/test_service.hpp"
+#include "utils/test_service.hpp"
 #include "scitos2_behavior_tree/action/emergency_stop_service.hpp"
 
 class EmergencyStopService : public TestService<scitos2_msgs::srv::EmergencyStop>

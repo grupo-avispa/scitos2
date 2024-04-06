@@ -81,6 +81,10 @@ install(DIRECTORY include/
   DESTINATION include/
 )
 
+install(DIRECTORY test/utils/
+        DESTINATION include/${PROJECT_NAME}/utils/
+)
+
 install(FILES scitos2_tree_nodes.xml DESTINATION share/${PROJECT_NAME})
 install(FILES ${GENERATED_DIR}/plugins_list.hpp DESTINATION include/${PROJECT_NAME})
 

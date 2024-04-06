@@ -1,5 +1,3 @@
-find_package(nav2_behavior_tree REQUIRED)
-
 # Test for the emergency stop service
 ament_add_gtest(test_scitos2_action_emergency_stop_service
   test_emergency_stop_service.cpp
