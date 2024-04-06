@@ -13,6 +13,10 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
+      - name: Cache APT Packages
+        uses: awalsh128/cache-apt-pkgs-action@v1.4.2
+        with:
+          packages: libboost1.74-dev libqwt-qt5-dev libqt5webkit5-dev libqwtmathml-qt5-dev libqt5opengl5-dev libqt5svg5-dev qt*5-dev qttools5-dev-tools
       - name: Download and extract MIRA
         run: |
             curl -o mira.tar.gz https://www.mira-project.org/downloads/MIRA-2023-12-15_r10375.tar.gz
