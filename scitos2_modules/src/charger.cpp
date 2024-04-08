@@ -35,7 +35,8 @@ void Charger::configure(
 
   plugin_name_ = name;
   logger_ = node->get_logger();
-  authority_ = std::make_shared<mira::Authority>("/", plugin_name_);
+  authority_ = std::make_shared<mira::Authority>();
+  authority_->checkin("/", plugin_name_);
 
   // Create ROS publishers
   battery_pub_ = node->create_publisher<sensor_msgs::msg::BatteryState>("battery", 1);
@@ -64,7 +65,6 @@ void Charger::cleanup()
     logger_,
     "Cleaning up module : %s of type scitos2_module::Charger",
     plugin_name_.c_str());
-  authority_->checkout();
   authority_.reset();
   battery_pub_.reset();
   charger_pub_.reset();
@@ -78,6 +78,7 @@ void Charger::activate()
     plugin_name_.c_str());
   battery_pub_->on_activate();
   charger_pub_->on_activate();
+  authority_->start();
 }
 
 void Charger::deactivate()
@@ -86,6 +87,7 @@ void Charger::deactivate()
     logger_,
     "Deactivating module : %s of type scitos2_module::Charger",
     plugin_name_.c_str());
+  authority_->checkout();
   battery_pub_->on_deactivate();
   charger_pub_->on_deactivate();
 }

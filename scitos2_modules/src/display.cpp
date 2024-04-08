@@ -34,7 +34,8 @@ void Display::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
   plugin_name_ = name;
   logger_ = node->get_logger();
   clock_ = node->get_clock();
-  authority_ = std::make_shared<mira::Authority>("/", name);
+  authority_ = std::make_shared<mira::Authority>();
+  authority_->checkin("/", plugin_name_);
 
   // Create publisher
   display_data_pub_ = node->create_publisher<scitos2_msgs::msg::MenuEntry>("user_menu_selected", 1);
@@ -101,7 +102,6 @@ void Display::cleanup()
     logger_,
     "Cleaning up module : %s of type scitos2_module::Display",
     plugin_name_.c_str());
-  authority_->checkout();
   authority_.reset();
   display_data_pub_.reset();
 }
@@ -113,6 +113,7 @@ void Display::activate()
     "Activating module : %s of type scitos2_module::Display",
     plugin_name_.c_str());
   display_data_pub_->on_activate();
+  authority_->start();
 }
 
 void Display::deactivate()
@@ -121,6 +122,7 @@ void Display::deactivate()
     logger_,
     "Deactivating module : %s of type scitos2_module::Display",
     plugin_name_.c_str());
+  authority_->checkout();
   display_data_pub_->on_deactivate();
 }
 

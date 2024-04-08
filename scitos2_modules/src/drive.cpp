@@ -40,10 +40,12 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
     throw std::runtime_error("Unable to lock node!");
   }
 
+  is_active_ = false;
   plugin_name_ = name;
   logger_ = node->get_logger();
   clock_ = node->get_clock();
-  authority_ = std::make_shared<mira::Authority>("/", name);
+  authority_ = std::make_shared<mira::Authority>();
+  authority_->checkin("/", plugin_name_);
 
   // Create ROS publishers
   auto latched_profile = rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable();
@@ -161,7 +163,6 @@ void Drive::cleanup()
     logger_,
     "Cleaning up module : %s of type scitos2_module::Drive",
     plugin_name_.c_str());
-  authority_->checkout();
   authority_.reset();
   bumper_pub_.reset();
   bumper_markers_pub_.reset();
@@ -188,6 +189,8 @@ void Drive::activate()
   mileage_pub_->on_activate();
   odometry_pub_->on_activate();
   rfid_pub_->on_activate();
+  authority_->start();
+  is_active_ = true;
 }
 
 void Drive::deactivate()
@@ -196,6 +199,7 @@ void Drive::deactivate()
     logger_,
     "Deactivating module : %s of type scitos2_module::Drive",
     plugin_name_.c_str());
+  authority_->checkout();
   bumper_pub_->on_deactivate();
   bumper_markers_pub_->on_deactivate();
   drive_status_pub_->on_deactivate();
@@ -204,6 +208,7 @@ void Drive::deactivate()
   mileage_pub_->on_deactivate();
   odometry_pub_->on_deactivate();
   rfid_pub_->on_deactivate();
+  is_active_ = false;
 }
 
 rcl_interfaces::msg::SetParametersResult Drive::dynamicParametersCallback(
@@ -309,7 +314,7 @@ void Drive::rfidStatusCallback(mira::ChannelRead<uint64> data)
 
 void Drive::velocityCommandCallback(const geometry_msgs::msg::Twist & msg)
 {
-  if (!emergency_stop_activated_) {
+  if (!emergency_stop_activated_ && is_active_) {
     mira::Velocity2 speed(msg.linear.x, 0, msg.angular.z);
     call_mira_service(authority_, "setVelocity", std::optional<mira::Velocity2>(speed));
   }

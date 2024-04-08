@@ -33,7 +33,8 @@ void EBC::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std
 
   plugin_name_ = name;
   logger_ = node->get_logger();
-  authority_ = std::make_shared<mira::Authority>("/", plugin_name_);
+  authority_ = std::make_shared<mira::Authority>();
+  authority_->checkin("/", plugin_name_);
 
   bool port_enabled;
   nav2_util::declare_parameter_if_not_declared(
@@ -271,7 +272,6 @@ void EBC::cleanup()
     logger_,
     "Cleaning up module : %s of type scitos2_module::EBC",
     plugin_name_.c_str());
-  authority_->checkout();
   authority_.reset();
 }
 
@@ -281,6 +281,7 @@ void EBC::activate()
     logger_,
     "Activating module : %s of type scitos2_module::EBC",
     plugin_name_.c_str());
+  authority_->start();
 }
 
 void EBC::deactivate()
@@ -289,6 +290,7 @@ void EBC::deactivate()
     logger_,
     "Deactivating module : %s of type scitos2_module::EBC",
     plugin_name_.c_str());
+  authority_->checkout();
 }
 
 rcl_interfaces::msg::SetParametersResult EBC::dynamicParametersCallback(

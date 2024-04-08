@@ -360,6 +360,7 @@ protected:
   std::string base_frame_;
   bool emergency_stop_activated_;
   scitos2_msgs::msg::BarrierStatus barrier_status_;
+  bool is_active_;
 
   // Bumper
   bool bumper_activated_;

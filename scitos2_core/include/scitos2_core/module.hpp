@@ -82,6 +82,14 @@ protected:
       return false;
     }
 
+    // Check if the authority is valid or if the service exists
+    if (!sharedAuthority->isValid() || !sharedAuthority->existsService("/robot/Robot")) {
+      RCLCPP_ERROR_ONCE(
+        rclcpp::get_logger("MIRA"),
+        "MIRA authority is not valid or service does not exist");
+      return false;
+    }
+
     try {
       mira::RPCFuture<void> rpc = sharedAuthority->callService<void>("/robot/Robot", service_name);
       rpc.timedWait(mira::Duration::seconds(1));
@@ -112,6 +120,14 @@ protected:
     // Convert weak_ptr to shared_ptr
     auto sharedAuthority = authority.lock();
     if (!sharedAuthority) {
+      return false;
+    }
+
+    // Check if the authority is valid or if the service exists
+    if (!sharedAuthority->isValid() || !sharedAuthority->existsService("/robot/Robot")) {
+      RCLCPP_ERROR_ONCE(
+        rclcpp::get_logger("MIRA"),
+        "MIRA authority is not valid or service does not exist");
       return false;
     }
 
@@ -151,6 +167,15 @@ protected:
     if (!sharedAuthority) {
       return false;
     }
+
+    // Check if the authority is valid or if the service exists
+    if (!sharedAuthority->isValid() || !sharedAuthority->existsService("/robot/Robot")) {
+      RCLCPP_ERROR_ONCE(
+        rclcpp::get_logger("MIRA"),
+        "MIRA authority is not valid or service does not exist");
+      return false;
+    }
+
     try {
       mira::RPCFuture<void> rpc = sharedAuthority->callService<void>(
         "/robot/Robot#builtin", std::string("setProperty"), param_name, value);
@@ -181,6 +206,15 @@ protected:
     if (!sharedAuthority) {
       return "";
     }
+
+    // Check if the authority is valid or if the service exists
+    if (!sharedAuthority->isValid() || !sharedAuthority->existsService("/robot/Robot")) {
+      RCLCPP_ERROR_ONCE(
+        rclcpp::get_logger("MIRA"),
+        "MIRA authority is not valid or service does not exist");
+      return "";
+    }
+
     try {
       mira::RPCFuture<std::string> rpc = sharedAuthority->callService<std::string>(
         "/robot/Robot#builtin", std::string("getProperty"), param_name);

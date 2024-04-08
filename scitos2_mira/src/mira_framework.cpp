@@ -28,6 +28,7 @@ namespace scitos2_mira
 
 MiraFramework::MiraFramework(const rclcpp::NodeOptions & options)
 : nav2_util::LifecycleNode("scitos_mira", "", options),
+  loaded_(false),
   module_loader_("scitos2_core", "scitos2_core::Module"),
   default_ids_{"drive"},
   default_types_{"scitos2_modules::Drive"}
@@ -47,6 +48,7 @@ MiraFramework::~MiraFramework()
   if (framework_->isTerminationRequested()) {
     RCLCPP_INFO(get_logger(), "Stopping MIRA framework...");
   }
+  framework_.reset();
 }
 
 nav2_util::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::State &)
@@ -62,12 +64,17 @@ nav2_util::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::St
     rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Configuration of the robot in XML format"));
   this->get_parameter("scitos_config", config);
-  if (!config.empty()) {
-    RCLCPP_INFO(get_logger(), "Loaded scitos config: %s", config.c_str());
-    framework_->load(config);
+  if (!loaded_) {
+    if (!config.empty()) {
+      RCLCPP_INFO(get_logger(), "Loaded scitos config: %s", config.c_str());
+      framework_->load(config);
+      loaded_ = true;
+    } else {
+      RCLCPP_ERROR(get_logger(), "Can't read parameter 'scitos_config'");
+      return nav2_util::CallbackReturn::FAILURE;
+    }
   } else {
-    RCLCPP_ERROR(get_logger(), "Can't read parameter 'scitos_config'");
-    return nav2_util::CallbackReturn::FAILURE;
+    RCLCPP_WARN(get_logger(), "Already loaded scitos config");
   }
 
   nav2_util::declare_parameter_if_not_declared(
@@ -113,8 +120,6 @@ nav2_util::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::St
     get_logger(),
     "MIRA framework has %s modules available.", module_ids_concat_.c_str());
 
-  framework_->start();
-
   return nav2_util::CallbackReturn::SUCCESS;
 }
 
@@ -127,6 +132,9 @@ nav2_util::CallbackReturn MiraFramework::on_activate(const rclcpp_lifecycle::Sta
   for (it = modules_.begin(); it != modules_.end(); ++it) {
     it->second->activate();
   }
+
+  // Start the MIRA framework
+  framework_->start();
 
   // Create bond connection
   createBond();

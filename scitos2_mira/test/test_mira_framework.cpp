@@ -32,11 +32,19 @@ TEST(ScitosMiraFrameworkTest, configure) {
   // Create the node
   auto node = std::make_shared<MiraFrameworkFixture>();
 
-  // Set the scitos config parameter. In the the robot this should be a XML file
-  std::string pkg = ament_index_cpp::get_package_share_directory("scitos2_mira");
+  // Set an empty scitos config parameter
+  nav2_util::declare_parameter_if_not_declared(node, "scitos_config", rclcpp::ParameterValue(""));
 
-  nav2_util::declare_parameter_if_not_declared(
-    node, "scitos_config", rclcpp::ParameterValue(pkg + "/test/scitos_config.xml"));
+  // Configure the node
+  node->configure();
+  node->activate();
+
+  // Check results: the node should be in the unconfigured state as scitos_config plugins is empty
+  EXPECT_EQ(node->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED);
+
+  // Now, set the scitos config parameter. In the the robot this should be a XML file
+  std::string pkg = ament_index_cpp::get_package_share_directory("scitos2_mira");
+  node->set_parameter(rclcpp::Parameter("scitos_config", pkg + "/test/scitos_config.xml"));
 
   // Configure the node
   node->configure();
@@ -49,17 +57,13 @@ TEST(ScitosMiraFrameworkTest, configure) {
   node->deactivate();
   node->cleanup();
 
-  // Now, set the module plugins as empty
-  node->set_parameter(rclcpp::Parameter("scitos_config", ""));
-
-  // Configure the node
+  // We configure again to show the warning
   node->configure();
   node->activate();
 
-  // Check results: the node should be in the unconfigured state as scitos_config plugins is empty
-  EXPECT_EQ(node->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED);
-
-  node->shutdown();
+  // Cleaning up
+  node->deactivate();
+  node->cleanup();
 }
 
 int main(int argc, char ** argv)
