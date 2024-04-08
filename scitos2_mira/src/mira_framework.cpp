@@ -83,6 +83,16 @@ nav2_util::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::St
     rcl_interfaces::msg::ParameterDescriptor()
     .set__description("List of the modules exposed by the node"));
   this->get_parameter("module_plugins", module_ids_);
+
+  // Print the list of modules
+  for (size_t i = 0; i != module_ids_.size(); ++i) {
+    RCLCPP_INFO(get_logger(), "Module: %s", module_ids_[i].c_str());
+  }
+
+  for (size_t i = 0; i != default_ids_.size(); ++i) {
+    RCLCPP_INFO(get_logger(), "Default module: %s", default_ids_[i].c_str());
+  }
+
   if (module_ids_ == default_ids_) {
     for (size_t i = 0; i != default_ids_.size(); ++i) {
       nav2_util::declare_parameter_if_not_declared(

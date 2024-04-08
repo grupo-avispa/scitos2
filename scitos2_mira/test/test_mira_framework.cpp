@@ -21,6 +21,14 @@
 #include "scitos2_mira/mira_framework.hpp"
 #include "scitos2_core/module.hpp"
 
+class MiraFrameworkFixture : public scitos2_mira::MiraFramework
+{
+public:
+  MiraFrameworkFixture()
+  : scitos2_mira::MiraFramework(rclcpp::NodeOptions())
+  {}
+};
+
 class DummyModule : public scitos2_core::Module
 {
 public:
@@ -50,7 +58,7 @@ template<>
 pluginlib::UniquePtr<scitos2_core::Module> pluginlib::ClassLoader<scitos2_core::Module>::
 createUniqueInstance(const std::string & lookup_name)
 {
-  if (lookup_name != "DummyModule") {
+  if (lookup_name != "drive") {
     // original method body
     if (!isClassLoaded(lookup_name)) {
       loadLibraryForClass(lookup_name);
@@ -73,7 +81,7 @@ createUniqueInstance(const std::string & lookup_name)
 
 TEST(ScitosMiraFrameworkTest, configure) {
   // Create the node
-  auto node = std::make_shared<scitos2_mira::MiraFramework>();
+  auto node = std::make_shared<MiraFrameworkFixture>();
 
   // Set an empty scitos config parameter
   nav2_util::declare_parameter_if_not_declared(node, "scitos_config", rclcpp::ParameterValue(""));
@@ -92,9 +100,9 @@ TEST(ScitosMiraFrameworkTest, configure) {
       "scitos_config", rclcpp::ParameterValue(std::string(pkg + "/test/scitos_config.xml"))));
   nav2_util::declare_parameter_if_not_declared(
     node, "module_plugins",
-    rclcpp::ParameterValue(std::vector<std::string>(1, "DummyModule")));
+    rclcpp::ParameterValue(std::vector<std::string>(1, "drive")));
   nav2_util::declare_parameter_if_not_declared(
-    node, "DummyModule.plugin", rclcpp::ParameterValue("DummyModule"));
+    node, "drive.plugin", rclcpp::ParameterValue("drive"));
 
   // Configure the node
   node->configure();
