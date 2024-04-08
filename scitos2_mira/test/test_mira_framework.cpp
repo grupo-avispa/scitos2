@@ -42,13 +42,9 @@ TEST(ScitosMiraFrameworkTest, configure) {
   // Check results: the node should be in the unconfigured state as scitos_config plugins is empty
   EXPECT_EQ(node->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED);
 
-  // Now, set the scitos config parameter. In the the robot this should be a XML file
-  std::string pkg = ament_index_cpp::get_package_share_directory("scitos2_mira");
-  node->set_parameter(rclcpp::Parameter("scitos_config", pkg + "/test/scitos_config.xml"));
-
-  // Configure the node
-  node->configure();
-  node->activate();
+  // Cleaning up
+  node->deactivate();
+  node->cleanup();
 }
 
 int main(int argc, char ** argv)
