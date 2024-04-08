@@ -8,4 +8,5 @@ Changelog for package scitos2_modules
 * Remove CMakeLists.mira and added dependency to scitos2_common.
 * Rename drive services.
 * Added unit testing.
+* Added footprint to Drive module for visualization.
 * Contributors: Alberto Tudela.

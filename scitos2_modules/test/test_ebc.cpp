@@ -26,6 +26,7 @@ public:
 };
 
 TEST(ScitosEBCTest, configure) {
+  rclcpp::init(0, nullptr);
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testEBC");
 
   // Create the module
@@ -36,9 +37,11 @@ TEST(ScitosEBCTest, configure) {
   // Cleaning up
   module->deactivate();
   module->cleanup();
+  rclcpp::shutdown();
 }
 
 TEST(ScitosEBCTest, dynamicParameters) {
+  rclcpp::init(0, nullptr);
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testEBC");
 
   // Create the module
@@ -98,10 +101,12 @@ TEST(ScitosEBCTest, dynamicParameters) {
   // Cleaning up
   module->deactivate();
   module->cleanup();
+  rclcpp::shutdown();
 }
 
 
 TEST(ScitosEBCTest, dynamicParametersOutRange) {
+  rclcpp::init(0, nullptr);
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testEBC");
 
   // Create the module
@@ -161,15 +166,14 @@ TEST(ScitosEBCTest, dynamicParametersOutRange) {
   // Cleaning up
   module->deactivate();
   module->cleanup();
+  rclcpp::shutdown();
 }
 
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
-  rclcpp::init(argc, argv);
-  mira::Framework framework(argc, argv);
+  mira::Framework framework(0, nullptr);
   framework.start();
   bool success = RUN_ALL_TESTS();
-  rclcpp::shutdown();
   return success;
 }

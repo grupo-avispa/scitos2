@@ -261,6 +261,20 @@ protected:
    */
   visualization_msgs::msg::MarkerArray createBumperMarkers();
 
+/**
+ * @brief Create a circular footprint from a given radius
+ */
+  std::vector<geometry_msgs::msg::Point> makeFootprintFromRadius(double radius);
+
+/**
+ * @brief Make the footprint from the given string.
+ *
+ * Format should be bracketed array of arrays of floats, like so: [[1.0, 2.2], [3.3, 4.2], ...]
+ *
+ */
+  bool makeFootprintFromString(
+    const std::string & footprint_string, std::vector<geometry_msgs::msg::Point> & footprint);
+
   /**
    * @brief Callback executed when a parameter change is detected.
    * @param event ParameterEvent message
@@ -367,6 +381,10 @@ protected:
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Time last_bumper_reset_;
   rclcpp::Duration reset_bumper_interval_{0, 0};
+  bool use_radius_{false};
+  std::string footprint_;
+  double robot_radius_;
+  std::vector<geometry_msgs::msg::Point> unpadded_footprint_;
 
   // TF
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;

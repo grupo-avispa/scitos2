@@ -19,6 +19,7 @@
 
 // ROS
 #include "nav2_util/node_utils.hpp"
+#include "nav2_util/array_parser.hpp"
 #include "pluginlib/class_list_macros.hpp"
 #include "geometry_msgs/msg/quaternion.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
@@ -128,8 +129,7 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
     .set__description("Publish the odometry as a tf2 transform"));
   node->get_parameter(plugin_name_ + ".publish_tf", publish_tf_);
   RCLCPP_INFO(
-    logger_, "The parameter publish_tf_ is set to: [%s]",
-    publish_tf_ ? "true" : "false");
+    logger_, "The parameter publish_tf_ is set to: [%s]", publish_tf_ ? "true" : "false");
 
   int rbi = 0;
   nav2_util::declare_parameter_if_not_declared(
@@ -142,6 +142,36 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
 
   set_mira_param(
     authority_, "MainControlUnit.RearLaser.Enabled", magnetic_barrier_enabled ? "true" : "false");
+
+  nav2_util::declare_parameter_if_not_declared(
+    node, plugin_name_ + ".footprint",
+    rclcpp::ParameterValue(""), rcl_interfaces::msg::ParameterDescriptor()
+    .set__description("The footprint of the robot"));
+  node->get_parameter(plugin_name_ + ".footprint", footprint_);
+  RCLCPP_INFO(logger_, "The parameter footprint is set to: [%s]", footprint_);
+
+  nav2_util::declare_parameter_if_not_declared(
+    node, plugin_name_ + ".robot_radius",
+    rclcpp::ParameterValue(0.5), rcl_interfaces::msg::ParameterDescriptor()
+    .set__description("The radius of the robot"));
+  node->get_parameter(plugin_name_ + ".robot_radius", robot_radius_);
+  RCLCPP_INFO(logger_, "The parameter robot_radius is set to: [%f]", robot_radius_);
+
+  // If the footprint has been specified, it must be in the correct format
+  use_radius_ = true;
+  if (footprint_ != "" && footprint_ != "[]") {
+    // Footprint parameter has been specified, try to convert it
+    if (makeFootprintFromString(footprint_, unpadded_footprint_)) {
+      // The specified footprint is valid, so we'll use that instead of the radius
+      use_radius_ = false;
+    } else {
+      // Footprint provided but invalid, so stay with the radius
+      unpadded_footprint_ = makeFootprintFromRadius(robot_radius_);
+      RCLCPP_ERROR(
+        logger_, "The footprint parameter is invalid: \"%s\", using radius (%lf) instead",
+        footprint_.c_str(), robot_radius_);
+    }
+  }
 
   // Callback for monitor changes in parameters
   dyn_params_handler_ = node->add_on_set_parameters_callback(
@@ -411,35 +441,72 @@ visualization_msgs::msg::MarkerArray Drive::createBumperMarkers()
     cylinder.color.a = 1.0;
   }
 
-  // Left bumper
-  cylinder.id = 0;
-  cylinder.pose.position.x = -0.10;
-  cylinder.pose.position.y = 0.20;
-  cylinder.pose.orientation = tf2::toMsg(tf2::Quaternion({0, 1, 0}, M_PI / 2.0));
-  markers_msg.markers.push_back(cylinder);
-
-  // Right bumper
-  cylinder.id = 1;
-  cylinder.pose.position.x = -0.10;
-  cylinder.pose.position.y = -0.20;
-  cylinder.pose.orientation = tf2::toMsg(tf2::Quaternion({0, 1, 0}, M_PI / 2.0));
-  markers_msg.markers.push_back(cylinder);
-
-  // Front bumper
-  cylinder.id = 2;
-  cylinder.pose.position.y = 0.0;
-  cylinder.pose.position.x = 0.15;
-  cylinder.pose.orientation = tf2::toMsg(tf2::Quaternion({1, 0, 0}, M_PI / 2.0));
-  markers_msg.markers.push_back(cylinder);
-
-  // Rear bumper
-  cylinder.id = 3;
-  cylinder.pose.position.y = 0.0;
-  cylinder.pose.position.x = -0.35;
-  cylinder.pose.orientation = tf2::toMsg(tf2::Quaternion({1, 0, 0}, M_PI / 2.0));
-  markers_msg.markers.push_back(cylinder);
+  // Create the markers using the footprint
+  for (size_t i = 0; i < unpadded_footprint_.size(); ++i) {
+    cylinder.id = i + 4;
+    cylinder.pose.position.x = unpadded_footprint_[i].x;
+    cylinder.pose.position.y = unpadded_footprint_[i].y;
+    markers_msg.markers.push_back(cylinder);
+  }
 
   return markers_msg;
+}
+
+std::vector<geometry_msgs::msg::Point> Drive::makeFootprintFromRadius(double radius)
+{
+  std::vector<geometry_msgs::msg::Point> points;
+
+  // Loop over 16 angles around a circle making a point each time
+  int N = 16;
+  geometry_msgs::msg::Point pt;
+  for (int i = 0; i < N; ++i) {
+    double angle = i * 2 * M_PI / N;
+    pt.x = cos(angle) * radius;
+    pt.y = sin(angle) * radius;
+
+    points.push_back(pt);
+  }
+
+  return points;
+}
+
+bool Drive::makeFootprintFromString(
+  const std::string & footprint_string, std::vector<geometry_msgs::msg::Point> & footprint)
+{
+  std::string error;
+  std::vector<std::vector<float>> vvf = nav2_util::parseVVF(footprint_string, error);
+
+  if (error != "") {
+    RCLCPP_ERROR(logger_, "Error parsing footprint parameter: '%s'", error.c_str());
+    RCLCPP_ERROR(logger_, "Footprint string was '%s'.", footprint_string.c_str());
+    return false;
+  }
+
+  // Convert vvf into points.
+  if (vvf.size() < 3) {
+    RCLCPP_ERROR(
+      logger_,
+      "You must specify at least three points for the robot footprint, reverting to previous footprint."); //NOLINT
+    return false;
+  }
+  footprint.reserve(vvf.size());
+  for (unsigned int i = 0; i < vvf.size(); i++) {
+    if (vvf[i].size() == 2) {
+      geometry_msgs::msg::Point point;
+      point.x = vvf[i][0];
+      point.y = vvf[i][1];
+      point.z = 0;
+      footprint.push_back(point);
+    } else {
+      RCLCPP_ERROR(
+        logger_,
+        "Points in the footprint specification must be pairs of numbers. Found a point with %d numbers.", //NOLINT
+        static_cast<int>(vvf[i].size()));
+      return false;
+    }
+  }
+
+  return true;
 }
 
 bool Drive::isEmergencyStopReleased(scitos2_msgs::msg::EmergencyStopStatus msg)
