@@ -19,7 +19,6 @@
 
 // ROS
 #include "nav2_util/node_utils.hpp"
-#include "nav2_util/array_parser.hpp"
 #include "pluginlib/class_list_macros.hpp"
 #include "geometry_msgs/msg/quaternion.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
@@ -148,7 +147,7 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
     rclcpp::ParameterValue(""), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("The footprint of the robot"));
   node->get_parameter(plugin_name_ + ".footprint", footprint_);
-  RCLCPP_INFO(logger_, "The parameter footprint is set to: [%s]", footprint_);
+  RCLCPP_INFO(logger_, "The parameter footprint is set to: [%s]", footprint_.c_str());
 
   nav2_util::declare_parameter_if_not_declared(
     node, plugin_name_ + ".robot_radius",
@@ -474,7 +473,7 @@ bool Drive::makeFootprintFromString(
   const std::string & footprint_string, std::vector<geometry_msgs::msg::Point> & footprint)
 {
   std::string error;
-  std::vector<std::vector<float>> vvf = nav2_util::parseVVF(footprint_string, error);
+  std::vector<std::vector<float>> vvf = parseVVF(footprint_string, error);
 
   if (error != "") {
     RCLCPP_ERROR(logger_, "Error parsing footprint parameter: '%s'", error.c_str());
@@ -599,6 +598,69 @@ scitos2_msgs::msg::BarrierStatus Drive::miraToRosBarrierStatus(
   barrier.barrier_stopped = true;
   barrier.last_detection_stamp = rclcpp::Time(timestamp.toUnixNS());
   return barrier;
+}
+
+std::vector<std::vector<float>> Drive::parseVVF(
+  const std::string & input,
+  std::string & error_return)
+{
+  std::vector<std::vector<float>> result;
+
+  std::stringstream input_ss(input);
+  int depth = 0;
+  std::vector<float> current_vector;
+  while (!!input_ss && !input_ss.eof()) {
+    switch (input_ss.peek()) {
+      case EOF:
+        break;
+      case '[':
+        depth++;
+        if (depth > 2) {
+          error_return = "Array depth greater than 2";
+          return result;
+        }
+        input_ss.get();
+        current_vector.clear();
+        break;
+      case ']':
+        depth--;
+        if (depth < 0) {
+          error_return = "More close ] than open [";
+          return result;
+        }
+        input_ss.get();
+        if (depth == 1) {
+          result.push_back(current_vector);
+        }
+        break;
+      case ',':
+      case ' ':
+      case '\t':
+        input_ss.get();
+        break;
+      default:  // All other characters should be part of the numbers.
+        if (depth != 2) {
+          std::stringstream err_ss;
+          err_ss << "Numbers at depth other than 2. Char was '" << char(input_ss.peek()) << "'.";
+          error_return = err_ss.str();
+          return result;
+        }
+        float value;
+        input_ss >> value;
+        if (!!input_ss) {
+          current_vector.push_back(value);
+        }
+        break;
+    }
+  }
+
+  if (depth != 0) {
+    error_return = "Unterminated vector string.";
+  } else {
+    error_return = "";
+  }
+
+  return result;
 }
 
 }  // namespace scitos2_modules
