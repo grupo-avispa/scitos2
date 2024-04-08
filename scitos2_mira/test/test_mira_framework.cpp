@@ -19,18 +19,61 @@
 #include "lifecycle_msgs/msg/state.hpp"
 #include "nav2_util/node_utils.hpp"
 #include "scitos2_mira/mira_framework.hpp"
+#include "scitos2_core/module.hpp"
 
-class MiraFrameworkFixture : public scitos2_mira::MiraFramework
+class DummyModule : public scitos2_core::Module
 {
 public:
-  MiraFrameworkFixture()
-  : scitos2_mira::MiraFramework(rclcpp::NodeOptions())
-  {}
+  DummyModule() {}
+
+  ~DummyModule() {}
+
+  virtual void configure(
+    const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std::string name) {}
+
+  virtual void cleanup() {}
+
+  virtual void activate() {}
+
+  virtual void deactivate() {}
 };
+
+// Mocked class loader
+void onPluginDeletion(scitos2_core::Module * obj)
+{
+  if (nullptr != obj) {
+    delete (obj);
+  }
+}
+
+template<>
+pluginlib::UniquePtr<scitos2_core::Module> pluginlib::ClassLoader<scitos2_core::Module>::
+createUniqueInstance(const std::string & lookup_name)
+{
+  if (lookup_name != "DummyModule") {
+    // original method body
+    if (!isClassLoaded(lookup_name)) {
+      loadLibraryForClass(lookup_name);
+    }
+    try {
+      std::string class_type = getClassType(lookup_name);
+      pluginlib::UniquePtr<scitos2_core::Module> obj =
+        lowlevel_class_loader_.createUniqueInstance<scitos2_core::Module>(class_type);
+      return obj;
+    } catch (const class_loader::CreateClassException & ex) {
+      throw pluginlib::CreateClassException(ex.what());
+    }
+  }
+
+  // mocked plugin creation
+  return std::unique_ptr<scitos2_core::Module,
+           class_loader::ClassLoader::DeleterType<scitos2_core::Module>>(
+    new DummyModule(), onPluginDeletion);
+}
 
 TEST(ScitosMiraFrameworkTest, configure) {
   // Create the node
-  auto node = std::make_shared<MiraFrameworkFixture>();
+  auto node = std::make_shared<scitos2_mira::MiraFramework>();
 
   // Set an empty scitos config parameter
   nav2_util::declare_parameter_if_not_declared(node, "scitos_config", rclcpp::ParameterValue(""));
@@ -42,9 +85,36 @@ TEST(ScitosMiraFrameworkTest, configure) {
   // Check results: the node should be in the unconfigured state as scitos_config plugins is empty
   EXPECT_EQ(node->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED);
 
+  // Now, set the scitos config parameter. In the the robot this should be a XML file
+  std::string pkg = ament_index_cpp::get_package_share_directory("scitos2_mira");
+  node->set_parameter(
+    rclcpp::Parameter(
+      "scitos_config", rclcpp::ParameterValue(std::string(pkg + "/test/scitos_config.xml"))));
+  nav2_util::declare_parameter_if_not_declared(
+    node, "module_plugins",
+    rclcpp::ParameterValue(std::vector<std::string>(1, "DummyModule")));
+  nav2_util::declare_parameter_if_not_declared(
+    node, "DummyModule.plugin", rclcpp::ParameterValue("DummyModule"));
+
+  // Configure the node
+  node->configure();
+  node->activate();
+
+  // Check results: the node should be in the active state
+  EXPECT_EQ(node->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE);
+
   // Cleaning up
   node->deactivate();
   node->cleanup();
+
+  // Configure the node again to warn that the scitos config is already loaded
+  node->configure();
+  node->activate();
+
+  // Cleaning up
+  node->deactivate();
+  node->cleanup();
+  node->shutdown();
 }
 
 int main(int argc, char ** argv)
