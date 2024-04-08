@@ -211,6 +211,7 @@ void Drive::cleanup()
   reset_motor_stop_service_.reset();
   reset_odometry_service_.reset();
   suspend_bumper_service_.reset();
+  tf_broadcaster_.reset();
 }
 
 void Drive::activate()
