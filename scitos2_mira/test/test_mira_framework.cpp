@@ -15,6 +15,7 @@
 
 #include "gtest/gtest.h"
 #include "rclcpp/rclcpp.hpp"
+#include <ament_index_cpp/get_package_share_directory.hpp>
 #include "lifecycle_msgs/msg/state.hpp"
 #include "nav2_util/node_utils.hpp"
 #include "scitos2_mira/mira_framework.hpp"
@@ -30,6 +31,14 @@ public:
 TEST(ScitosMiraFrameworkTest, configure) {
   // Create the node
   auto node = std::make_shared<MiraFrameworkFixture>();
+
+  // Set the scitos config parameter. In the the robot this should be a XML file
+  std::string pkg = ament_index_cpp::get_package_share_directory("scitos2_mira");
+
+  nav2_util::declare_parameter_if_not_declared(
+    node, "scitos_config", rclcpp::ParameterValue(pkg + "/test/scitos_config.xml"));
+
+  // Configure the node
   node->configure();
   node->activate();
 

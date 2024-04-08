@@ -11,7 +11,7 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  #add_compile_options(-Wall -Wextra -Wpedantic -Werror -Wdeprecated -fPIC -Wshadow -Wnull-dereference)
+  # add_compile_options(-Wall -Wextra -Wpedantic -Werror -Wdeprecated -fPIC -Wshadow -Wnull-dereference)
   add_compile_options(-Wall -Wextra)
   add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-Wnon-virtual-dtor>")
 endif()
@@ -87,11 +87,16 @@ install(DIRECTORY launch params
   DESTINATION share/${PROJECT_NAME}/
 )
 
+install(FILES test/scitos_config.xml
+  DESTINATION share/${PROJECT_NAME}/test
+)
+
 # ###########
 # Testing  ##
 # ###########
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
+
   # the following line skips the linter which checks for copyrights
   set(ament_cmake_copyright_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
