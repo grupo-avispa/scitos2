@@ -15,17 +15,18 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-Wnon-virtual-dtor>")
 endif()
 
-################################################
-## Find  dependencies                         ##
-################################################
-## Find ament macros and libraries
+# ###############################################
+# # Find  dependencies                         ##
+# ###############################################
+# # Find ament macros and libraries
 find_package(ament_cmake REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(builtin_interfaces REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
 
-################################################
-## Declare ROS messages, services and actions ##
-################################################
+# ###############################################
+# # Declare ROS messages, services and actions ##
+# ###############################################
 set(msg_files
   "msg/BarrierStatus.msg"
   "msg/BatteryState.msg"
@@ -52,30 +53,11 @@ set(srv_files
 rosidl_generate_interfaces(${PROJECT_NAME}
   ${msg_files}
   ${srv_files}
-  DEPENDENCIES std_msgs
+  DEPENDENCIES std_msgs builtin_interfaces
 )
 
-###########
-## Build ##
-###########
-
-#############
-## Install ##
-#############
-
-# ############
-# # Testing ##
-# ############
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-
-  # the following line skips the linter which checks for copyrights
-  set(ament_cmake_copyright_FOUND TRUE)
-  ament_lint_auto_find_test_dependencies()
-endif()
-
-###################################
-## ament specific configuration ##
-###################################
+# ##################################
+# # ament specific configuration ##
+# ##################################
 ament_export_dependencies(rosidl_default_runtime)
 ament_package()
