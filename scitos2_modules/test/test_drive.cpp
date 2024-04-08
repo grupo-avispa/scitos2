@@ -142,6 +142,9 @@ TEST(ScitosDriveTest, configure) {
   // Cleaning up
   module->deactivate();
   module->cleanup();
+  node->deactivate();
+  node->cleanup();
+  node->shutdown();
 
   rclcpp::shutdown();
 }
@@ -175,6 +178,9 @@ TEST(ScitosDriveTest, dynamicParameters) {
   // Cleaning up
   module->deactivate();
   module->cleanup();
+  node->deactivate();
+  node->cleanup();
+  node->shutdown();
   rclcpp::shutdown();
 }
 
@@ -211,6 +217,9 @@ TEST(ScitosDriveTest, changeForce) {
   // Cleaning up
   module->deactivate();
   module->cleanup();
+  node->deactivate();
+  node->cleanup();
+  node->shutdown();
   rclcpp::shutdown();
 }
 
@@ -246,6 +255,9 @@ TEST(ScitosDriveTest, emergencyStop) {
   // Cleaning up
   module->deactivate();
   module->cleanup();
+  node->deactivate();
+  node->cleanup();
+  node->shutdown();
   rclcpp::shutdown();
 }
 
@@ -282,6 +294,9 @@ TEST(ScitosDriveTest, enableMotors) {
   // Cleaning up
   module->deactivate();
   module->cleanup();
+  node->deactivate();
+  node->cleanup();
+  node->shutdown();
   rclcpp::shutdown();
 }
 
@@ -318,6 +333,9 @@ TEST(ScitosDriveTest, enableRfid) {
   // Cleaning up
   module->deactivate();
   module->cleanup();
+  node->deactivate();
+  node->cleanup();
+  node->shutdown();
   rclcpp::shutdown();
 }
 
@@ -353,6 +371,9 @@ TEST(ScitosDriveTest, resetBarrierStop) {
   // Cleaning up
   module->deactivate();
   module->cleanup();
+  node->deactivate();
+  node->cleanup();
+  node->shutdown();
   rclcpp::shutdown();
 }
 
@@ -388,6 +409,9 @@ TEST(ScitosDriveTest, resetMotorStop) {
   // Cleaning up
   module->deactivate();
   module->cleanup();
+  node->deactivate();
+  node->cleanup();
+  node->shutdown();
   rclcpp::shutdown();
 }
 
@@ -423,6 +447,9 @@ TEST(ScitosDriveTest, resetOdometry) {
   // Cleaning up
   module->deactivate();
   module->cleanup();
+  node->deactivate();
+  node->cleanup();
+  node->shutdown();
   rclcpp::shutdown();
 }
 
@@ -458,6 +485,9 @@ TEST(ScitosDriveTest, suspendBumper) {
   // Cleaning up
   module->deactivate();
   module->cleanup();
+  node->deactivate();
+  node->cleanup();
+  node->shutdown();
   rclcpp::shutdown();
 }
 
@@ -734,7 +764,13 @@ TEST(ScitosDriveTest, odometryPublisher) {
 
   // Cleaning up
   module->deactivate();
+  drive_node->deactivate();
   sub_node->deactivate();
+  module->cleanup();
+  drive_node->cleanup();
+  sub_node->cleanup();
+  drive_node->shutdown();
+  sub_node->shutdown();
   rclcpp::shutdown();
   // Have to join thread after rclcpp is shut down otherwise test hangs
   drive_thread.join();
@@ -784,7 +820,13 @@ TEST(ScitosDriveTest, bumperPublisher) {
 
   // Cleaning up
   module->deactivate();
+  drive_node->deactivate();
   sub_node->deactivate();
+  module->cleanup();
+  drive_node->cleanup();
+  sub_node->cleanup();
+  drive_node->shutdown();
+  sub_node->shutdown();
   rclcpp::shutdown();
   // Have to join thread after rclcpp is shut down otherwise test hangs
   drive_thread.join();
@@ -834,7 +876,13 @@ TEST(ScitosDriveTest, mileagePublisher) {
 
   // Cleaning up
   module->deactivate();
+  drive_node->deactivate();
   sub_node->deactivate();
+  module->cleanup();
+  drive_node->cleanup();
+  sub_node->cleanup();
+  drive_node->shutdown();
+  sub_node->shutdown();
   rclcpp::shutdown();
   // Have to join thread after rclcpp is shut down otherwise test hangs
   drive_thread.join();
@@ -884,7 +932,13 @@ TEST(ScitosDriveTest, driveStatusPublisher) {
 
   // Cleaning up
   module->deactivate();
+  drive_node->deactivate();
   sub_node->deactivate();
+  module->cleanup();
+  drive_node->cleanup();
+  sub_node->cleanup();
+  drive_node->shutdown();
+  sub_node->shutdown();
   rclcpp::shutdown();
   // Have to join thread after rclcpp is shut down otherwise test hangs
   drive_thread.join();
@@ -934,7 +988,13 @@ TEST(ScitosDriveTest, rfidPublisher) {
 
   // Cleaning up
   module->deactivate();
+  drive_node->deactivate();
   sub_node->deactivate();
+  module->cleanup();
+  drive_node->cleanup();
+  sub_node->cleanup();
+  drive_node->shutdown();
+  sub_node->shutdown();
   rclcpp::shutdown();
   // Have to join thread after rclcpp is shut down otherwise test hangs
   drive_thread.join();
@@ -979,7 +1039,13 @@ TEST(ScitosDriveTest, velocityCommand) {
 
   // Cleaning up
   module->deactivate();
+  drive_node->deactivate();
   pub_node->deactivate();
+  module->cleanup();
+  drive_node->cleanup();
+  pub_node->cleanup();
+  drive_node->shutdown();
+  pub_node->shutdown();
   rclcpp::shutdown();
   // Have to join thread after rclcpp is shut down otherwise test hangs
   pub_thread.join();

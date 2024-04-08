@@ -7,6 +7,7 @@ ignore:
   - "*/test/**/*" # ignore package  test directories
   - "**/test_*.*" # ignore files starting with test_
   - "**/main*.*" # ignore files starting with main
+  - "**/generate_*.*" # ignore files starting with generate_
   - "**/*_tests.*" # ignore files ending with _tests
   - "*/**/benchmark/*"  # ignore package test directories
   - "*/benchmark/**/*" # ignore package  test directories

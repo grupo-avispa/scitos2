@@ -51,6 +51,9 @@ TEST(ScitosChargerTest, configure) {
   // Cleaning up
   module->deactivate();
   module->cleanup();
+  node->deactivate();
+  node->cleanup();
+  node->shutdown();
   rclcpp::shutdown();
 }
 
@@ -99,6 +102,9 @@ TEST(ScitosChargerTest, batteryPublisher) {
   // Cleaning up
   module->deactivate();
   sub_node->deactivate();
+  module->cleanup();
+  sub_node->cleanup();
+  sub_node->shutdown();
   rclcpp::shutdown();
   // Have to join thread after rclcpp is shut down otherwise test hangs
   charger_thread.join();
@@ -149,6 +155,12 @@ TEST(ScitosChargerTest, statusPublisher) {
   // Cleaning up
   module->deactivate();
   sub_node->deactivate();
+  charger_node->deactivate();
+  module->cleanup();
+  sub_node->cleanup();
+  charger_node->cleanup();
+  sub_node->shutdown();
+  charger_node->shutdown();
   rclcpp::shutdown();
   // Have to join thread after rclcpp is shut down otherwise test hangs
   charger_thread.join();
@@ -187,6 +199,9 @@ TEST(ScitosChargerTest, savePersistentError) {
   // Cleaning up
   module->deactivate();
   module->cleanup();
+  node->deactivate();
+  node->cleanup();
+  node->shutdown();
   rclcpp::shutdown();
 }
 

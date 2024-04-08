@@ -203,6 +203,14 @@ void Drive::cleanup()
   odometry_pub_.reset();
   rfid_pub_.reset();
   timer_.reset();
+  change_force_service_.reset();
+  emergency_stop_service_.reset();
+  enable_motors_service_.reset();
+  enable_rfid_service_.reset();
+  reset_barrier_stop_service_.reset();
+  reset_motor_stop_service_.reset();
+  reset_odometry_service_.reset();
+  suspend_bumper_service_.reset();
 }
 
 void Drive::activate()

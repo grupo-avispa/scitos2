@@ -68,6 +68,7 @@ void Charger::cleanup()
   authority_.reset();
   battery_pub_.reset();
   charger_pub_.reset();
+  save_persistent_errors_service_.reset();
 }
 
 void Charger::activate()
