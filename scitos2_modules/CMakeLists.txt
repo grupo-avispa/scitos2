@@ -22,6 +22,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(nav2_util REQUIRED)
+find_package(nav2_costmap_2d REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
@@ -50,6 +51,7 @@ include_mira_packages()
 set(dependencies
   rclcpp
   nav2_util
+  nav2_costmap_2d
   geometry_msgs
   nav_msgs
   sensor_msgs
@@ -100,7 +102,7 @@ if(BUILD_TESTING)
   # the following line skips the linter which checks for copyrights
   set(ament_cmake_copyright_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
-  #add_subdirectory(test)
+  add_subdirectory(test)
 endif()
 
 # ##################################

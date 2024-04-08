@@ -65,17 +65,6 @@ public:
     emergency_stop_activated_ = false;
   }
 
-  std::vector<geometry_msgs::msg::Point> makeFootprintFromRadius(double radius)
-  {
-    return scitos2_modules::Drive::makeFootprintFromRadius(radius);
-  }
-
-  bool makeFootprintFromString(
-    const std::string & footprint_string, std::vector<geometry_msgs::msg::Point> & footprint)
-  {
-    return scitos2_modules::Drive::makeFootprintFromString(footprint_string, footprint);
-  }
-
   visualization_msgs::msg::MarkerArray createBumperMarkers()
   {
     return scitos2_modules::Drive::createBumperMarkers();
@@ -472,51 +461,6 @@ TEST(ScitosDriveTest, suspendBumper) {
   rclcpp::shutdown();
 }
 
-TEST(ScitosDriveTest, makeFootprintFromRadius) {
-  // Create the module
-  auto module = std::make_shared<DriveFixture>();
-
-  // Set a valid radius
-  auto footprint = module->makeFootprintFromRadius(0.5);
-
-  // Check results
-  EXPECT_EQ(16u, footprint.size());
-}
-
-TEST(ScitosDriveTest, makeFootprintFromString) {
-  // Create the module
-  auto module = std::make_shared<DriveFixture>();
-
-  // Set a valid footprint
-  std::vector<geometry_msgs::msg::Point> footprint;
-  bool result = module->makeFootprintFromString(
-    "[[1, 2.2], [.3, -4e4], [-.3, -4e4], [-1, 2.2]]", footprint);
-  EXPECT_EQ(result, true);
-  EXPECT_EQ(4u, footprint.size());
-  EXPECT_NEAR(footprint[0].x, 1.0, 1e-5);
-  EXPECT_NEAR(footprint[0].y, 2.2, 1e-5);
-  EXPECT_NEAR(footprint[1].x, 0.3, 1e-5);
-  EXPECT_NEAR(footprint[1].y, -4e4, 1e-5);
-  EXPECT_NEAR(footprint[2].x, -0.3, 1e-5);
-  EXPECT_NEAR(footprint[2].y, -4e4, 1e-5);
-  EXPECT_NEAR(footprint[3].x, -1.0, 1e-5);
-  EXPECT_NEAR(footprint[3].y, 2.2, 1e-5);
-
-  // Set a wrong string
-  result = module->makeFootprintFromString(
-    "[[bad_string", footprint);
-  EXPECT_EQ(result, false);
-
-  // Set two points
-  result = module->makeFootprintFromString("[[1, 2.2], [.3, -4e4]]", footprint);
-  EXPECT_EQ(result, false);
-
-  // Set a wrong number of points
-  result = module->makeFootprintFromString(
-    "[[1, 2.2], [.3, -4e4], [-.3, -4e4], [-1, 2.2, 5.6]]", footprint);
-  EXPECT_EQ(result, false);
-}
-
 TEST(ScitosDriveTest, createBumperMarkers) {
   rclcpp::init(0, nullptr);
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testDrive");
@@ -534,16 +478,16 @@ TEST(ScitosDriveTest, createBumperMarkers) {
   // Deactivate the bumper
   module->deactivateBumper();
   // Create the bumper markers
-  auto markers = module->createBumperMarkers();
+  auto marker_array = module->createBumperMarkers();
   // Check the number of markers
-  EXPECT_EQ(markers.markers.size(), 4);
+  EXPECT_EQ(marker_array.markers.front().points.size(), 4);
 
   // Activate the bumper
   module->activateBumper();
   // Create the bumper markers
-  markers = module->createBumperMarkers();
+  marker_array = module->createBumperMarkers();
   // Check the number of markers
-  EXPECT_EQ(markers.markers.size(), 4);
+  EXPECT_EQ(marker_array.markers.front().points.size(), 4);
   rclcpp::shutdown();
 }
 

@@ -19,6 +19,7 @@
 
 // ROS
 #include "nav2_util/node_utils.hpp"
+#include "nav2_costmap_2d/footprint.hpp"
 #include "pluginlib/class_list_macros.hpp"
 #include "geometry_msgs/msg/quaternion.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
@@ -160,12 +161,12 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
   use_radius_ = true;
   if (footprint_ != "" && footprint_ != "[]") {
     // Footprint parameter has been specified, try to convert it
-    if (makeFootprintFromString(footprint_, unpadded_footprint_)) {
+    if (nav2_costmap_2d::makeFootprintFromString(footprint_, unpadded_footprint_)) {
       // The specified footprint is valid, so we'll use that instead of the radius
       use_radius_ = false;
     } else {
       // Footprint provided but invalid, so stay with the radius
-      unpadded_footprint_ = makeFootprintFromRadius(robot_radius_);
+      unpadded_footprint_ = nav2_costmap_2d::makeFootprintFromRadius(robot_radius_);
       RCLCPP_ERROR(
         logger_, "The footprint parameter is invalid: \"%s\", using radius (%lf) instead",
         footprint_.c_str(), robot_radius_);
@@ -414,98 +415,42 @@ bool Drive::suspendBumper(
 visualization_msgs::msg::MarkerArray Drive::createBumperMarkers()
 {
   // Create markers
-  visualization_msgs::msg::MarkerArray markers_msg;
-  visualization_msgs::msg::Marker cylinder;
-  cylinder.header.frame_id = base_frame_;
-  cylinder.header.stamp = clock_->now();
-  cylinder.lifetime = rclcpp::Duration(0, 10);
-  cylinder.ns = "bumpers";
-  cylinder.type = visualization_msgs::msg::Marker::CYLINDER;
-  cylinder.action = visualization_msgs::msg::Marker::ADD;
-  cylinder.scale.x = 0.05;
-  cylinder.scale.y = 0.05;
-  cylinder.scale.z = 0.45;
-  cylinder.pose.position.z = 0.03;
+  visualization_msgs::msg::MarkerArray marker_array;
+  visualization_msgs::msg::Marker marker;
+  marker.header.frame_id = base_frame_;
+  marker.header.stamp = clock_->now();
+  marker.ns = "bumper";
+  marker.type = visualization_msgs::msg::Marker::LINE_STRIP;
+  marker.action = visualization_msgs::msg::Marker::ADD;
+  marker.scale.x = 0.05;
+  marker.scale.y = 0.05;
+  marker.scale.z = 0.45;
+  marker.pose.position.z = 0.03;
+  marker.pose.orientation.w = 1.0;
 
   // Change color depending on the state: red if activated, white otherwise
   if (bumper_activated_) {
-    cylinder.color.r = 1.0;
-    cylinder.color.g = 0.0;
-    cylinder.color.b = 0.0;
-    cylinder.color.a = 1.0;
+    marker.color.r = 1.0;
+    marker.color.g = 0.0;
+    marker.color.b = 0.0;
+    marker.color.a = 1.0;
   } else {
-    cylinder.color.r = 1.0;
-    cylinder.color.g = 1.0;
-    cylinder.color.b = 1.0;
-    cylinder.color.a = 1.0;
+    marker.color.r = 1.0;
+    marker.color.g = 1.0;
+    marker.color.b = 1.0;
+    marker.color.a = 1.0;
   }
 
   // Create the markers using the footprint
-  for (size_t i = 0; i < unpadded_footprint_.size(); ++i) {
-    cylinder.id = i + 4;
-    cylinder.pose.position.x = unpadded_footprint_[i].x;
-    cylinder.pose.position.y = unpadded_footprint_[i].y;
-    markers_msg.markers.push_back(cylinder);
+  int id = 0;
+  for (const auto & point : unpadded_footprint_) {
+    marker.points.push_back(point);
+    marker.id = id++;
   }
 
-  return markers_msg;
-}
+  marker_array.markers.push_back(marker);
 
-std::vector<geometry_msgs::msg::Point> Drive::makeFootprintFromRadius(double radius)
-{
-  std::vector<geometry_msgs::msg::Point> points;
-
-  // Loop over 16 angles around a circle making a point each time
-  int N = 16;
-  geometry_msgs::msg::Point pt;
-  for (int i = 0; i < N; ++i) {
-    double angle = i * 2 * M_PI / N;
-    pt.x = cos(angle) * radius;
-    pt.y = sin(angle) * radius;
-
-    points.push_back(pt);
-  }
-
-  return points;
-}
-
-bool Drive::makeFootprintFromString(
-  const std::string & footprint_string, std::vector<geometry_msgs::msg::Point> & footprint)
-{
-  std::string error;
-  std::vector<std::vector<float>> vvf = parseVVF(footprint_string, error);
-
-  if (error != "") {
-    RCLCPP_ERROR(logger_, "Error parsing footprint parameter: '%s'", error.c_str());
-    RCLCPP_ERROR(logger_, "Footprint string was '%s'.", footprint_string.c_str());
-    return false;
-  }
-
-  // Convert vvf into points.
-  if (vvf.size() < 3) {
-    RCLCPP_ERROR(
-      logger_,
-      "You must specify at least three points for the robot footprint, reverting to previous footprint."); //NOLINT
-    return false;
-  }
-  footprint.reserve(vvf.size());
-  for (unsigned int i = 0; i < vvf.size(); i++) {
-    if (vvf[i].size() == 2) {
-      geometry_msgs::msg::Point point;
-      point.x = vvf[i][0];
-      point.y = vvf[i][1];
-      point.z = 0;
-      footprint.push_back(point);
-    } else {
-      RCLCPP_ERROR(
-        logger_,
-        "Points in the footprint specification must be pairs of numbers. Found a point with %d numbers.", //NOLINT
-        static_cast<int>(vvf[i].size()));
-      return false;
-    }
-  }
-
-  return true;
+  return marker_array;
 }
 
 bool Drive::isEmergencyStopReleased(scitos2_msgs::msg::EmergencyStopStatus msg)
@@ -598,69 +543,6 @@ scitos2_msgs::msg::BarrierStatus Drive::miraToRosBarrierStatus(
   barrier.barrier_stopped = true;
   barrier.last_detection_stamp = rclcpp::Time(timestamp.toUnixNS());
   return barrier;
-}
-
-std::vector<std::vector<float>> Drive::parseVVF(
-  const std::string & input,
-  std::string & error_return)
-{
-  std::vector<std::vector<float>> result;
-
-  std::stringstream input_ss(input);
-  int depth = 0;
-  std::vector<float> current_vector;
-  while (!!input_ss && !input_ss.eof()) {
-    switch (input_ss.peek()) {
-      case EOF:
-        break;
-      case '[':
-        depth++;
-        if (depth > 2) {
-          error_return = "Array depth greater than 2";
-          return result;
-        }
-        input_ss.get();
-        current_vector.clear();
-        break;
-      case ']':
-        depth--;
-        if (depth < 0) {
-          error_return = "More close ] than open [";
-          return result;
-        }
-        input_ss.get();
-        if (depth == 1) {
-          result.push_back(current_vector);
-        }
-        break;
-      case ',':
-      case ' ':
-      case '\t':
-        input_ss.get();
-        break;
-      default:  // All other characters should be part of the numbers.
-        if (depth != 2) {
-          std::stringstream err_ss;
-          err_ss << "Numbers at depth other than 2. Char was '" << char(input_ss.peek()) << "'.";
-          error_return = err_ss.str();
-          return result;
-        }
-        float value;
-        input_ss >> value;
-        if (!!input_ss) {
-          current_vector.push_back(value);
-        }
-        break;
-    }
-  }
-
-  if (depth != 0) {
-    error_return = "Unterminated vector string.";
-  } else {
-    error_return = "";
-  }
-
-  return result;
 }
 
 }  // namespace scitos2_modules

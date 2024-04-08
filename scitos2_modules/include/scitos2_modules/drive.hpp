@@ -261,29 +261,6 @@ protected:
    */
   visualization_msgs::msg::MarkerArray createBumperMarkers();
 
-/**
- * @brief Create a circular footprint from a given radius
- */
-  std::vector<geometry_msgs::msg::Point> makeFootprintFromRadius(double radius);
-
-/**
- * @brief Make the footprint from the given string.
- *
- * Format should be bracketed array of arrays of floats, like so: [[1.0, 2.2], [3.3, 4.2], ...]
- *
- */
-  bool makeFootprintFromString(
-    const std::string & footprint_string, std::vector<geometry_msgs::msg::Point> & footprint);
-
-/** @brief Parse a vector of vectors of floats from a string.
- * @param error_return If no error, error_return is set to "".  If
- *        error, error_return will describe the error.
- * Syntax is [[1.0, 2.0], [3.3, 4.4, 5.5], ...]
- *
- * On error, error_return is set and the return value could be
- * anything, like part of a successful parse. */
-  std::vector<std::vector<float>> parseVVF(const std::string & input, std::string & error_return);
-
   /**
    * @brief Callback executed when a parameter change is detected.
    * @param event ParameterEvent message
