@@ -15,6 +15,7 @@ Changelog for package scitos2_mira
 * Rename default.launch.py to mira.launch.py and added lifecycle manager.
 * Added drive as a default module.
 * Added unit testing.
+* Added composable nodes in launch file.
 
 1.1.3 (10-10-2023)
 ------------------
