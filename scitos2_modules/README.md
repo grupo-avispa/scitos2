@@ -158,15 +158,15 @@ The Drive module controls the robot's motors, handling velocity commands, odomet
 
 	This parameter should be set to true to publish the TF between `/odom` and `/base_frame`.
 
-* ** `reset_bumper_interval`** (int, default: 0)
+* **`reset_bumper_interval`** (int, default: 0)
 
 	This parameter sets the interval in milliseconds to reset motor stop when the bumper is pressed. If set to 0, the motor stop will not be reset.
 
-* ** `footprint`** (string, default: "")
+* **`footprint`** (string, default: "")
 
 	Specifies the list of points that define the footprint of the robot. The format is the same as the one used in the `nav2_costmap_2d` package.
 
-* ** `robot_radius`** (double, default: 0.5)
+* **`robot_radius`** (double, default: 0.5)
 
 	Specifies the radius of the robot in meters.
 
