@@ -251,15 +251,16 @@ protected:
   /**
    * @brief Reset tje motor stop if the bumper is activated after a certain time.
    *
-   * @param current_time
+   * @param current_time Current time
    */
   void resetMotorStopAfterTimeout(rclcpp::Time current_time);
 
   /**
    * @brief Create the bumper markers.
    *
+   * @param header Header for the markers
    */
-  visualization_msgs::msg::MarkerArray createBumperMarkers();
+  visualization_msgs::msg::MarkerArray createBumperMarkers(std_msgs::msg::Header header);
 
   /**
    * @brief Callback executed when a parameter change is detected.
@@ -364,7 +365,6 @@ protected:
 
   // Bumper
   bool bumper_activated_;
-  rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Time last_bumper_reset_;
   rclcpp::Duration reset_bumper_interval_{0, 0};
   bool use_radius_{false};

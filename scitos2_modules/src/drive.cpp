@@ -64,12 +64,6 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
   odometry_pub_ = node->create_publisher<nav_msgs::msg::Odometry>("odom", 10);
   rfid_pub_ = node->create_publisher<scitos2_msgs::msg::RfidTag>("rfid", 20);
 
-  timer_ = node->create_wall_timer(
-    std::chrono::milliseconds(50), [this]() -> void
-    {
-      bumper_markers_pub_->publish(createBumperMarkers());
-    });
-
   // Create MIRA subscribers
   authority_->subscribe<mira::robot::Odometry2>(
     "/robot/Odometry", &Drive::odometryDataCallback, this);
@@ -202,7 +196,6 @@ void Drive::cleanup()
   mileage_pub_.reset();
   odometry_pub_.reset();
   rfid_pub_.reset();
-  timer_.reset();
   change_force_service_.reset();
   emergency_stop_service_.reset();
   enable_motors_service_.reset();
@@ -304,6 +297,7 @@ void Drive::bumperDataCallback(mira::ChannelRead<bool> data)
   bumper_status.bumper_activated = data->value();
   bumper_status.bumper_status = data->value();
   bumper_pub_->publish(bumper_status);
+  bumper_markers_pub_->publish(createBumperMarkers(bumper_status.header));
 
   bumper_activated_ = bumper_status.bumper_activated;
 
@@ -421,13 +415,12 @@ bool Drive::suspendBumper(
   return call_mira_service(authority_, "suspendBumper");
 }
 
-visualization_msgs::msg::MarkerArray Drive::createBumperMarkers()
+visualization_msgs::msg::MarkerArray Drive::createBumperMarkers(std_msgs::msg::Header header)
 {
   // Create markers
   visualization_msgs::msg::MarkerArray marker_array;
   visualization_msgs::msg::Marker marker;
-  marker.header.frame_id = base_frame_;
-  marker.header.stamp = clock_->now();
+  marker.header = header;
   marker.ns = "bumper";
   marker.type = visualization_msgs::msg::Marker::LINE_STRIP;
   marker.action = visualization_msgs::msg::Marker::ADD;
@@ -455,6 +448,11 @@ visualization_msgs::msg::MarkerArray Drive::createBumperMarkers()
   for (const auto & point : unpadded_footprint_) {
     marker.points.push_back(point);
     marker.id = id++;
+  }
+
+  // Last point is the first point to close the polygon
+  if (!unpadded_footprint_.empty()) {
+    marker.points.push_back(unpadded_footprint_.front());
   }
 
   marker_array.markers.push_back(marker);

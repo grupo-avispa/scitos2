@@ -65,9 +65,9 @@ public:
     emergency_stop_activated_ = false;
   }
 
-  visualization_msgs::msg::MarkerArray createBumperMarkers()
+  visualization_msgs::msg::MarkerArray createBumperMarkers(std_msgs::msg::Header header)
   {
-    return scitos2_modules::Drive::createBumperMarkers();
+    return scitos2_modules::Drive::createBumperMarkers(header);
   }
 
   bool isEmergencyStopReleased(scitos2_msgs::msg::EmergencyStopStatus msg)
@@ -508,16 +508,31 @@ TEST(ScitosDriveTest, createBumperMarkers) {
   // Deactivate the bumper
   module->deactivateBumper();
   // Create the bumper markers
-  auto marker_array = module->createBumperMarkers();
+  std_msgs::msg::Header header;
+  header.frame_id = "base_test";
+  header.stamp = rclcpp::Time(0, 0);
+  auto marker_array = module->createBumperMarkers(header);
   // Check the number of markers
-  EXPECT_EQ(marker_array.markers.front().points.size(), 4);
+  EXPECT_EQ(marker_array.markers.front().points.size(), 5);
+  EXPECT_EQ(marker_array.markers.front().header.frame_id, "base_test");
+  EXPECT_EQ(marker_array.markers.front().header.stamp, rclcpp::Time(0, 0));
+  EXPECT_EQ(marker_array.markers.front().type, visualization_msgs::msg::Marker::LINE_STRIP);
+  EXPECT_EQ(marker_array.markers.front().action, visualization_msgs::msg::Marker::ADD);
+  EXPECT_NEAR(marker_array.markers.front().points[0].x, 1, 1e-3);
+  EXPECT_NEAR(marker_array.markers.front().points[0].y, 2.2, 1e-3);
+  EXPECT_NEAR(marker_array.markers.front().points[1].x, 0.3, 1e-3);
+  EXPECT_NEAR(marker_array.markers.front().points[1].y, -4e4, 1e-3);
+  EXPECT_NEAR(marker_array.markers.front().points[2].x, -0.3, 1e-3);
+  EXPECT_NEAR(marker_array.markers.front().points[2].y, -4e4, 1e-3);
+  EXPECT_NEAR(marker_array.markers.front().points[3].x, -1, 1e-3);
+  EXPECT_NEAR(marker_array.markers.front().points[3].y, 2.2, 1e-3);
 
   // Activate the bumper
   module->activateBumper();
   // Create the bumper markers
-  marker_array = module->createBumperMarkers();
+  marker_array = module->createBumperMarkers(header);
   // Check the number of markers
-  EXPECT_EQ(marker_array.markers.front().points.size(), 4);
+  EXPECT_EQ(marker_array.markers.front().points.size(), 5);
   rclcpp::shutdown();
 }
 
