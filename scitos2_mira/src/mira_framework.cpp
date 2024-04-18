@@ -49,6 +49,7 @@ MiraFramework::~MiraFramework()
     RCLCPP_INFO(get_logger(), "Stopping MIRA framework...");
   }
   framework_.reset();
+  timer_.reset();
 }
 
 nav2_util::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::State &)
@@ -130,6 +131,10 @@ nav2_util::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::St
     get_logger(),
     "MIRA framework has %s modules available.", module_ids_concat_.c_str());
 
+  // Create a publisher for diagnostics
+  diag_pub_ = this->create_publisher<diagnostic_msgs::msg::DiagnosticArray>(
+    "/diagnostics", rclcpp::SystemDefaultsQoS());
+
   return nav2_util::CallbackReturn::SUCCESS;
 }
 
@@ -145,6 +150,13 @@ nav2_util::CallbackReturn MiraFramework::on_activate(const rclcpp_lifecycle::Sta
 
   // Start the MIRA framework
   framework_->start();
+
+  // Create a timer to publish diagnostics
+  timer_ = this->create_timer(
+    std::chrono::milliseconds(10), [this]() -> void
+    {
+      diag_pub_->publish(createDiagnostics());
+    });
 
   // Create bond connection
   createBond();
@@ -178,6 +190,9 @@ nav2_util::CallbackReturn MiraFramework::on_cleanup(const rclcpp_lifecycle::Stat
   }
   modules_.clear();
 
+  diag_pub_.reset();
+  timer_.reset();
+
   framework_->requestTermination();
 
   return nav2_util::CallbackReturn::SUCCESS;
@@ -188,6 +203,17 @@ nav2_util::CallbackReturn MiraFramework::on_shutdown(const rclcpp_lifecycle::Sta
   RCLCPP_INFO(get_logger(), "Shutting down");
 
   return nav2_util::CallbackReturn::SUCCESS;
+}
+
+diagnostic_msgs::msg::DiagnosticArray MiraFramework::createDiagnostics()
+{
+  diagnostic_msgs::msg::DiagnosticArray msg;
+  diagnostic_msgs::msg::DiagnosticStatus status;
+  status.name = "MIRA framework";
+  status.level = diagnostic_msgs::msg::DiagnosticStatus::OK;
+  status.message = "MIRA framework is running";
+  msg.status.push_back(status);
+  return msg;
 }
 
 }  // namespace scitos2_mira

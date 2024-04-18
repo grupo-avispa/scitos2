@@ -57,6 +57,7 @@ find_package(scitos2_msgs REQUIRED)
 find_package(scitos2_core REQUIRED)
 find_package(scitos2_common REQUIRED)
 find_package(pluginlib REQUIRED)
+find_package(diagnostic_msgs REQUIRED)
 
 find_mira_path()
 
@@ -78,6 +79,7 @@ set(dependencies
   scitos2_msgs
   scitos2_core
   pluginlib
+  diagnostic_msgs
 )
 
 set(library_name ${PROJECT_NAME}_core)

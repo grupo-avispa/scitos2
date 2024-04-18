@@ -16,6 +16,7 @@ Changelog for package scitos2_mira
 * Added drive as a default module.
 * Added unit testing.
 * Added composable nodes in launch file.
+* Added default diagnostics.
 
 1.1.3 (10-10-2023)
 ------------------

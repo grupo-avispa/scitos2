@@ -28,6 +28,11 @@ public:
   MiraFrameworkFixture()
   : scitos2_mira::MiraFramework(rclcpp::NodeOptions())
   {}
+
+  diagnostic_msgs::msg::DiagnosticArray createDiagnostics()
+  {
+    return scitos2_mira::MiraFramework::createDiagnostics();
+  }
 };
 
 class DummyModule : public scitos2_core::Module
@@ -108,6 +113,9 @@ TEST(ScitosMiraFrameworkTest, configure) {
   // Configure the node
   node->configure();
   node->activate();
+
+  // Just call the function
+  node->createDiagnostics();
 
   // Check results: the node should be in the active state
   EXPECT_EQ(node->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE);

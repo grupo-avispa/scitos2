@@ -26,6 +26,7 @@
 #include <vector>
 
 // ROS
+#include "diagnostic_msgs/msg/diagnostic_array.hpp"
 #include "nav2_util/lifecycle_node.hpp"
 #include "pluginlib/class_loader.hpp"
 #include "pluginlib/class_list_macros.hpp"
@@ -106,6 +107,14 @@ protected:
    * @return Success or Failure
    */
   nav2_util::CallbackReturn on_shutdown(const rclcpp_lifecycle::State & state) override;
+
+  /**
+   * @brief Create a diagnostics message.
+   */
+  diagnostic_msgs::msg::DiagnosticArray createDiagnostics();
+
+  rclcpp_lifecycle::LifecyclePublisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diag_pub_;
+  rclcpp::TimerBase::SharedPtr timer_;
 
   // MIRA framework
   std::unique_ptr<mira::Framework> framework_;

@@ -2,4 +2,6 @@
 
 ## Overview
 
-This package provides the abstract interfaces (virtual base classes) for the Scitos Modules. These interfaces are utilized by the `scitos2_mira` package to facilitate communication with the various Scitos modules.
+This package provides abstract interfaces (virtual base classes) used within the `scitos2` package to communicate with the various Scitos modules. The package contains:
+* module (e.g. `battery`, `charger`, `display`, `drive`, ...)
+* sink logger: a logger that reads data from MIRA logger and writes it to RCL logger.
