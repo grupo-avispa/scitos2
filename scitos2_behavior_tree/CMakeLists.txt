@@ -27,6 +27,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 option(COVERAGE_ENABLED "Enable code coverage" FALSE)
+
 if(COVERAGE_ENABLED)
   add_compile_options(--coverage)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
@@ -51,7 +52,8 @@ endif()
 # # Find ament macros and libraries
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(sensor_msgs REQUIRED)
+find_package(rclcpp_action REQUIRED)
+find_package(rclcpp_lifecycle REQUIRED)
 find_package(scitos2_msgs REQUIRED)
 find_package(behaviortree_cpp_v3 REQUIRED)
 find_package(nav2_behavior_tree REQUIRED)
@@ -67,7 +69,8 @@ include_directories(
 
 set(dependencies
   rclcpp
-  sensor_msgs
+  rclcpp_action
+  rclcpp_lifecycle
   scitos2_msgs
   behaviortree_cpp_v3
   nav2_behavior_tree
@@ -112,7 +115,7 @@ install(DIRECTORY include/
 )
 
 install(DIRECTORY test/utils/
-        DESTINATION include/${PROJECT_NAME}/utils/
+  DESTINATION include/${PROJECT_NAME}/utils/
 )
 
 install(FILES scitos2_tree_nodes.xml DESTINATION share/${PROJECT_NAME})

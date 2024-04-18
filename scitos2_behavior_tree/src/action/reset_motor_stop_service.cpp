@@ -22,21 +22,14 @@ namespace scitos2_behavior_tree
 {
 
 ResetMotorStopService::ResetMotorStopService(
-  const std::string & service_node_name,
-  const BT::NodeConfiguration & conf)
+  const std::string & service_node_name, const BT::NodeConfiguration & conf)
 : BtServiceNode<scitos2_msgs::srv::ResetMotorStop>(service_node_name, conf)
-{
-}
-
-void ResetMotorStopService::on_tick()
 {
 }
 
 }  // namespace scitos2_behavior_tree
 
 #include "behaviortree_cpp_v3/bt_factory.h"
-// LCOV_EXCL_START
 BT_REGISTER_NODES(factory) {
   factory.registerNodeType<scitos2_behavior_tree::ResetMotorStopService>("ResetMotorStop");
 }
-// LCOV_EXCL_STOP

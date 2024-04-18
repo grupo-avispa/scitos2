@@ -46,7 +46,8 @@ void Display::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
 
   // Create MIRA subscriber
   authority_->subscribe<uint8>(
-    "/robot/StatusDisplayUserMenuEvent", &Display::menuDataCallback, this);
+    "/robot/StatusDisplayUserMenuEvent",
+    std::bind(&Display::menuDataCallback, this, std::placeholders::_1));
 
   // Declare and read parameters
   nav2_util::declare_parameter_if_not_declared(
@@ -99,9 +100,7 @@ void Display::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
 void Display::cleanup()
 {
   RCLCPP_INFO(
-    logger_,
-    "Cleaning up module : %s of type scitos2_module::Display",
-    plugin_name_.c_str());
+    logger_, "Cleaning up module : %s of type scitos2_module::Display", plugin_name_.c_str());
   authority_.reset();
   display_data_pub_.reset();
 }
@@ -109,9 +108,7 @@ void Display::cleanup()
 void Display::activate()
 {
   RCLCPP_INFO(
-    logger_,
-    "Activating module : %s of type scitos2_module::Display",
-    plugin_name_.c_str());
+    logger_, "Activating module : %s of type scitos2_module::Display", plugin_name_.c_str());
   display_data_pub_->on_activate();
   authority_->start();
 }
@@ -119,9 +116,7 @@ void Display::activate()
 void Display::deactivate()
 {
   RCLCPP_INFO(
-    logger_,
-    "Deactivating module : %s of type scitos2_module::Display",
-    plugin_name_.c_str());
+    logger_, "Deactivating module : %s of type scitos2_module::Display", plugin_name_.c_str());
   authority_->checkout();
   display_data_pub_->on_deactivate();
 }

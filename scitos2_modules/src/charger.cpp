@@ -24,6 +24,9 @@
 namespace scitos2_modules
 {
 
+using std::placeholders::_1;
+using std::placeholders::_2;
+
 void Charger::configure(
   const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std::string name)
 {
@@ -45,16 +48,13 @@ void Charger::configure(
 
   // Create MIRA subscribers
   authority_->subscribe<mira::robot::BatteryState>(
-    "/robot/charger/Battery", &Charger::batteryDataCallback, this);
+    "/robot/charger/Battery", std::bind(&Charger::batteryDataCallback, this, _1));
   authority_->subscribe<uint8>(
-    "/robot/charger/ChargerStatus", &Charger::chargerStatusCallback, this);
+    "/robot/charger/ChargerStatus", std::bind(&Charger::chargerStatusCallback, this, _1));
 
   // Create ROS services
   save_persistent_errors_service_ = node->create_service<scitos2_msgs::srv::SavePersistentErrors>(
-    "charger/save_persistent_errors",
-    std::bind(
-      &Charger::savePersistentErrors, this,
-      std::placeholders::_1, std::placeholders::_2));
+    "charger/save_persistent_errors", std::bind(&Charger::savePersistentErrors, this, _1, _2));
 
   RCLCPP_INFO(logger_, "Configured module : %s", plugin_name_.c_str());
 }
@@ -62,9 +62,7 @@ void Charger::configure(
 void Charger::cleanup()
 {
   RCLCPP_INFO(
-    logger_,
-    "Cleaning up module : %s of type scitos2_module::Charger",
-    plugin_name_.c_str());
+    logger_, "Cleaning up module : %s of type scitos2_module::Charger", plugin_name_.c_str());
   authority_.reset();
   battery_pub_.reset();
   charger_pub_.reset();
@@ -74,9 +72,7 @@ void Charger::cleanup()
 void Charger::activate()
 {
   RCLCPP_INFO(
-    logger_,
-    "Activating module : %s of type scitos2_module::Charger",
-    plugin_name_.c_str());
+    logger_, "Activating module : %s of type scitos2_module::Charger", plugin_name_.c_str());
   battery_pub_->on_activate();
   charger_pub_->on_activate();
   authority_->start();
@@ -85,9 +81,7 @@ void Charger::activate()
 void Charger::deactivate()
 {
   RCLCPP_INFO(
-    logger_,
-    "Deactivating module : %s of type scitos2_module::Charger",
-    plugin_name_.c_str());
+    logger_, "Deactivating module : %s of type scitos2_module::Charger", plugin_name_.c_str());
   authority_->checkout();
   battery_pub_->on_deactivate();
   charger_pub_->on_deactivate();

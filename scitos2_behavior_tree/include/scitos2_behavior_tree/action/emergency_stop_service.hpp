@@ -37,14 +37,7 @@ public:
    * @param service_node_name Service name this node creates a client for
    * @param conf BT node configuration
    */
-  EmergencyStopService(
-    const std::string & service_node_name,
-    const BT::NodeConfiguration & conf);
-
-  /**
-   * @brief Function to perform some user-defined operation on tick
-   */
-  void on_tick() override;
+  EmergencyStopService(const std::string & service_node_name, const BT::NodeConfiguration & conf);
 };
 
 }  // namespace scitos2_behavior_tree

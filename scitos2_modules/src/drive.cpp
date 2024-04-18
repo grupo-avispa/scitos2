@@ -66,20 +66,19 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
 
   // Create MIRA subscribers
   authority_->subscribe<mira::robot::Odometry2>(
-    "/robot/Odometry", &Drive::odometryDataCallback, this);
+    "/robot/Odometry", std::bind(&Drive::odometryDataCallback, this, _1));
   authority_->subscribe<bool>(
-    "/robot/Bumper", &Drive::bumperDataCallback, this);
+    "/robot/Bumper", std::bind(&Drive::bumperDataCallback, this, _1));
   authority_->subscribe<float>(
-    "/robot/Mileage", &Drive::mileageDataCallback, this);
+    "/robot/Mileage", std::bind(&Drive::mileageDataCallback, this, _1));
   authority_->subscribe<uint32>(
-    "/robot/DriveStatusPlain", &Drive::driveStatusCallback, this);
+    "/robot/DriveStatusPlain", std::bind(&Drive::driveStatusCallback, this, _1));
   authority_->subscribe<uint64>(
-    "/robot/RFIDUserTag", &Drive::rfidStatusCallback, this);
+    "/robot/RFIDUserTag", std::bind(&Drive::rfidStatusCallback, this, _1));
 
   // Create ROS subscribers
   cmd_vel_sub_ = node->create_subscription<geometry_msgs::msg::Twist>(
-    "cmd_vel", 1,
-    std::bind(&Drive::velocityCommandCallback, this, _1));
+    "cmd_vel", 1, std::bind(&Drive::velocityCommandCallback, this, _1));
 
   // Create ROS services
   change_force_service_ = node->create_service<scitos2_msgs::srv::ChangeForce>(
@@ -184,9 +183,7 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
 void Drive::cleanup()
 {
   RCLCPP_INFO(
-    logger_,
-    "Cleaning up module : %s of type scitos2_module::Drive",
-    plugin_name_.c_str());
+    logger_, "Cleaning up module : %s of type scitos2_module::Drive", plugin_name_.c_str());
   authority_.reset();
   bumper_pub_.reset();
   bumper_markers_pub_.reset();
@@ -210,9 +207,7 @@ void Drive::cleanup()
 void Drive::activate()
 {
   RCLCPP_INFO(
-    logger_,
-    "Activating module : %s of type scitos2_module::Drive",
-    plugin_name_.c_str());
+    logger_, "Activating module : %s of type scitos2_module::Drive", plugin_name_.c_str());
   bumper_pub_->on_activate();
   bumper_markers_pub_->on_activate();
   drive_status_pub_->on_activate();
@@ -228,9 +223,7 @@ void Drive::activate()
 void Drive::deactivate()
 {
   RCLCPP_INFO(
-    logger_,
-    "Deactivating module : %s of type scitos2_module::Drive",
-    plugin_name_.c_str());
+    logger_, "Deactivating module : %s of type scitos2_module::Drive", plugin_name_.c_str());
   authority_->checkout();
   bumper_pub_->on_deactivate();
   bumper_markers_pub_->on_deactivate();
@@ -379,8 +372,7 @@ bool Drive::enableRfid(
   std::shared_ptr<scitos2_msgs::srv::EnableRfid::Response> response)
 {
   return set_mira_param(
-    authority_, "MainControlUnit.RearLaser.Enabled",
-    request->enable ? "true" : "false");
+    authority_, "MainControlUnit.RearLaser.Enabled", request->enable ? "true" : "false");
 }
 
 bool Drive::resetBarrierStop(

@@ -269,27 +269,21 @@ void EBC::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std
 void EBC::cleanup()
 {
   RCLCPP_INFO(
-    logger_,
-    "Cleaning up module : %s of type scitos2_module::EBC",
-    plugin_name_.c_str());
+    logger_, "Cleaning up module : %s of type scitos2_module::EBC", plugin_name_.c_str());
   authority_.reset();
 }
 
 void EBC::activate()
 {
   RCLCPP_INFO(
-    logger_,
-    "Activating module : %s of type scitos2_module::EBC",
-    plugin_name_.c_str());
+    logger_, "Activating module : %s of type scitos2_module::EBC", plugin_name_.c_str());
   authority_->start();
 }
 
 void EBC::deactivate()
 {
   RCLCPP_INFO(
-    logger_,
-    "Deactivating module : %s of type scitos2_module::EBC",
-    plugin_name_.c_str());
+    logger_, "Deactivating module : %s of type scitos2_module::EBC", plugin_name_.c_str());
   authority_->checkout();
 }
 
