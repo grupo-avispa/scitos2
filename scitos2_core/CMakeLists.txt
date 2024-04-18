@@ -32,6 +32,18 @@ if(COVERAGE_ENABLED)
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} --coverage")
 endif()
 
+# Defaults for Microsoft C++ compiler
+if(MSVC)
+  # https://blog.kitware.com/create-dlls-on-windows-without-declspec-using-new-cmake-export-all-feature/
+  set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
+  # Enable Math Constants
+  # https://docs.microsoft.com/en-us/cpp/c-runtime-library/math-constants?view=vs-2019
+  add_compile_definitions(
+    _USE_MATH_DEFINES
+  )
+endif()
+
 # ###############################################
 # # Find  dependencies                         ##
 # ###############################################
