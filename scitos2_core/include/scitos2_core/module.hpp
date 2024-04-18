@@ -67,6 +67,8 @@ public:
   virtual void deactivate() = 0;
 
 protected:
+  // Skip this method from coverage report because it only calls MIRA services
+  // LCOV_EXCL_START
   /**
    * @brief Call a MIRA service with a timeout of 1 second.
    *
@@ -85,8 +87,7 @@ protected:
     // Check if the authority is valid or if the service exists
     if (!sharedAuthority->isValid() || !sharedAuthority->existsService("/robot/Robot")) {
       RCLCPP_ERROR_ONCE(
-        rclcpp::get_logger("MIRA"),
-        "MIRA authority is not valid or service does not exist");
+        rclcpp::get_logger("MIRA"), "MIRA authority is not valid or service does not exist");
       return false;
     }
 
@@ -97,8 +98,7 @@ protected:
       RCLCPP_DEBUG(rclcpp::get_logger("MIRA"), "service_name: %i", true);
     } catch (mira::XRPC & e) {
       RCLCPP_WARN(
-        rclcpp::get_logger("MIRA"),
-        "MIRA RPC error caught when calling the service: %s", e.what() );
+        rclcpp::get_logger("MIRA"), "MIRA RPC error caught when calling the service: %s", e.what());
       return false;
     }
     return true;
@@ -126,8 +126,7 @@ protected:
     // Check if the authority is valid or if the service exists
     if (!sharedAuthority->isValid() || !sharedAuthority->existsService("/robot/Robot")) {
       RCLCPP_ERROR_ONCE(
-        rclcpp::get_logger("MIRA"),
-        "MIRA authority is not valid or service does not exist");
+        rclcpp::get_logger("MIRA"), "MIRA authority is not valid or service does not exist");
       return false;
     }
 
@@ -143,8 +142,7 @@ protected:
       RCLCPP_DEBUG(rclcpp::get_logger("MIRA"), "service_name: %i", true);
     } catch (mira::XRPC & e) {
       RCLCPP_WARN(
-        rclcpp::get_logger("MIRA"),
-        "MIRA RPC error caught when calling the service: %s", e.what() );
+        rclcpp::get_logger("MIRA"), "MIRA RPC error caught when calling the service: %s", e.what());
       return false;
     }
     return true;
@@ -171,8 +169,7 @@ protected:
     // Check if the authority is valid or if the service exists
     if (!sharedAuthority->isValid() || !sharedAuthority->existsService("/robot/Robot")) {
       RCLCPP_ERROR_ONCE(
-        rclcpp::get_logger("MIRA"),
-        "MIRA authority is not valid or service does not exist");
+        rclcpp::get_logger("MIRA"), "MIRA authority is not valid or service does not exist");
       return false;
     }
 
@@ -183,8 +180,7 @@ protected:
       rpc.get();
     } catch (mira::XRPC & e) {
       RCLCPP_WARN(
-        rclcpp::get_logger("MIRA"),
-        "MIRA RPC error caught when setting parameter: %s", e.what() );
+        rclcpp::get_logger("MIRA"), "MIRA RPC error caught when setting parameter: %s", e.what());
       return false;
     }
     return true;
@@ -210,8 +206,7 @@ protected:
     // Check if the authority is valid or if the service exists
     if (!sharedAuthority->isValid() || !sharedAuthority->existsService("/robot/Robot")) {
       RCLCPP_ERROR_ONCE(
-        rclcpp::get_logger("MIRA"),
-        "MIRA authority is not valid or service does not exist");
+        rclcpp::get_logger("MIRA"), "MIRA authority is not valid or service does not exist");
       return "";
     }
 
@@ -222,11 +217,11 @@ protected:
       return rpc.get();
     } catch (mira::XRPC & e) {
       RCLCPP_WARN(
-        rclcpp::get_logger("MIRA"),
-        "MIRA RPC error caught when getting parameter: %s", e.what() );
+        rclcpp::get_logger("MIRA"), "MIRA RPC error caught when getting parameter: %s", e.what());
       return "";
     }
   }
+  // LCOV_EXCL_STOP
 };
 
 }  // namespace scitos2_core

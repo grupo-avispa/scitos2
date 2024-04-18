@@ -20,6 +20,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 
+// LCOV_EXCL_START
 namespace scitos2_core
 {
 
@@ -70,5 +71,6 @@ private:
 };
 
 }  // namespace scitos2_core
+// LCOV_EXCL_STOP
 
 #endif  // SCITOS2_CORE__SINK_LOGGER_HPP_
