@@ -152,9 +152,8 @@ nav2_util::CallbackReturn MiraFramework::on_activate(const rclcpp_lifecycle::Sta
   framework_->start();
 
   // Create a timer to publish diagnostics
-  timer_ = this->create_timer(
-    std::chrono::milliseconds(10), [this]() -> void
-    {
+  timer_ = this->create_wall_timer(
+    std::chrono::milliseconds(10), [this]() {
       diag_pub_->publish(createDiagnostics());
     });
 
