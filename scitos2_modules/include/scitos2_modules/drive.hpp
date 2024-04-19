@@ -246,7 +246,7 @@ protected:
    * @param code Rfid code
    * @return bool If the code is a barrier code
    */
-  bool isBarrierCode(uint64 code) {return code == MAGNETIC_BARRIER_RFID_CODE;}
+  inline bool isBarrierCode(uint64 code) {return code == MAGNETIC_BARRIER_RFID_CODE;}
 
   /**
    * @brief Reset tje motor stop if the bumper is activated after a certain time.
