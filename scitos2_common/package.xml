@@ -4,9 +4,9 @@
   <name>scitos2_common</name>
   <version>2.0.0</version>
   <description>Common support functionality used throughout the scitos 2 stack</description>
-  <maintainer email="ajtudela@gmail.com">Alberto J. Tudela Roldán</maintainer>
+  <maintainer email="ajtudela@gmail.com">Alberto Tudela</maintainer>
   <license>Apache-2.0</license>
-  <author email="ajtudela@gmail.com">Alberto J. Tudela Roldán</author>
+  <author email="ajtudela@gmail.com">Alberto Tudela</author>
   <buildtool_depend>ament_cmake_core</buildtool_depend>
   <buildtool_export_depend>ament_cmake_core</buildtool_export_depend>
   <export>

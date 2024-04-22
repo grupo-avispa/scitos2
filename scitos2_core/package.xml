@@ -4,9 +4,9 @@
   <name>scitos2_core</name>
   <version>2.0.0</version>
   <description>Abstract interface for Scitos Modules.</description>
-  <maintainer email="ajtudela@gmail.com">Alberto J. Tudela Roldán</maintainer>
+  <maintainer email="ajtudela@gmail.com">Alberto Tudela</maintainer>
   <license>Apache-2.0</license>
-  <author email="ajtudela@gmail.com">Alberto J. Tudela Roldán</author>
+  <author email="ajtudela@gmail.com">Alberto Tudela</author>
   <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>rclcpp</depend>
   <depend>rclcpp_lifecycle</depend>
