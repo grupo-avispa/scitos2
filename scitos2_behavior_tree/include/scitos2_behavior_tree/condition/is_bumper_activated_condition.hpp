@@ -40,8 +40,7 @@ public:
    * @param conf BT node configuration
    */
   IsBumperActivatedCondition(
-    const std::string & condition_name,
-    const BT::NodeConfiguration & conf);
+    const std::string & condition_name, const BT::NodeConfiguration & conf);
 
   IsBumperActivatedCondition() = delete;
 
@@ -58,8 +57,7 @@ public:
   static BT::PortsList providedPorts()
   {
     return {
-      BT::InputPort<std::string>(
-        "bumper_topic", std::string("/bumper"), "Bumper topic")
+      BT::InputPort<std::string>("bumper_topic", std::string("/bumper"), "Bumper topic")
     };
   }
 

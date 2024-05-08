@@ -27,7 +27,7 @@ namespace scitos2_behavior_tree
 using nav2_behavior_tree::BtServiceNode;
 
 /**
- * @brief A nav2_behavior_tree::BtServiceNode class that wraps scitos_msgs::srv::ResetMotorStop
+ * @brief A nav2_behavior_tree::BtServiceNode class that wraps scitos2_msgs::srv::ResetMotorStop
  */
 class ResetMotorStopService : public BtServiceNode<scitos2_msgs::srv::ResetMotorStop>
 {

@@ -27,7 +27,7 @@ namespace scitos2_behavior_tree
 using nav2_behavior_tree::BtServiceNode;
 
 /**
- * @brief A nav2_behavior_tree::BtServiceNode class that wraps scitos_msgs::srv::EmergencyStop
+ * @brief A nav2_behavior_tree::BtServiceNode class that wraps scitos2_msgs::srv::EmergencyStop
  */
 class EmergencyStopService : public BtServiceNode<scitos2_msgs::srv::EmergencyStop>
 {
