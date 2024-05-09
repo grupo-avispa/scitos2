@@ -2,12 +2,14 @@
 mira:
   ros__parameters:
     scitos_config: ''
-    module_plugins: ['charger', 'drive']
+    module_plugins: ["charger", "drive"]
     charger:
-      plugin: 'scitos2_modules::Charger'
+      plugin: "scitos2_modules::Charger"
     drive:
-      plugin: 'scitos2_modules::Drive'
-      base_frame: base_link
+      plugin: "scitos2_modules::Drive"
+      robot_base_frame: "base_link"
+      odom_frame: "odom"
+      odom_topic: "odom"
       magnetic_barrier_enabled: true
       publish_tf: true
       reset_bumper_interval: 1000

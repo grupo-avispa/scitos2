@@ -358,7 +358,7 @@ protected:
   std::shared_ptr<rclcpp::Service<scitos2_msgs::srv::ResetOdometry>> reset_odometry_service_;
   std::shared_ptr<rclcpp::Service<scitos2_msgs::srv::SuspendBumper>> suspend_bumper_service_;
 
-  std::string base_frame_;
+  std::string robot_base_frame_, odom_frame_, odom_topic_;
   bool emergency_stop_activated_;
   scitos2_msgs::msg::BarrierStatus barrier_status_;
   bool is_active_;

@@ -27,7 +27,12 @@ public:
 
   void setBaseFrame(const std::string & base_frame)
   {
-    base_frame_ = base_frame;
+    robot_base_frame_ = base_frame;
+  }
+
+  void setOdomFrame(const std::string & odom_frame)
+  {
+    odom_frame_ = odom_frame;
   }
 
   void setResetBumperInterval(const rclcpp::Duration & reset_bumper_interval)
@@ -165,15 +170,23 @@ TEST(ScitosDriveTest, dynamicParameters) {
 
   // Set the parameters
   auto results = params->set_parameters_atomically(
-    {rclcpp::Parameter("test.magnetic_barrier_enabled", true),
-      rclcpp::Parameter("test.base_frame", "global_frame")});
+    {rclcpp::Parameter("test.robot_base_frame", "global_frame"),
+      rclcpp::Parameter("test.odom_frame", "odometry_frame"),
+      rclcpp::Parameter("test.odom_topic", "odom_test_topic"),
+      rclcpp::Parameter("test.magnetic_barrier_enabled", true),
+      rclcpp::Parameter("test.publish_tf", false),
+      rclcpp::Parameter("test.reset_bumper_interval", 20)});
 
   // Spin
   rclcpp::spin_until_future_complete(node->get_node_base_interface(), results);
 
   // Check parameters
+  EXPECT_EQ(node->get_parameter("test.robot_base_frame").as_string(), "global_frame");
+  EXPECT_EQ(node->get_parameter("test.odom_frame").as_string(), "odometry_frame");
+  EXPECT_EQ(node->get_parameter("test.odom_topic").as_string(), "odom_test_topic");
   EXPECT_EQ(node->get_parameter("test.magnetic_barrier_enabled").as_bool(), true);
-  EXPECT_EQ(node->get_parameter("test.base_frame").as_string(), "global_frame");
+  EXPECT_EQ(node->get_parameter("test.publish_tf").as_bool(), false);
+  EXPECT_EQ(node->get_parameter("test.reset_bumper_interval").as_int(), 20);
 
   // Cleaning up
   module->deactivate();
@@ -634,10 +647,11 @@ TEST(ScitosDriveTest, odometryTest) {
 
   // Convert the odometry to ROS
   module->setBaseFrame("base_test");
+  module->setOdomFrame("odom_test");
   mira::Time time = mira::Time().now();
   auto ros_odometry = module->miraToRosOdometry(odometry, time);
   // Check the values
-  EXPECT_EQ(ros_odometry.header.frame_id, "odom");
+  EXPECT_EQ(ros_odometry.header.frame_id, "odom_test");
   EXPECT_EQ(ros_odometry.header.stamp, rclcpp::Time(time.toUnixNS()));
   EXPECT_EQ(ros_odometry.child_frame_id, "base_test");
   EXPECT_DOUBLE_EQ(ros_odometry.pose.pose.position.x, 1.0);
@@ -661,10 +675,11 @@ TEST(ScitosDriveTest, transformTest) {
 
   // Convert the odometry to ROS
   module->setBaseFrame("base_test");
+  module->setOdomFrame("odom_test");
   mira::Time time = mira::Time().now();
   auto ros_tf = module->miraToRosTf(odometry, time);
   // Check the values
-  EXPECT_EQ(ros_tf.header.frame_id, "odom");
+  EXPECT_EQ(ros_tf.header.frame_id, "odom_test");
   EXPECT_EQ(ros_tf.header.stamp, rclcpp::Time(time.toUnixNS()));
   EXPECT_EQ(ros_tf.child_frame_id, "base_test");
   EXPECT_DOUBLE_EQ(ros_tf.transform.translation.x, 1.0);
@@ -763,7 +778,7 @@ TEST(ScitosDriveTest, odometryPublisher) {
   bool received_msg = false;
   auto sub = sub_node->create_subscription<nav_msgs::msg::Odometry>(
     "odom", 1,
-    [&](const nav_msgs::msg::Odometry & msg) {
+    [&](const nav_msgs::msg::Odometry & /* msg */) {
       RCLCPP_INFO(sub_node->get_logger(), "Received message");
       received_msg = true;
     });
@@ -819,7 +834,7 @@ TEST(ScitosDriveTest, bumperPublisher) {
   bool received_msg = false;
   auto sub = sub_node->create_subscription<scitos2_msgs::msg::BumperStatus>(
     "bumper", 1,
-    [&](const scitos2_msgs::msg::BumperStatus & msg) {
+    [&](const scitos2_msgs::msg::BumperStatus & /* msg */) {
       RCLCPP_INFO(sub_node->get_logger(), "Received message");
       received_msg = true;
     });
@@ -875,7 +890,7 @@ TEST(ScitosDriveTest, mileagePublisher) {
   bool received_msg = false;
   auto sub = sub_node->create_subscription<scitos2_msgs::msg::Mileage>(
     "mileage", 1,
-    [&](const scitos2_msgs::msg::Mileage & msg) {
+    [&](const scitos2_msgs::msg::Mileage & /* msg */) {
       RCLCPP_INFO(sub_node->get_logger(), "Received message");
       received_msg = true;
     });
@@ -931,7 +946,7 @@ TEST(ScitosDriveTest, driveStatusPublisher) {
   bool received_msg = false;
   auto sub = sub_node->create_subscription<scitos2_msgs::msg::DriveStatus>(
     "drive_status", 1,
-    [&](const scitos2_msgs::msg::DriveStatus & msg) {
+    [&](const scitos2_msgs::msg::DriveStatus & /* msg */) {
       RCLCPP_INFO(sub_node->get_logger(), "Received message");
       received_msg = true;
     });
@@ -987,7 +1002,7 @@ TEST(ScitosDriveTest, rfidPublisher) {
   bool received_msg = false;
   auto sub = sub_node->create_subscription<scitos2_msgs::msg::RfidTag>(
     "rfid", 1,
-    [&](const scitos2_msgs::msg::RfidTag & msg) {
+    [&](const scitos2_msgs::msg::RfidTag & /* msg */) {
       RCLCPP_INFO(sub_node->get_logger(), "Received message");
       received_msg = true;
     });

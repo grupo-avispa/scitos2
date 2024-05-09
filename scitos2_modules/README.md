@@ -146,9 +146,17 @@ The Drive module controls the robot's motors, handling velocity commands, odomet
 
 #### Parameters
 
-* **`base_frame`** (string, default: base_link)
+* **`robot_base_frame`** (string, default: base_link)
 
 	Specifies the name of the base frame of the robot.
+
+* ** `odom_frame`** (string, default: odom)
+
+	Specifies the name of the odometry frame when publishing the TF.
+
+* ** `odom_topic`** (string, default: odom)
+
+	Specifies the name of the odometry topic.
 
 * **`magnetic_barrier_enabled`** (bool, default: false)
 
@@ -156,7 +164,7 @@ The Drive module controls the robot's motors, handling velocity commands, odomet
 
 * **`publish_tf`** (bool, default: true)
 
-	This parameter should be set to true to publish the TF between `/odom` and `/base_frame`.
+	This parameter should be set to true to publish the TF between `odom_frame` and `robot_base_frame`.
 
 * **`reset_bumper_interval`** (int, default: 0)
 

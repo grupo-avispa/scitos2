@@ -48,63 +48,27 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
   authority_ = std::make_shared<mira::Authority>();
   authority_->checkin("/", plugin_name_);
 
-  // Create ROS publishers
-  auto latched_profile = rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable();
-  bumper_pub_ = node->create_publisher<scitos2_msgs::msg::BumperStatus>(
-    "bumper", latched_profile);
-  bumper_markers_pub_ = node->create_publisher<visualization_msgs::msg::MarkerArray>(
-    "bumper/visualization", 20);
-  drive_status_pub_ = node->create_publisher<scitos2_msgs::msg::DriveStatus>(
-    "drive_status", 20);
-  emergency_stop_pub_ = node->create_publisher<scitos2_msgs::msg::EmergencyStopStatus>(
-    "emergency_stop_status", latched_profile);
-  magnetic_barrier_pub_ = node->create_publisher<scitos2_msgs::msg::BarrierStatus>(
-    "barrier_status", latched_profile);
-  mileage_pub_ = node->create_publisher<scitos2_msgs::msg::Mileage>("mileage", 20);
-  odometry_pub_ = node->create_publisher<nav_msgs::msg::Odometry>("odom", 10);
-  rfid_pub_ = node->create_publisher<scitos2_msgs::msg::RfidTag>("rfid", 20);
-
-  // Create MIRA subscribers
-  authority_->subscribe<mira::robot::Odometry2>(
-    "/robot/Odometry", std::bind(&Drive::odometryDataCallback, this, _1));
-  authority_->subscribe<bool>(
-    "/robot/Bumper", std::bind(&Drive::bumperDataCallback, this, _1));
-  authority_->subscribe<float>(
-    "/robot/Mileage", std::bind(&Drive::mileageDataCallback, this, _1));
-  authority_->subscribe<uint32>(
-    "/robot/DriveStatusPlain", std::bind(&Drive::driveStatusCallback, this, _1));
-  authority_->subscribe<uint64>(
-    "/robot/RFIDUserTag", std::bind(&Drive::rfidStatusCallback, this, _1));
-
-  // Create ROS subscribers
-  cmd_vel_sub_ = node->create_subscription<geometry_msgs::msg::Twist>(
-    "cmd_vel", 1, std::bind(&Drive::velocityCommandCallback, this, _1));
-
-  // Create ROS services
-  change_force_service_ = node->create_service<scitos2_msgs::srv::ChangeForce>(
-    "drive/change_force", std::bind(&Drive::changeForce, this, _1, _2));
-  emergency_stop_service_ = node->create_service<scitos2_msgs::srv::EmergencyStop>(
-    "drive/emergency_stop", std::bind(&Drive::emergencyStop, this, _1, _2));
-  enable_motors_service_ = node->create_service<scitos2_msgs::srv::EnableMotors>(
-    "drive/enable_motors", std::bind(&Drive::enableMotors, this, _1, _2));
-  enable_rfid_service_ = node->create_service<scitos2_msgs::srv::EnableRfid>(
-    "drive/enable_rfid", std::bind(&Drive::enableRfid, this, _1, _2));
-  reset_barrier_stop_service_ = node->create_service<scitos2_msgs::srv::ResetBarrierStop>(
-    "drive/reset_barrier_stop", std::bind(&Drive::resetBarrierStop, this, _1, _2));
-  reset_motor_stop_service_ = node->create_service<scitos2_msgs::srv::ResetMotorStop>(
-    "drive/reset_motor_stop", std::bind(&Drive::resetMotorStop, this, _1, _2));
-  reset_odometry_service_ = node->create_service<scitos2_msgs::srv::ResetOdometry>(
-    "drive/reset_odometry", std::bind(&Drive::resetOdometry, this, _1, _2));
-  suspend_bumper_service_ = node->create_service<scitos2_msgs::srv::SuspendBumper>(
-    "drive/suspend_bumper", std::bind(&Drive::suspendBumper, this, _1, _2));
-
   // Declare and read parameters
   nav2_util::declare_parameter_if_not_declared(
-    node, plugin_name_ + ".base_frame",
+    node, plugin_name_ + ".robot_base_frame",
     rclcpp::ParameterValue("base_link"), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("The name of the base frame of the robot"));
-  node->get_parameter(plugin_name_ + ".base_frame", base_frame_);
-  RCLCPP_INFO(logger_, "The parameter base_frame is set to: [%s]", base_frame_.c_str());
+  node->get_parameter(plugin_name_ + ".robot_base_frame", robot_base_frame_);
+  RCLCPP_INFO(logger_, "The parameter robot_base_frame is set to: [%s]", robot_base_frame_.c_str());
+
+  nav2_util::declare_parameter_if_not_declared(
+    node, plugin_name_ + ".odom_frame",
+    rclcpp::ParameterValue("odom"), rcl_interfaces::msg::ParameterDescriptor()
+    .set__description("The name of the odometry frame"));
+  node->get_parameter(plugin_name_ + ".odom_frame", odom_frame_);
+  RCLCPP_INFO(logger_, "The parameter odom_frame is set to: [%s]", odom_frame_.c_str());
+
+  nav2_util::declare_parameter_if_not_declared(
+    node, plugin_name_ + ".odom_topic",
+    rclcpp::ParameterValue("odom"), rcl_interfaces::msg::ParameterDescriptor()
+    .set__description("The name of the odometry topic"));
+  node->get_parameter(plugin_name_ + ".odom_topic", odom_topic_);
+  RCLCPP_INFO(logger_, "The parameter odom_topic is set to: [%s]", odom_topic_.c_str());
 
   bool magnetic_barrier_enabled;
   nav2_util::declare_parameter_if_not_declared(
@@ -165,6 +129,56 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
         footprint_.c_str(), robot_radius_);
     }
   }
+
+  // Create ROS publishers
+  auto latched_profile = rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable();
+  bumper_pub_ = node->create_publisher<scitos2_msgs::msg::BumperStatus>(
+    "bumper", latched_profile);
+  bumper_markers_pub_ = node->create_publisher<visualization_msgs::msg::MarkerArray>(
+    "bumper/visualization", 20);
+  drive_status_pub_ = node->create_publisher<scitos2_msgs::msg::DriveStatus>(
+    "drive_status", 20);
+  emergency_stop_pub_ = node->create_publisher<scitos2_msgs::msg::EmergencyStopStatus>(
+    "emergency_stop_status", latched_profile);
+  magnetic_barrier_pub_ = node->create_publisher<scitos2_msgs::msg::BarrierStatus>(
+    "barrier_status", latched_profile);
+  mileage_pub_ = node->create_publisher<scitos2_msgs::msg::Mileage>("mileage", 20);
+  odometry_pub_ = node->create_publisher<nav_msgs::msg::Odometry>(odom_topic_, 10);
+  rfid_pub_ = node->create_publisher<scitos2_msgs::msg::RfidTag>("rfid", 20);
+
+  // Create MIRA subscribers
+  authority_->subscribe<mira::robot::Odometry2>(
+    "/robot/Odometry", std::bind(&Drive::odometryDataCallback, this, _1));
+  authority_->subscribe<bool>(
+    "/robot/Bumper", std::bind(&Drive::bumperDataCallback, this, _1));
+  authority_->subscribe<float>(
+    "/robot/Mileage", std::bind(&Drive::mileageDataCallback, this, _1));
+  authority_->subscribe<uint32>(
+    "/robot/DriveStatusPlain", std::bind(&Drive::driveStatusCallback, this, _1));
+  authority_->subscribe<uint64>(
+    "/robot/RFIDUserTag", std::bind(&Drive::rfidStatusCallback, this, _1));
+
+  // Create ROS subscribers
+  cmd_vel_sub_ = node->create_subscription<geometry_msgs::msg::Twist>(
+    "cmd_vel", 1, std::bind(&Drive::velocityCommandCallback, this, _1));
+
+  // Create ROS services
+  change_force_service_ = node->create_service<scitos2_msgs::srv::ChangeForce>(
+    "drive/change_force", std::bind(&Drive::changeForce, this, _1, _2));
+  emergency_stop_service_ = node->create_service<scitos2_msgs::srv::EmergencyStop>(
+    "drive/emergency_stop", std::bind(&Drive::emergencyStop, this, _1, _2));
+  enable_motors_service_ = node->create_service<scitos2_msgs::srv::EnableMotors>(
+    "drive/enable_motors", std::bind(&Drive::enableMotors, this, _1, _2));
+  enable_rfid_service_ = node->create_service<scitos2_msgs::srv::EnableRfid>(
+    "drive/enable_rfid", std::bind(&Drive::enableRfid, this, _1, _2));
+  reset_barrier_stop_service_ = node->create_service<scitos2_msgs::srv::ResetBarrierStop>(
+    "drive/reset_barrier_stop", std::bind(&Drive::resetBarrierStop, this, _1, _2));
+  reset_motor_stop_service_ = node->create_service<scitos2_msgs::srv::ResetMotorStop>(
+    "drive/reset_motor_stop", std::bind(&Drive::resetMotorStop, this, _1, _2));
+  reset_odometry_service_ = node->create_service<scitos2_msgs::srv::ResetOdometry>(
+    "drive/reset_odometry", std::bind(&Drive::resetOdometry, this, _1, _2));
+  suspend_bumper_service_ = node->create_service<scitos2_msgs::srv::SuspendBumper>(
+    "drive/suspend_bumper", std::bind(&Drive::suspendBumper, this, _1, _2));
 
   // Callback for monitor changes in parameters
   dyn_params_handler_ = node->add_on_set_parameters_callback(
@@ -257,9 +271,21 @@ rcl_interfaces::msg::SetParametersResult Drive::dynamicParametersCallback(
           magnetic_barrier_enabled ? "true" : "false");
       }
     } else if (type == ParameterType::PARAMETER_STRING) {
-      if (name == plugin_name_ + ".base_frame") {
-        base_frame_ = parameter.as_string();
-        RCLCPP_INFO(logger_, "The parameter base_frame is set to: [%s]", base_frame_.c_str());
+      if (name == plugin_name_ + ".robot_base_frame") {
+        robot_base_frame_ = parameter.as_string();
+        RCLCPP_INFO(logger_, "The parameter base_frame is set to: [%s]", robot_base_frame_.c_str());
+      } else if (name == plugin_name_ + ".odom_frame") {
+        odom_frame_ = parameter.as_string();
+        RCLCPP_INFO(logger_, "The parameter odom_frame is set to: [%s]", odom_frame_.c_str());
+      } else if (name == plugin_name_ + ".odom_topic") {
+        odom_topic_ = parameter.as_string();
+        RCLCPP_INFO(logger_, "The parameter odom_topic is set to: [%s]", odom_topic_.c_str());
+      }
+    } else if (type == ParameterType::PARAMETER_INTEGER) {
+      if (name == plugin_name_ + ".reset_bumper_interval") {
+        int rbi = parameter.as_int();
+        reset_bumper_interval_ = rclcpp::Duration::from_seconds(rbi / 1000.0);
+        RCLCPP_INFO(logger_, "The parameter reset_bumper_interval is set to: [%i]", rbi);
       }
     }
   }
@@ -285,7 +311,7 @@ void Drive::bumperDataCallback(mira::ChannelRead<bool> data)
   rclcpp::Time stamp = rclcpp::Time(data->timestamp.toUnixNS());
 
   scitos2_msgs::msg::BumperStatus bumper_status;
-  bumper_status.header.frame_id = base_frame_;
+  bumper_status.header.frame_id = robot_base_frame_;
   bumper_status.header.stamp = stamp;
   bumper_status.bumper_activated = data->value();
   bumper_status.bumper_status = data->value();
@@ -300,7 +326,7 @@ void Drive::bumperDataCallback(mira::ChannelRead<bool> data)
 void Drive::mileageDataCallback(mira::ChannelRead<float> data)
 {
   scitos2_msgs::msg::Mileage mileage_msg;
-  mileage_msg.header.frame_id = base_frame_;
+  mileage_msg.header.frame_id = robot_base_frame_;
   mileage_msg.header.stamp = rclcpp::Time(data->timestamp.toUnixNS());
   mileage_msg.distance = data->value();
   mileage_pub_->publish(mileage_msg);
@@ -379,7 +405,7 @@ bool Drive::resetBarrierStop(
   const std::shared_ptr<scitos2_msgs::srv::ResetBarrierStop::Request> request,
   std::shared_ptr<scitos2_msgs::srv::ResetBarrierStop::Response> response)
 {
-  barrier_status_.header.frame_id = base_frame_;
+  barrier_status_.header.frame_id = robot_base_frame_;
   barrier_status_.header.stamp = clock_->now();
   barrier_status_.barrier_stopped = false;
   magnetic_barrier_pub_->publish(barrier_status_);
@@ -469,9 +495,9 @@ nav_msgs::msg::Odometry Drive::miraToRosOdometry(
   const mira::robot::Odometry2 & odometry, const mira::Time & timestamp)
 {
   nav_msgs::msg::Odometry odom_msg;
-  odom_msg.header.frame_id = "odom";
+  odom_msg.header.frame_id = odom_frame_;
   odom_msg.header.stamp = rclcpp::Time(timestamp.toUnixNS());
-  odom_msg.child_frame_id = base_frame_;
+  odom_msg.child_frame_id = robot_base_frame_;
 
   // Set the position
   odom_msg.pose.pose.position.x = odometry.pose.x();
@@ -489,9 +515,9 @@ geometry_msgs::msg::TransformStamped Drive::miraToRosTf(
   const mira::robot::Odometry2 & odometry, const mira::Time & timestamp)
 {
   geometry_msgs::msg::TransformStamped tf_msg;
-  tf_msg.header.frame_id = "odom";
+  tf_msg.header.frame_id = odom_frame_;
   tf_msg.header.stamp = rclcpp::Time(timestamp.toUnixNS());
-  tf_msg.child_frame_id = base_frame_;
+  tf_msg.child_frame_id = robot_base_frame_;
   tf_msg.transform.translation.x = odometry.pose.x();
   tf_msg.transform.translation.y = odometry.pose.y();
   tf_msg.transform.translation.z = 0.0;
@@ -503,7 +529,7 @@ scitos2_msgs::msg::DriveStatus Drive::miraToRosDriveStatus(
   const uint32 & status, const mira::Time & timestamp)
 {
   scitos2_msgs::msg::DriveStatus drive_status;
-  drive_status.header.frame_id = base_frame_;
+  drive_status.header.frame_id = robot_base_frame_;
   drive_status.header.stamp = rclcpp::Time(timestamp.toUnixNS());
   drive_status.mode_normal = static_cast<bool>(status & 1);
   drive_status.mode_forced_stopped = static_cast<bool>(status & (1 << 1));
@@ -526,7 +552,7 @@ scitos2_msgs::msg::EmergencyStopStatus Drive::miraToRosEmergencyStopStatus(
   const uint32 & status, const mira::Time & timestamp)
 {
   scitos2_msgs::msg::EmergencyStopStatus emergency_stop_status;
-  emergency_stop_status.header.frame_id = base_frame_;
+  emergency_stop_status.header.frame_id = robot_base_frame_;
   emergency_stop_status.header.stamp = rclcpp::Time(timestamp.toUnixNS());
   emergency_stop_status.emergency_stop_activated = static_cast<bool>(status & (1 << 7));
   emergency_stop_status.emergency_stop_status = static_cast<bool>(status & (1 << 8));
@@ -537,7 +563,7 @@ scitos2_msgs::msg::BarrierStatus Drive::miraToRosBarrierStatus(
   const uint64 & status, const mira::Time & timestamp)
 {
   scitos2_msgs::msg::BarrierStatus barrier;
-  barrier.header.frame_id = base_frame_;
+  barrier.header.frame_id = robot_base_frame_;
   barrier.header.stamp = rclcpp::Time(timestamp.toUnixNS());
   barrier.barrier_stopped = true;
   barrier.last_detection_stamp = rclcpp::Time(timestamp.toUnixNS());
