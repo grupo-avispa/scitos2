@@ -49,23 +49,22 @@ public:
   using ModuleMap = std::unordered_map<std::string, scitos2_core::Module::Ptr>;
 
   /**
-   * @brief Construct a new laser Segmentation object
+   * @brief Construct a new Mira Framework object
    *
    * @param options Node options
    */
   explicit MiraFramework(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
   /**
-   * @brief Destroy the laser Segmentation object
+   * @brief Destroy the Mira Framework object
    *
    */
   ~MiraFramework();
 
 protected:
   /**
-   * @brief Configures the modules parameters and member variables
+   * @brief Configures the modules plugin.
    *
-   * Configures modules plugin.
    * @param state LifeCycle Node's state
    * @return Success or Failure
    * @throw pluginlib::PluginlibException When failed to initialize module
@@ -74,18 +73,16 @@ protected:
   nav2_util::CallbackReturn on_configure(const rclcpp_lifecycle::State & state) override;
 
   /**
-   * @brief Activates member variables
+   * @brief Activates the modules.
    *
-   * Activates the modules
    * @param state LifeCycle Node's state
    * @return Success or Failure
    */
   nav2_util::CallbackReturn on_activate(const rclcpp_lifecycle::State & state) override;
 
   /**
-   * @brief Deactivates member variables
+   * @brief Deactivates the modules.
    *
-   * Deactivates the modules.
    * @param state LifeCycle Node's state
    * @return Success or Failure
    */
@@ -94,15 +91,14 @@ protected:
   /**
    * @brief Calls clean up states and resets member variables.
    *
-   * module clean up state is called, and resets rest of the
-   * variables
    * @param state LifeCycle Node's state
    * @return Success or Failure
    */
   nav2_util::CallbackReturn on_cleanup(const rclcpp_lifecycle::State & state) override;
 
   /**
-   * @brief Called when in Shutdown state
+   * @brief Called when in Shutdown state.
+   *
    * @param state LifeCycle Node's state
    * @return Success or Failure
    */
@@ -120,7 +116,7 @@ protected:
   std::unique_ptr<mira::Framework> framework_;
   bool loaded_;
 
-  // Modules Plugins
+  // Module Plugins
   pluginlib::ClassLoader<scitos2_core::Module> module_loader_;
   ModuleMap modules_;
   std::vector<std::string> default_ids_;
