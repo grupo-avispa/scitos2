@@ -19,6 +19,7 @@ This package contains messages and services for the Metralabs Scitos robot base.
 * [EmergencyStop](srv/EmergencyStop.srv): Service to perform an emergency stop and set the motor emergency stop flag.
 * [EnableMotors](srv/EnableMotors.srv): Service to enable or disable the motors.
 * [EnableRfid](srv/EnableRfid.srv): Service to enable or disable the RFID reader.
+* [SaveDock](srv/SaveDock.srv): Service to record the save the current dock pointcloud as a PCD file.
 * [ResetBarrierStop](srv/ResetBarrierStop.srv): Service to reset the magnetic barrier stop flag.
 * [ResetMotorStop](srv/ResetMotorStop.srv): Service to reset the motor stop flags (bumper, emergency stop flags, etc).
 * [ResetOdometry](srv/ResetOdometry.srv): Service to reset the odometry to zero.

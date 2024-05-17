@@ -1,6 +1,6 @@
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package scitos2_msgs
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 2.0.0 (XX-03-2024)
 ------------------
@@ -8,6 +8,7 @@ Changelog for package scitos2_msgs
 * Rename package to scitos2_msgs.
 * Added emergency_stop_status to EmergencyStopStatus.msg.
 * Added bumper_status to BumperStatus.msg.
+* Added SaveDock.srv.
 
 1.4.0 (25-04-2023)
 ------------------
