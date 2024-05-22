@@ -43,10 +43,10 @@ set(srv_files
   "srv/EmergencyStop.srv"
   "srv/EnableMotors.srv"
   "srv/EnableRfid.srv"
-  "srv/SaveDock.srv"
   "srv/ResetBarrierStop.srv"
   "srv/ResetMotorStop.srv"
   "srv/ResetOdometry.srv"
+  "srv/SaveDock.srv"
   "srv/SavePersistentErrors.srv"
   "srv/SuspendBumper.srv"
 )
