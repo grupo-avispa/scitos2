@@ -17,6 +17,7 @@
 
 // C++
 #include <vector>
+#include <string>
 
 // ROS
 #include "geometry_msgs/msg/point.hpp"
@@ -40,8 +41,12 @@ class Segmentation
 public:
   /**
    * @brief Create a segmentation instance. Configure ROS 2 parameters.
+   *
+   * @param node The ROS 2 node
+   * @param name The name of the segmentation
    */
-  explicit Segmentation(const rclcpp_lifecycle::LifecycleNode::SharedPtr & node);
+  explicit Segmentation(
+    const rclcpp_lifecycle::LifecycleNode::SharedPtr & node, const std::string & name);
 
   /**
    * @brief Destroy the Segmentation object
@@ -113,6 +118,9 @@ protected:
   // Dynamic parameters handler
   rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr dyn_params_handler_;
   std::mutex dynamic_params_lock_;
+
+  // Name of the segmentation
+  std::string name_;
 
   // Distance threshold for the segmentation
   double distance_threshold_;

@@ -21,8 +21,9 @@
 class SegmentationFixture : public scitos2_charging_dock::Segmentation
 {
 public:
-  explicit SegmentationFixture(const rclcpp_lifecycle::LifecycleNode::SharedPtr & node)
-  : Segmentation(node)
+  explicit SegmentationFixture(
+    const rclcpp_lifecycle::LifecycleNode::SharedPtr & node, const std::string & name)
+  : Segmentation(node, name)
   {
   }
 
@@ -114,7 +115,7 @@ sensor_msgs::msg::LaserScan create_scan(int num_points, double distance)
 TEST(SegmentationTest, dynamicParameters) {
   // Create a node
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("segmentation_test");
-  auto segmentation = std::make_shared<SegmentationFixture>(node);
+  auto segmentation = std::make_shared<SegmentationFixture>(node, "test");
 
   // Activate the node
   node->configure();
@@ -127,25 +128,25 @@ TEST(SegmentationTest, dynamicParameters) {
 
   // Set the parameters
   auto results = params->set_parameters_atomically(
-    {rclcpp::Parameter("segmentation.min_points", 1),
-      rclcpp::Parameter("segmentation.max_points", 3),
-      rclcpp::Parameter("segmentation.distance_threshold", 1.0),
-      rclcpp::Parameter("segmentation.min_distance", 10.0),
-      rclcpp::Parameter("segmentation.max_distance", 0.1),
-      rclcpp::Parameter("segmentation.min_width", 10.0),
-      rclcpp::Parameter("segmentation.max_width", 0.1)});
+    {rclcpp::Parameter("test.segmentation.min_points", 1),
+      rclcpp::Parameter("test.segmentation.max_points", 3),
+      rclcpp::Parameter("test.segmentation.distance_threshold", 1.0),
+      rclcpp::Parameter("test.segmentation.min_distance", 10.0),
+      rclcpp::Parameter("test.segmentation.max_distance", 0.1),
+      rclcpp::Parameter("test.segmentation.min_width", 10.0),
+      rclcpp::Parameter("test.segmentation.max_width", 0.1)});
 
   // Spin
   rclcpp::spin_until_future_complete(node->get_node_base_interface(), results);
 
   // Check parameters
-  EXPECT_EQ(node->get_parameter("segmentation.min_points").as_int(), 1);
-  EXPECT_EQ(node->get_parameter("segmentation.max_points").as_int(), 3);
-  EXPECT_EQ(node->get_parameter("segmentation.distance_threshold").as_double(), 1.0);
-  EXPECT_EQ(node->get_parameter("segmentation.min_distance").as_double(), 10.0);
-  EXPECT_EQ(node->get_parameter("segmentation.max_distance").as_double(), 0.1);
-  EXPECT_EQ(node->get_parameter("segmentation.min_width").as_double(), 10.0);
-  EXPECT_EQ(node->get_parameter("segmentation.max_width").as_double(), 0.1);
+  EXPECT_EQ(node->get_parameter("test.segmentation.min_points").as_int(), 1);
+  EXPECT_EQ(node->get_parameter("test.segmentation.max_points").as_int(), 3);
+  EXPECT_EQ(node->get_parameter("test.segmentation.distance_threshold").as_double(), 1.0);
+  EXPECT_EQ(node->get_parameter("test.segmentation.min_distance").as_double(), 10.0);
+  EXPECT_EQ(node->get_parameter("test.segmentation.max_distance").as_double(), 0.1);
+  EXPECT_EQ(node->get_parameter("test.segmentation.min_width").as_double(), 10.0);
+  EXPECT_EQ(node->get_parameter("test.segmentation.max_width").as_double(), 0.1);
 
   // Cleaning up
   node->deactivate();
@@ -156,7 +157,7 @@ TEST(SegmentationTest, dynamicParameters) {
 TEST(SegmentationTest, euclideanDistance) {
   // Create a node
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("segmentation_test");
-  auto segmentation = std::make_shared<SegmentationFixture>(node);
+  auto segmentation = std::make_shared<SegmentationFixture>(node, "test");
 
   // Calculate the euclidean distance between two points
   geometry_msgs::msg::Point point1;
@@ -173,7 +174,7 @@ TEST(SegmentationTest, euclideanDistance) {
 TEST(SegmentationTest, fromPolarToCartesian) {
   // Create a node
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("segmentation_test");
-  auto segmentation = std::make_shared<SegmentationFixture>(node);
+  auto segmentation = std::make_shared<SegmentationFixture>(node, "test");
 
   // Convert a polar point to a cartesian point
   geometry_msgs::msg::Point point = segmentation->fromPolarToCartesian(1.0, 0.0);
@@ -191,7 +192,7 @@ TEST(SegmentationTest, fromPolarToCartesian) {
 TEST(SegmentationTest, scanToPoints) {
   // Create a node
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("segmentation_test");
-  auto segmentation = std::make_shared<SegmentationFixture>(node);
+  auto segmentation = std::make_shared<SegmentationFixture>(node, "test");
 
   // Convert a laser scan to a vector of points
   sensor_msgs::msg::LaserScan scan;
@@ -218,7 +219,7 @@ TEST(SegmentationTest, scanToPoints) {
 TEST(SegmentationTest, isJumpBetweenPoints) {
   // Create a node
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("segmentation_test");
-  auto segmentation = std::make_shared<SegmentationFixture>(node);
+  auto segmentation = std::make_shared<SegmentationFixture>(node, "test");
 
   // Create two points with a distance of 1.0
   geometry_msgs::msg::Point point1;
@@ -242,7 +243,7 @@ TEST(SegmentationTest, isJumpBetweenPoints) {
 TEST(SegmentationTest, performSegmentation) {
   // Create a node
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("segmentation_test");
-  auto segmentation = std::make_shared<SegmentationFixture>(node);
+  auto segmentation = std::make_shared<SegmentationFixture>(node, "test");
 
   // Set the jump distance to 0.1
   segmentation->setDistanceThreshold(0.1);
@@ -276,7 +277,7 @@ TEST(SegmentationTest, performSegmentation) {
 TEST(SegmentationTest, filteringSegments) {
   // Create a node
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("segmentation_test");
-  auto segmentation = std::make_shared<SegmentationFixture>(node);
+  auto segmentation = std::make_shared<SegmentationFixture>(node, "test");
 
   // Set the filtering parameters
   segmentation->setFilteringParams(1, 3, 1.0, 10.0, 0.1, 10.0);

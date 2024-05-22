@@ -20,30 +20,33 @@
 namespace scitos2_charging_dock
 {
 
-Segmentation::Segmentation(const rclcpp_lifecycle::LifecycleNode::SharedPtr & node)
+Segmentation::Segmentation(
+  const rclcpp_lifecycle::LifecycleNode::SharedPtr & node, const std::string & name)
 {
-  nav2_util::declare_parameter_if_not_declared(
-    node, "segmentation.distance_threshold", rclcpp::ParameterValue(0.04));
-  nav2_util::declare_parameter_if_not_declared(
-    node, "segmentation.min_points", rclcpp::ParameterValue(20));
-  nav2_util::declare_parameter_if_not_declared(
-    node, "segmentation.max_points", rclcpp::ParameterValue(200));
-  nav2_util::declare_parameter_if_not_declared(
-    node, "segmentation.min_distance", rclcpp::ParameterValue(0.0));
-  nav2_util::declare_parameter_if_not_declared(
-    node, "segmentation.max_distance", rclcpp::ParameterValue(2.0));
-  nav2_util::declare_parameter_if_not_declared(
-    node, "segmentation.min_width", rclcpp::ParameterValue(0.3));
-  nav2_util::declare_parameter_if_not_declared(
-    node, "segmentation.max_width", rclcpp::ParameterValue(1.0));
+  name_ = name;
 
-  node->get_parameter("segmentation.distance_threshold", distance_threshold_);
-  node->get_parameter("segmentation.min_points", min_points_segment_);
-  node->get_parameter("segmentation.max_points", max_points_segment_);
-  node->get_parameter("segmentation.min_distance", min_avg_distance_from_sensor_);
-  node->get_parameter("segmentation.max_distance", max_avg_distance_from_sensor_);
-  node->get_parameter("segmentation.min_width", min_segment_width_);
-  node->get_parameter("segmentation.max_width", max_segment_width_);
+  nav2_util::declare_parameter_if_not_declared(
+    node, name_ + ".segmentation.distance_threshold", rclcpp::ParameterValue(0.04));
+  nav2_util::declare_parameter_if_not_declared(
+    node, name_ + ".segmentation.min_points", rclcpp::ParameterValue(20));
+  nav2_util::declare_parameter_if_not_declared(
+    node, name_ + ".segmentation.max_points", rclcpp::ParameterValue(200));
+  nav2_util::declare_parameter_if_not_declared(
+    node, name_ + ".segmentation.min_distance", rclcpp::ParameterValue(0.0));
+  nav2_util::declare_parameter_if_not_declared(
+    node, name_ + ".segmentation.max_distance", rclcpp::ParameterValue(2.0));
+  nav2_util::declare_parameter_if_not_declared(
+    node, name_ + ".segmentation.min_width", rclcpp::ParameterValue(0.3));
+  nav2_util::declare_parameter_if_not_declared(
+    node, name_ + ".segmentation.max_width", rclcpp::ParameterValue(1.0));
+
+  node->get_parameter(name_ + ".segmentation.distance_threshold", distance_threshold_);
+  node->get_parameter(name_ + ".segmentation.min_points", min_points_segment_);
+  node->get_parameter(name_ + ".segmentation.max_points", max_points_segment_);
+  node->get_parameter(name_ + ".segmentation.min_distance", min_avg_distance_from_sensor_);
+  node->get_parameter(name_ + ".segmentation.max_distance", max_avg_distance_from_sensor_);
+  node->get_parameter(name_ + ".segmentation.min_width", min_segment_width_);
+  node->get_parameter(name_ + ".segmentation.max_width", max_segment_width_);
 
   // Add callback for dynamic parameters
   dyn_params_handler_ = node->add_on_set_parameters_callback(
@@ -154,21 +157,21 @@ Segmentation::dynamicParametersCallback(std::vector<rclcpp::Parameter> parameter
     const auto & type = parameter.get_type();
     const auto & name = parameter.get_name();
     if (type == rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER) {
-      if (name == "segmentation.min_points") {
+      if (name == name_ + ".segmentation.min_points") {
         min_points_segment_ = parameter.as_int();
-      } else if (name == "segmentation.max_points") {
+      } else if (name == name_ + ".segmentation.max_points") {
         max_points_segment_ = parameter.as_int();
       }
     } else if (type == rcl_interfaces::msg::ParameterType::PARAMETER_DOUBLE) {
-      if (name == "segmentation.distance_threshold") {
+      if (name == name_ + ".segmentation.distance_threshold") {
         distance_threshold_ = parameter.as_double();
-      } else if (name == "segmentation.min_distance") {
+      } else if (name == name_ + ".segmentation.min_distance") {
         min_avg_distance_from_sensor_ = parameter.as_double();
-      } else if (name == "segmentation.max_distance") {
+      } else if (name == name_ + ".segmentation.max_distance") {
         max_avg_distance_from_sensor_ = parameter.as_double();
-      } else if (name == "segmentation.min_width") {
+      } else if (name == name_ + ".segmentation.min_width") {
         min_segment_width_ = parameter.as_double();
-      } else if (name == "segmentation.max_width") {
+      } else if (name == name_ + ".segmentation.max_width") {
         max_segment_width_ = parameter.as_double();
       }
     }
