@@ -58,7 +58,10 @@ find_package(sensor_msgs REQUIRED)
 find_package(nav2_util REQUIRED)
 find_package(pcl_ros REQUIRED)
 find_package(pcl_conversions REQUIRED)
+find_package(tf2_ros REQUIRED)
 find_package(scitos2_msgs REQUIRED)
+find_package(opennav_docking_core REQUIRED)
+find_package(opennav_docking REQUIRED)
 
 # ##########
 # # Build ##
@@ -72,41 +75,38 @@ include_directories(
 set(dependencies
   rclcpp
   rclcpp_components
+  pluginlib
   geometry_msgs
   sensor_msgs
   nav2_util
   pcl_ros
   pcl_conversions
-  pluginlib
+  tf2_ros
   scitos2_msgs
+  opennav_docking_core
+  opennav_docking
 )
 
 set(library_name ${PROJECT_NAME}_core)
-set(perception_library_name perception)
-set(executable_name scitos2_charging_dock)
-set(dock_saver_executable_name dock_saver)
-
-# Add perception library
-add_library(${perception_library_name} SHARED src/perception.cpp)
-ament_target_dependencies(${perception_library_name} ${dependencies})
+set(dock_saver_executable dock_saver)
 
 # Add library
-add_library(${library_name} SHARED src/dock_saver.cpp)
+add_library(${library_name} SHARED
+  src/segmentation.cpp
+  src/perception.cpp
+  src/charging_dock.cpp
+  src/dock_saver.cpp
+)
 ament_target_dependencies(${library_name} ${dependencies})
-target_link_libraries(${library_name} ${perception_library_name})
+
+pluginlib_export_plugin_description_file(opennav_docking_core plugins.xml)
 
 # Add dock saver executable
-add_executable(${dock_saver_executable_name} src/main_saver.cpp)
-ament_target_dependencies(${dock_saver_executable_name} ${dependencies})
-target_link_libraries(${dock_saver_executable_name} ${library_name})
-
-# Add executables
-add_executable(${executable_name} src/main.cpp)
-ament_target_dependencies(${executable_name} ${dependencies})
-target_link_libraries(${executable_name} ${library_name})
+add_executable(${dock_saver_executable} src/main_saver.cpp)
+ament_target_dependencies(${dock_saver_executable} ${dependencies})
+target_link_libraries(${dock_saver_executable} ${library_name})
 
 rclcpp_components_register_nodes(${library_name} "scitos2_charging_dock::DockSaver")
-rclcpp_components_register_nodes(${library_name} "scitos2_charging_dock::Perception")
 
 # ############
 # # Install ##
@@ -117,7 +117,7 @@ install(TARGETS ${library_name}
   RUNTIME DESTINATION bin
 )
 
-install(TARGETS ${executable_name} ${dock_saver_executable_name}
+install(TARGETS ${dock_saver_executable}
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -138,6 +138,7 @@ install(FILES test/dock_test.pcd test/empty_dock_test.pcd
 # ############
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
+
   # the following line skips the linter which checks for copyrights
   set(ament_cmake_copyright_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
@@ -148,6 +149,6 @@ endif()
 # # ament specific configuration  ##
 # ##################################
 ament_export_include_directories(include)
-ament_export_libraries(${PROJECT_NAME})
+ament_export_libraries(${PROJECT_NAME} ${library_name})
 ament_export_dependencies(${dependencies})
 ament_package()

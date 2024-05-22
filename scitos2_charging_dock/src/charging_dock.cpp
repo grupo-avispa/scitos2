@@ -76,7 +76,7 @@ void ChargingDock::configure(
   node_->get_parameter(name + ".staging_yaw_offset", staging_yaw_offset_);
 
   // Setup perception
-  perception_ = std::make_unique<Perception>(node_);
+  perception_ = std::make_unique<Perception>(node_, name);
 
   // Setup filter
   double filter_coef;
@@ -105,6 +105,9 @@ void ChargingDock::configure(
 geometry_msgs::msg::PoseStamped ChargingDock::getStagingPose(
   const geometry_msgs::msg::Pose & pose, const std::string & frame)
 {
+  // Send the staging pose to the perception module
+  perception_->setStagingPose(pose, frame);
+
   // Compute the staging pose with given offsets
   const double yaw = tf2::getYaw(pose.orientation);
   geometry_msgs::msg::PoseStamped staging_pose;
