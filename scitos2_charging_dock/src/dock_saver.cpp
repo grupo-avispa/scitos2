@@ -153,7 +153,7 @@ bool DockSaver::saveDockCallback(
   sensor_msgs::msg::LaserScan::SharedPtr scan_msg = future_result.get();
 
   // Extract the dock pointcloud from the scan
-  scitos2_charging_dock::Perception::Pcloud dock;
+  scitos2_charging_dock::Pcloud dock;
   /*if (!perception_->extractDockPointcloud(*scan_msg, dock)) {
     RCLCPP_ERROR(get_logger(), "Failed to extract dock pointcloud");
     return false;
