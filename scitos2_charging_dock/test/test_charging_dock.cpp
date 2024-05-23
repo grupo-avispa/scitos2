@@ -134,13 +134,11 @@ TEST(ScitosChargingDock, stagingPoseWithYawOffset)
   dock.reset();
 }
 
-/*
 TEST(ScitosChargingDock, refinedPoseTest)
 {
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("test");
   node->declare_parameter("my_dock.use_external_detection_pose", rclcpp::ParameterValue(true));
-  auto pub = node->create_publisher<geometry_msgs::msg::PoseStamped>(
-    "detected_dock_pose", rclcpp::QoS(1));
+  auto pub = node->create_publisher<sensor_msgs::msg::LaserScan>("scan", rclcpp::QoS(1));
   pub->on_activate();
   auto dock = std::make_unique<scitos2_charging_dock::ChargingDock>();
 
@@ -153,24 +151,28 @@ TEST(ScitosChargingDock, refinedPoseTest)
   EXPECT_FALSE(dock->isDocked());
   EXPECT_FALSE(dock->getRefinedPose(pose));
 
-  geometry_msgs::msg::PoseStamped detected_pose;
-  detected_pose.header.stamp = node->now();
-  detected_pose.header.frame_id = "my_frame";
-  detected_pose.pose.position.x = 0.1;
-  detected_pose.pose.position.y = -0.1;
-  pub->publish(detected_pose);
+  sensor_msgs::msg::LaserScan scan;
+  scan.header.stamp = node->now();
+  scan.header.frame_id = "my_frame";
+  scan.angle_min = -M_PI;
+  scan.angle_max = M_PI;
+  scan.angle_increment = 2 * M_PI / 5;
+  scan.ranges = {1.0, 2.0, 3.0, 4.0, 5.0};
+  scan.range_min = scan.ranges.front();
+  scan.range_max = scan.ranges.back();
+  pub->publish(std::move(scan));
   rclcpp::spin_some(node->get_node_base_interface());
 
+  // Just expect that the pose is refined
+  // The actual values are not important for this test
+  // as they depend on the perception module and its already tested
   pose.header.frame_id = "my_frame";
   EXPECT_TRUE(dock->getRefinedPose(pose));
-  EXPECT_NEAR(pose.pose.position.x, 0.1, 0.01);
-  EXPECT_NEAR(pose.pose.position.y, -0.1, 0.01);
 
   dock->deactivate();
   dock->cleanup();
   dock.reset();
 }
-*/
 
 int main(int argc, char ** argv)
 {
