@@ -23,18 +23,18 @@ jobs:
         with:
           packages: g++ cmake subversion doxygen libxml2-dev libssl-dev libsqlite3-dev libboost-all-dev libogre-1.9-dev libsvn-dev libopencv-dev binutils-dev libiberty-dev libcurl4-gnutls-dev libprocps-dev libqwt-qt5-dev libqt5webkit5-dev libqwtmathml-qt5-dev libqt5opengl5-dev libqt5svg5-dev qt*5-dev qttools5-dev-tools git
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.1.6
       - name: Install MIRA
         run: | 
           curl -o mira-installer-binary.sh https://www.mira-project.org/downloads/mira-installer-binary.sh
           chmod +x mira-installer-binary.sh
           ./mira-installer-binary.sh -s ubuntu-2204lts-x64 -d ${{ github.workspace }}/mira
       - name: Setup ROS 2
-        uses: ros-tooling/setup-ros@v0.7.4
+        uses: ros-tooling/setup-ros@0.7.5
         with:
           required-ros-distributions: humble
       - name: Install dependencies
-        uses: ros-tooling/action-ros-ci@v0.3.12
+        uses: ros-tooling/action-ros-ci@0.3.13
         with:
           package-name: |
             scitos2
