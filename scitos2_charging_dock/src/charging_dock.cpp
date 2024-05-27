@@ -51,10 +51,6 @@ void ChargingDock::configure(
   nav2_util::declare_parameter_if_not_declared(
     node_, name + ".filter_coef", rclcpp::ParameterValue(0.1));
 
-  // Charging threshold from BatteryState message
-  nav2_util::declare_parameter_if_not_declared(
-    node_, name + ".charging_threshold", rclcpp::ParameterValue(0.5));
-
   // Staging pose configuration
   nav2_util::declare_parameter_if_not_declared(
     node_, name + ".staging_x_offset", rclcpp::ParameterValue(-0.7));
@@ -71,12 +67,11 @@ void ChargingDock::configure(
   node_->get_parameter(name + ".external_detection_rotation_pitch", pitch);
   node_->get_parameter(name + ".external_detection_rotation_roll", roll);
   external_detection_rotation_.setEuler(pitch, roll, yaw);
-  node_->get_parameter(name + ".charging_threshold", charging_threshold_);
   node_->get_parameter(name + ".staging_x_offset", staging_x_offset_);
   node_->get_parameter(name + ".staging_yaw_offset", staging_yaw_offset_);
 
   // Setup perception
-  perception_ = std::make_unique<Perception>(node_, name);
+  perception_ = std::make_unique<Perception>(node_, name, tf2_buffer_);
 
   // Setup filter
   double filter_coef;
@@ -84,16 +79,18 @@ void ChargingDock::configure(
   filter_ = std::make_unique<opennav_docking::PoseFilter>(filter_coef, external_detection_timeout_);
 
   battery_sub_ = node_->create_subscription<sensor_msgs::msg::BatteryState>(
-    "battery_state", 1,
-    [this](const sensor_msgs::msg::BatteryState::SharedPtr state) {
-      is_charging_ = state->current > charging_threshold_;
+    "battery", 1,
+    [this](
+      const sensor_msgs::msg::BatteryState::SharedPtr state) {
+      is_charging_ =
+      (state->power_supply_status == sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_CHARGING);
     });
 
   dock_pose_.header.stamp = rclcpp::Time(0);
   scan_sub_ = node_->create_subscription<sensor_msgs::msg::LaserScan>(
-    "scan", 1,
+    "scan", rclcpp::SensorDataQoS(),
     [this](const sensor_msgs::msg::LaserScan::SharedPtr scan) {
-      detected_dock_pose_ = perception_->getDockPose(*scan);
+      scan_ = *scan;
     });
 
   dock_pose_pub_ = node_->create_publisher<geometry_msgs::msg::PoseStamped>("dock_pose", 1);
@@ -105,8 +102,8 @@ void ChargingDock::configure(
 geometry_msgs::msg::PoseStamped ChargingDock::getStagingPose(
   const geometry_msgs::msg::Pose & pose, const std::string & frame)
 {
-  // Send the staging pose to the perception module
-  perception_->setStagingPose(pose, frame);
+  // Send the initial estimate to the perception module
+  perception_->setInitialEstimate(pose, frame);
 
   // Compute the staging pose with given offsets
   const double yaw = tf2::getYaw(pose.orientation);
@@ -128,7 +125,7 @@ geometry_msgs::msg::PoseStamped ChargingDock::getStagingPose(
 bool ChargingDock::getRefinedPose(geometry_msgs::msg::PoseStamped & pose)
 {
   // Get current detections, transform to frame, and apply offsets
-  geometry_msgs::msg::PoseStamped detected = detected_dock_pose_;
+  geometry_msgs::msg::PoseStamped detected = perception_->getDockPose(scan_);
 
   // Validate that external pose is new enough
   auto timeout = rclcpp::Duration::from_seconds(external_detection_timeout_);

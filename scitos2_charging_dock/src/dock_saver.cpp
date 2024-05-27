@@ -52,7 +52,9 @@ DockSaver::on_configure(const rclcpp_lifecycle::State & /*state*/)
     service_prefix + save_dock_service_name_,
     std::bind(&DockSaver::saveDockCallback, this, std::placeholders::_1, std::placeholders::_2));
 
-  // perception_ = std::make_shared<Perception>(get_node_options());
+  // Setup TF buffer and perception
+  tf2_buffer_ = std::make_shared<tf2_ros::Buffer>(get_clock());
+  perception_ = std::make_unique<Perception>(shared_from_this(), "dock_saver", tf2_buffer_);
 
   return nav2_util::CallbackReturn::SUCCESS;
 }
@@ -134,7 +136,7 @@ bool DockSaver::saveDockCallback(
   option.callback_group = callback_group;
 
   auto scan_sub = create_subscription<sensor_msgs::msg::LaserScan>(
-    request->scan_topic, 10, scanCallback, option);
+    request->scan_topic, rclcpp::SensorDataQoS(), scanCallback, option);
 
   // Create SingleThreadedExecutor to spin scan_sub in callback_group
   rclcpp::executors::SingleThreadedExecutor executor;
@@ -152,15 +154,21 @@ bool DockSaver::saveDockCallback(
   // Scan message received. Extracting dock pointcloud
   sensor_msgs::msg::LaserScan::SharedPtr scan_msg = future_result.get();
 
-  // Extract the dock pointcloud from the scan
-  scitos2_charging_dock::Pcloud dock;
-  /*if (!perception_->extractDockPointcloud(*scan_msg, dock)) {
-    RCLCPP_ERROR(get_logger(), "Failed to extract dock pointcloud");
-    return false;
-  }*/
+  // Extract clusters from the scan
+  auto clusters = perception_->extractClustersFromScan(*scan_msg);
+
+  // Find closest cluster
+  std::vector<double> distances;
+  for (auto cluster: clusters) {
+    double distance = std::hypot(cluster.getCentroid().x, cluster.getCentroid().y);
+    distances.push_back(distance);
+  }
+  std::vector<double>::iterator min_distance = std::min_element(distances.begin(), distances.end());
+  int idx = std::distance(distances.begin(), min_distance);
 
   // Store the dock pointcloud to a file
-  response->result = perception_->storeDockPointcloud(filename, dock);
+  scitos2_charging_dock::Pcloud::Ptr dock = clusters[idx].cloud;
+  response->result = perception_->storeDockPointcloud(filename, *dock);
 
   return true;
 }

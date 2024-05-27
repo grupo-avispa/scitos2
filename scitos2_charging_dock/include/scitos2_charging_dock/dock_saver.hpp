@@ -21,6 +21,8 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "nav2_util/lifecycle_node.hpp"
+#include "tf2_ros/buffer.h"
+#include "sensor_msgs/msg/laser_scan.hpp"
 #include "scitos2_msgs/srv/save_dock.hpp"
 #include "scitos2_msgs/srv/change_force.hpp"
 #include "scitos2_charging_dock/perception.hpp"
@@ -98,6 +100,9 @@ protected:
 
   // Perception module to interact with scans and point clouds
   std::shared_ptr<Perception> perception_;
+
+  // The TF buffer
+  std::shared_ptr<tf2_ros::Buffer> tf2_buffer_;
 
   // The name of the service for saving a dock from topic
   const std::string save_dock_service_name_{"save_dock"};

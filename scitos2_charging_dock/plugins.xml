@@ -1,5 +1,5 @@
 <class_libraries>
-  <library path="charging_dock">
+  <library path="scitos2_charging_dock_core">
     <class type="scitos2_charging_dock::ChargingDock"  base_class_type="opennav_docking_core::ChargingDock">
       <description>A Scitos charging dock plugin.</description>
     </class>

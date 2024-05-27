@@ -23,9 +23,10 @@
 class PerceptionFixture : public scitos2_charging_dock::Perception
 {
 public:
-  explicit PerceptionFixture(
-    const rclcpp_lifecycle::LifecycleNode::SharedPtr & node, const std::string & name)
-  : Perception(node, name)
+  PerceptionFixture(
+    const rclcpp_lifecycle::LifecycleNode::SharedPtr & node,
+    const std::string & name, std::shared_ptr<tf2_ros::Buffer> tf)
+  : Perception(node, name, tf)
   {
   }
 
@@ -43,6 +44,27 @@ public:
   tf2::Transform eigenToTransform(const Eigen::Matrix4f & T)
   {
     return scitos2_charging_dock::Perception::eigenToTransform(T);
+  }
+
+  bool refineClusterPose(
+    scitos2_charging_dock::Cluster & cluster,
+    scitos2_charging_dock::Pcloud::ConstPtr cloud_template)
+  {
+    return scitos2_charging_dock::Perception::refineClusterPose(cluster, cloud_template);
+  }
+
+  bool refineAllClustersPoses(
+    scitos2_charging_dock::Clusters & clusters,
+    scitos2_charging_dock::Pcloud::ConstPtr cloud_template,
+    geometry_msgs::msg::PoseStamped & dock_pose)
+  {
+    return scitos2_charging_dock::Perception::refineAllClustersPoses(
+      clusters, cloud_template, dock_pose);
+  }
+
+  void setDebug(bool debug)
+  {
+    debug_ = debug;
   }
 };
 
@@ -62,13 +84,13 @@ TEST(ScitosDockingPerception, configure) {
   node->declare_parameter("test.perception.enable_debug", rclcpp::ParameterValue(true));
 
   // Create the perception object
-  auto perception = std::make_shared<PerceptionFixture>(node, "test");
+  auto perception = std::make_shared<PerceptionFixture>(node, "test", nullptr);
 }
 
 TEST(ScitosDockingPerception, dynamicParameters) {
   // Create a node
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("perception_test");
-  auto perception = std::make_shared<PerceptionFixture>(node, "test");
+  auto perception = std::make_shared<PerceptionFixture>(node, "test", nullptr);
 
   // Activate the node
   node->configure();
@@ -108,7 +130,7 @@ TEST(ScitosDockingPerception, dynamicParameters) {
 TEST(ScitosDockingPerception, loadDockPointcloud) {
   // Create a node
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("perception_test");
-  auto perception = std::make_shared<PerceptionFixture>(node, "test");
+  auto perception = std::make_shared<PerceptionFixture>(node, "test", nullptr);
 
   // Try to load an empty file
   std::string filename = "";
@@ -137,7 +159,7 @@ TEST(ScitosDockingPerception, loadDockPointcloud) {
 TEST(ScitosDockingPerception, storeDockPointcloud) {
   // Create a node
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("perception_test");
-  auto perception = std::make_shared<PerceptionFixture>(node, "test");
+  auto perception = std::make_shared<PerceptionFixture>(node, "test", nullptr);
 
   // Store a pointcloud
   std::string pkg = ament_index_cpp::get_package_share_directory("scitos2_charging_dock");
@@ -153,7 +175,7 @@ TEST(ScitosDockingPerception, storeDockPointcloud) {
 TEST(ScitosDockingPerception, segmentsToClusters) {
   // Create a node
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("perception_test");
-  auto perception = std::make_shared<PerceptionFixture>(node, "test");
+  auto perception = std::make_shared<PerceptionFixture>(node, "test", nullptr);
 
   // Create a segment
   scitos2_charging_dock::Segment segment;
@@ -178,14 +200,28 @@ TEST(ScitosDockingPerception, segmentsToClusters) {
   EXPECT_EQ(clusters.size(), 2);
   EXPECT_EQ(clusters[0].cloud->size(), 3);
   EXPECT_EQ(clusters[0].cloud->header.frame_id, "test_link");
+  EXPECT_EQ(clusters[0].cloud->points[0].x, 0);
+  EXPECT_EQ(clusters[0].cloud->points[0].y, 0);
+  EXPECT_EQ(clusters[0].cloud->points[1].x, 1);
+  EXPECT_EQ(clusters[0].cloud->points[1].y, 0);
+  EXPECT_EQ(clusters[0].cloud->points[2].x, 0);
+  EXPECT_EQ(clusters[0].cloud->points[2].y, 1);
   EXPECT_EQ(clusters[1].cloud->size(), 4);
+  EXPECT_EQ(clusters[1].cloud->points[0].x, 2);
+  EXPECT_EQ(clusters[1].cloud->points[0].y, 0);
+  EXPECT_EQ(clusters[1].cloud->points[1].x, 3);
+  EXPECT_EQ(clusters[1].cloud->points[1].y, 0);
+  EXPECT_EQ(clusters[1].cloud->points[2].x, 2);
+  EXPECT_EQ(clusters[1].cloud->points[2].y, 1);
+  EXPECT_EQ(clusters[1].cloud->points[3].x, 2);
+  EXPECT_EQ(clusters[1].cloud->points[3].y, 5);
   EXPECT_EQ(clusters[1].cloud->header.frame_id, "test_link");
 }
 
 TEST(ScitosDockingPerception, eigenToTransform) {
   // Create a node
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("perception_test");
-  auto perception = std::make_shared<PerceptionFixture>(node, "test");
+  auto perception = std::make_shared<PerceptionFixture>(node, "test", nullptr);
 
   // Create a transformation matrix
   Eigen::Matrix4f T = Eigen::Matrix4f::Identity();
@@ -222,6 +258,109 @@ TEST(ScitosDockingPerception, eigenToTransform) {
   EXPECT_EQ(transform.getBasis().getRow(2).getX(), 9);
   EXPECT_EQ(transform.getBasis().getRow(2).getY(), 10);
   EXPECT_EQ(transform.getBasis().getRow(2).getZ(), 11);
+}
+
+TEST(ScitosDockingPerception, refineClusterToPose) {
+  // Create a node
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("perception_test");
+  auto perception = std::make_shared<PerceptionFixture>(node, "test", nullptr);
+
+  // Create a cluster
+  scitos2_charging_dock::Cluster cluster;
+  cluster.cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  cluster.cloud->push_back(pcl::PointXYZ(0, 0, 0));
+  cluster.cloud->push_back(pcl::PointXYZ(1, 0, 0));
+  cluster.cloud->push_back(pcl::PointXYZ(1, 1.5, 0));
+  cluster.cloud->push_back(pcl::PointXYZ(1, 2, 0));
+
+  // Create a template
+  auto cloud_template = std::make_shared<scitos2_charging_dock::Pcloud>();
+  cloud_template->push_back(pcl::PointXYZ(0, 0, 0));
+  cloud_template->push_back(pcl::PointXYZ(1, 0, 0));
+  cloud_template->push_back(pcl::PointXYZ(1, 1.5, 0));
+  cloud_template->push_back(pcl::PointXYZ(1, 2, 0));
+
+  // Set the initial pose
+  geometry_msgs::msg::Pose initial_pose;
+  initial_pose.position.x = 1;
+  initial_pose.position.y = 1;
+
+  // Refine the cluster pose
+  perception->setInitialEstimate(initial_pose, "test_link");
+  bool success = perception->refineClusterPose(cluster, cloud_template);
+
+  // Check if the pose was refined
+  EXPECT_TRUE(success);
+  EXPECT_EQ(cluster.icp_pose.header.frame_id, "test_link");
+  EXPECT_NEAR(cluster.icp_pose.pose.position.x, 1.0, 0.01);
+  EXPECT_NEAR(cluster.icp_pose.pose.position.y, 1.0, 0.01);
+
+  // Now set another cluster different from the template
+  scitos2_charging_dock::Cluster cluster2;
+  cluster2.cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  cluster2.cloud->push_back(pcl::PointXYZ(40, 50, 7));
+  cluster2.cloud->push_back(pcl::PointXYZ(10, 30, 0));
+  cluster2.cloud->push_back(pcl::PointXYZ(10, 1.5, 0));
+  cluster2.cloud->push_back(pcl::PointXYZ(10, 90, 0));
+
+  // Refine the cluster pose
+  perception->setInitialEstimate(initial_pose, "test_link");
+  success = perception->refineClusterPose(cluster2, cloud_template);
+
+  // Check if the pose was refined
+  EXPECT_FALSE(success);
+}
+
+TEST(ScitosDockingPerception, refineAllClustersPoses) {
+  // Create a node
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("perception_test");
+  auto perception = std::make_shared<PerceptionFixture>(node, "test", nullptr);
+  // perception->setDebug(true);
+
+  // Create two clusters
+  scitos2_charging_dock::Clusters clusters;
+  scitos2_charging_dock::Cluster cluster;
+  cluster.cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  cluster.cloud->header.frame_id = "test_link";
+  cluster.cloud->push_back(pcl::PointXYZ(0, 0, 0));
+  cluster.cloud->push_back(pcl::PointXYZ(1, 0, 0));
+  cluster.cloud->push_back(pcl::PointXYZ(1, 1.5, 0));
+  cluster.cloud->push_back(pcl::PointXYZ(1, 2, 0));
+  clusters.push_back(cluster);
+
+  scitos2_charging_dock::Cluster cluster2;
+  cluster2.cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
+  cluster2.cloud->header.frame_id = "test_link";
+  cluster2.cloud->push_back(pcl::PointXYZ(2, 0, 0));
+  cluster2.cloud->push_back(pcl::PointXYZ(3, 0, 0));
+  cluster2.cloud->push_back(pcl::PointXYZ(2, 1, 0));
+  cluster2.cloud->push_back(pcl::PointXYZ(2, 5, 0));
+  clusters.push_back(cluster2);
+
+  // Create a template
+  auto cloud_template = std::make_shared<scitos2_charging_dock::Pcloud>();
+  cloud_template->header.frame_id = "test_link";
+  cloud_template->push_back(pcl::PointXYZ(0, 0, 0));
+  cloud_template->push_back(pcl::PointXYZ(1, 0, 0));
+  cloud_template->push_back(pcl::PointXYZ(1, 1.5, 0));
+  cloud_template->push_back(pcl::PointXYZ(1, 2, 0));
+
+  // Set the initial pose
+  geometry_msgs::msg::Pose initial_pose;
+  initial_pose.position.x = 1;
+  initial_pose.position.y = 1;
+  perception->setInitialEstimate(initial_pose, "test_link");
+
+  // Refine the clusters poses
+  geometry_msgs::msg::PoseStamped dock_pose;
+  dock_pose.pose = initial_pose;
+  dock_pose.header.frame_id = "test_link";
+  bool success = perception->refineAllClustersPoses(clusters, cloud_template, dock_pose);
+
+  // Check if the dock is found
+  EXPECT_TRUE(success);
+  EXPECT_EQ(dock_pose.header.frame_id, "test_link");
+  EXPECT_NEAR(dock_pose.pose.position.x, 1.0, 0.01);
 }
 
 int main(int argc, char ** argv)

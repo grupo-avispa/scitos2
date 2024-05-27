@@ -108,20 +108,13 @@ public:
   virtual bool hasStoppedCharging();
 
 protected:
-  /**
-   * @brief Callback executed when a new scan is received
-   *
-   * @param scan_msg The received scan
-   */
-  void scanCallback(const sensor_msgs::msg::LaserScan::SharedPtr scan_msg);
-
   // Subscribe to a scan topic
   rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;
   rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr dock_pose_pub_;
   rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr filtered_dock_pose_pub_;
   rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr staging_pose_pub_;
   // It will contain latest message
-  geometry_msgs::msg::PoseStamped detected_dock_pose_;
+  sensor_msgs::msg::LaserScan scan_;
   // This is the actual dock pose once it has the specified translation/rotation applied
   geometry_msgs::msg::PoseStamped dock_pose_;
 
@@ -138,8 +131,6 @@ protected:
   // Filtering of detected poses
   std::shared_ptr<opennav_docking::PoseFilter> filter_;
 
-  // Threshold that battery current must exceed to be "charging" (in Amperes)
-  double charging_threshold_;
   // Offset for staging pose relative to dock pose
   double staging_x_offset_;
   double staging_yaw_offset_;

@@ -72,9 +72,9 @@ struct Cluster
   {
     if (!cloud) {return 0;}
 
-    pcl::PointXYZ pt1 = (*cloud).front();
-    pcl::PointXYZ pt2 = (*cloud).back();
-    return sqrt(pow((pt1.x - pt2.x), 2) + pow((pt1.y - pt2.y), 2));
+    double dx = cloud->back().x - cloud->front().x;
+    double dy = cloud->back().y - cloud->front().y;
+    return std::hypot(dx, dy);
   }
 
   /**
@@ -83,20 +83,23 @@ struct Cluster
    * @param ideal_size Size of the cluster.
    * @return bool If the cluster is valid.
    */
-  bool valid(double ideal_size)
+  bool valid(double ideal_size) const
   {
     // If there are no points this cannot be valid.
-    if (!cloud) {return false;}
+    if (!cloud) {
+      return false;
+    }
 
     // Check overall size.
-    if (width() > 1.25 * ideal_size || width() < ideal_size / 2.0) {return false;}
+    if (width() > 1.25 * ideal_size || width() < ideal_size / 2.0) {
+      return false;
+    }
 
-    // Not too far off from initial pose.
-    return distance_from_initial_pose < 1.0;
+    return true;
   }
 
-  friend bool operator<(const Cluster c1, const Cluster c2) {return c1.width() < c2.width();}
-  friend bool operator>(const Cluster c1, const Cluster c2) {return c1.width() > c2.width();}
+  friend bool operator<(const Cluster c1, const Cluster c2) {return c1.icp_score < c2.icp_score;}
+  friend bool operator>(const Cluster c1, const Cluster c2) {return c1.icp_score > c2.icp_score;}
 };
 }  // namespace scitos2_charging_dock
 

@@ -27,7 +27,6 @@
 TEST(ScitosChargingDock, objectLifecycle)
 {
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("test");
-  node->declare_parameter("my_dock.use_external_detection_pose", rclcpp::ParameterValue(true));
 
   auto dock = std::make_unique<scitos2_charging_dock::ChargingDock>();
   dock->configure(node, "my_dock", nullptr);
@@ -47,18 +46,17 @@ TEST(ScitosChargingDock, batteryState)
 {
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("test");
   auto pub = node->create_publisher<sensor_msgs::msg::BatteryState>(
-    "battery_state", rclcpp::QoS(1));
+    "battery", rclcpp::QoS(1));
   pub->on_activate();
-  node->declare_parameter("my_dock.use_battery_state", rclcpp::ParameterValue(true));
 
   auto dock = std::make_unique<scitos2_charging_dock::ChargingDock>();
 
   dock->configure(node, "my_dock", nullptr);
   dock->activate();
 
-  // Below threshold
+  // Not charging
   sensor_msgs::msg::BatteryState msg;
-  msg.current = 0.3;
+  msg.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_DISCHARGING;
   pub->publish(msg);
   rclcpp::Rate r(2);
   r.sleep();
@@ -67,9 +65,9 @@ TEST(ScitosChargingDock, batteryState)
   EXPECT_FALSE(dock->isCharging());
   EXPECT_TRUE(dock->hasStoppedCharging());
 
-  // Above threshold
+  // Charging
   sensor_msgs::msg::BatteryState msg2;
-  msg2.current = 0.6;
+  msg2.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_CHARGING;
   pub->publish(msg2);
   rclcpp::Rate r1(2);
   r1.sleep();
@@ -137,8 +135,7 @@ TEST(ScitosChargingDock, stagingPoseWithYawOffset)
 TEST(ScitosChargingDock, refinedPoseTest)
 {
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("test");
-  node->declare_parameter("my_dock.use_external_detection_pose", rclcpp::ParameterValue(true));
-  auto pub = node->create_publisher<sensor_msgs::msg::LaserScan>("scan", rclcpp::QoS(1));
+  auto pub = node->create_publisher<sensor_msgs::msg::LaserScan>("scan", 1);
   pub->on_activate();
   auto dock = std::make_unique<scitos2_charging_dock::ChargingDock>();
 
@@ -151,6 +148,13 @@ TEST(ScitosChargingDock, refinedPoseTest)
   EXPECT_FALSE(dock->isDocked());
   EXPECT_FALSE(dock->getRefinedPose(pose));
 
+  // Just call the function to set the staging pose in the perception module
+  // befor the callback is called
+  geometry_msgs::msg::Pose pose_stmp;
+  std::string frame = "my_frame";
+  auto staging_pose = dock->getStagingPose(pose_stmp, frame);
+
+  // Publish a scan
   sensor_msgs::msg::LaserScan scan;
   scan.header.stamp = node->now();
   scan.header.frame_id = "my_frame";
