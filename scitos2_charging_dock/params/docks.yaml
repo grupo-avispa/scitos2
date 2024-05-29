@@ -1,0 +1,9 @@
+# ----------------
+# Docks in the map
+# ----------------
+
+docks:
+  main_dock:
+    type: "scitos_dock"
+    frame: "map"
+    pose: [0.0, 0.0, 0.0]
