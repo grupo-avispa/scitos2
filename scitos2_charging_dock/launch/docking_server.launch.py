@@ -53,7 +53,7 @@ def generate_launch_description():
     # Create our own temporary YAML files that include substitutions
     param_substitutions = {
         'autostart': autostart,
-        'dock_template_path': default_template_file,
+        'dock_template': default_template_file,
         'dock_database': default_dock_database,
     }
 

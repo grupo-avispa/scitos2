@@ -33,7 +33,6 @@
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
-
 #include "scitos2_charging_dock/cluster.hpp"
 #include "scitos2_charging_dock/segmentation.hpp"
 

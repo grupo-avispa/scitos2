@@ -20,10 +20,10 @@
 #include <string>
 
 // ROS
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "geometry_msgs/msg/point.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
-#include "nav2_util/lifecycle_node.hpp"
-
 #include "scitos2_charging_dock/segment.hpp"
 
 namespace scitos2_charging_dock

@@ -16,15 +16,13 @@
 #ifndef SCITOS2_CHARGING_DOCK__DOCK_SAVER_HPP_
 #define SCITOS2_CHARGING_DOCK__DOCK_SAVER_HPP_
 
-#include <string>
 #include <memory>
+#include <string>
 
 #include "rclcpp/rclcpp.hpp"
 #include "nav2_util/lifecycle_node.hpp"
 #include "tf2_ros/buffer.h"
-#include "sensor_msgs/msg/laser_scan.hpp"
 #include "scitos2_msgs/srv/save_dock.hpp"
-#include "scitos2_msgs/srv/change_force.hpp"
 #include "scitos2_charging_dock/perception.hpp"
 
 namespace scitos2_charging_dock

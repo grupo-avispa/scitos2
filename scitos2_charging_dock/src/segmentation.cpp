@@ -14,7 +14,6 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "nav2_util/node_utils.hpp"
-
 #include "scitos2_charging_dock/segmentation.hpp"
 
 namespace scitos2_charging_dock

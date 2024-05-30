@@ -49,7 +49,7 @@ docking_server:
         icp_max_trans_eps: 1.0e-8
         icp_max_eucl_fit_eps: 1.0e-8
         enable_debug: true
-        dock_template_path: ""
+        dock_template: ''
         segmentation:
           distance_threshold: 0.04
           min_points_segment: 20

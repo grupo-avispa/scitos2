@@ -13,13 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "scitos2_charging_dock/dock_saver.hpp"
-
-#include <string>
-#include <memory>
 #include <mutex>
 
 #include "sensor_msgs/msg/laser_scan.hpp"
+#include "scitos2_charging_dock/dock_saver.hpp"
 
 namespace scitos2_charging_dock
 {
@@ -159,11 +156,11 @@ bool DockSaver::saveDockCallback(
 
   // Find closest cluster
   std::vector<double> distances;
-  for (auto cluster: clusters) {
+  for (auto cluster : clusters) {
     double distance = std::hypot(cluster.getCentroid().x, cluster.getCentroid().y);
     distances.push_back(distance);
   }
-  std::vector<double>::iterator min_distance = std::min_element(distances.begin(), distances.end());
+  auto min_distance = std::min_element(distances.begin(), distances.end());
   int idx = std::distance(distances.begin(), min_distance);
 
   // Store the dock pointcloud to a file

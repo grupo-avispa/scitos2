@@ -1,13 +1,17 @@
-/*
- * DOCKING PERCEPTION CLASS
- *
- * Copyright (c) 2020-2023 Alberto José Tudela Roldán <ajtudela@gmail.com>
- *
- * This file is part of auto_docking.
- *
- * All rights reserved.
- *
- */
+// Copyright (c) 2024 Alberto J. Tudela Roldán
+// Copyright (c) 2024 Grupo Avispa, DTE, Universidad de Málaga
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 // PCL
 #include <pcl/common/eigen.h>
@@ -24,7 +28,6 @@
 #include "nav2_util/node_utils.hpp"
 #include "pcl_conversions/pcl_conversions.h"
 #include "pcl_ros/transforms.hpp"
-
 #include "scitos2_charging_dock/perception.hpp"
 
 namespace scitos2_charging_dock
@@ -52,7 +55,7 @@ Perception::Perception(
   nav2_util::declare_parameter_if_not_declared(
     node, name_ + ".perception.enable_debug", rclcpp::ParameterValue(false));
   nav2_util::declare_parameter_if_not_declared(
-    node, name_ + ".perception.dock_template_path", rclcpp::ParameterValue(""));
+    node, name_ + ".perception.dock_template", rclcpp::ParameterValue(""));
 
   node->get_parameter(name_ + ".perception.icp_min_score", icp_min_score_);
   node->get_parameter(name_ + ".perception.icp_max_iter", icp_max_iter_);
@@ -62,10 +65,10 @@ Perception::Perception(
   node->get_parameter(name_ + ".perception.enable_debug", debug_);
 
   // Load the dock template
-  std::string dock_template_path;
+  std::string dock_template;
   dock_template_ = Pcloud::Ptr(new Pcloud);
-  node->get_parameter(name_ + ".perception.dock_template_path", dock_template_path);
-  loadDockPointcloud(dock_template_path, *dock_template_);
+  node->get_parameter(name_ + ".perception.dock_template", dock_template);
+  loadDockPointcloud(dock_template, *dock_template_);
 
   // Publishers
   if (debug_) {
