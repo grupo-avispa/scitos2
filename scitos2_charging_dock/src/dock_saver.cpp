@@ -133,7 +133,7 @@ bool DockSaver::saveDockCallback(
   option.callback_group = callback_group;
 
   auto scan_sub = create_subscription<sensor_msgs::msg::LaserScan>(
-    request->scan_topic, rclcpp::SensorDataQoS(), scanCallback, option);
+    scan_topic, rclcpp::SensorDataQoS(), scanCallback, option);
 
   // Create SingleThreadedExecutor to spin scan_sub in callback_group
   rclcpp::executors::SingleThreadedExecutor executor;
@@ -153,6 +153,11 @@ bool DockSaver::saveDockCallback(
 
   // Extract clusters from the scan
   auto clusters = perception_->extractClustersFromScan(*scan_msg);
+
+  if (clusters.empty()) {
+    RCLCPP_ERROR(get_logger(), "No clusters found in the scan");
+    return false;
+  }
 
   // Find closest cluster
   std::vector<double> distances;

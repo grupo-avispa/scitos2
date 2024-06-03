@@ -15,6 +15,7 @@
 // limitations under the License.
 
 #include "gtest/gtest.h"
+#include "nav2_util/node_utils.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "sensor_msgs/msg/battery_state.hpp"
@@ -139,6 +140,20 @@ TEST(ScitosChargingDock, refinedPoseTest)
   pub->on_activate();
   auto dock = std::make_unique<scitos2_charging_dock::ChargingDock>();
 
+  // Update parameters to read the test dock template
+  std::string pkg = ament_index_cpp::get_package_share_directory("scitos2_charging_dock");
+  std::string path = pkg + "/test/dock_test.pcd";
+  nav2_util::declare_parameter_if_not_declared(
+    node, "my_dock.perception.dock_template", rclcpp::ParameterValue(path));
+  nav2_util::declare_parameter_if_not_declared(
+    node, "my_dock.segmentation.distance_threshold", rclcpp::ParameterValue(0.5));
+  nav2_util::declare_parameter_if_not_declared(
+    node, "my_dock.segmentation.min_points", rclcpp::ParameterValue(0));
+  nav2_util::declare_parameter_if_not_declared(
+    node, "my_dock.segmentation.min_width", rclcpp::ParameterValue(0.0));
+  nav2_util::declare_parameter_if_not_declared(
+    node, "my_dock.segmentation.min_distance", rclcpp::ParameterValue(0.0));
+
   dock->configure(node, "my_dock", nullptr);
   dock->activate();
 
@@ -158,12 +173,13 @@ TEST(ScitosChargingDock, refinedPoseTest)
   sensor_msgs::msg::LaserScan scan;
   scan.header.stamp = node->now();
   scan.header.frame_id = "my_frame";
-  scan.angle_min = -M_PI;
-  scan.angle_max = M_PI;
-  scan.angle_increment = 2 * M_PI / 5;
-  scan.ranges = {1.0, 2.0, 3.0, 4.0, 5.0};
-  scan.range_min = scan.ranges.front();
-  scan.range_max = scan.ranges.back();
+  // This three points are a match with the test dock template
+  scan.angle_min = -std::atan2(0.1, 0.9);
+  scan.angle_max = std::atan2(0.1, 0.9);
+  scan.angle_increment = std::atan2(0.1, 0.9);
+  scan.ranges = {0.9055, 1.0, 0.9055};
+  scan.range_min = 0.9055;
+  scan.range_max = 1.0;
   pub->publish(std::move(scan));
   rclcpp::spin_some(node->get_node_base_interface());
 

@@ -30,3 +30,14 @@ ament_target_dependencies(test_scitos2_charging_dock
 target_link_libraries(test_scitos2_charging_dock
   ${library_name}
 )
+
+# Test dock saver
+ament_add_gtest(test_dock_saver
+test_dock_saver.cpp
+)
+ament_target_dependencies(test_dock_saver
+  ${dependencies}
+)
+target_link_libraries(test_dock_saver
+  ${library_name}
+)

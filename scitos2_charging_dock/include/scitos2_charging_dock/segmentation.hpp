@@ -56,10 +56,11 @@ public:
   /**
    * @brief Perform a segmentation using a euclidean distance base clustering.
    *
-   * @param points The points to segment
-   * @return Segments The segmented points
+   * @param scan The laserscan to segment
+   * @param segments The segmented points
+   * @return bool If the segmentation was successful
    */
-  Segments performSegmentation(const sensor_msgs::msg::LaserScan & scan);
+  bool performSegmentation(const sensor_msgs::msg::LaserScan & scan, Segments & segments);
 
   /**
    * @brief Filter the segments based on the number of points, the distance between them.

@@ -27,9 +27,9 @@ Segmentation::Segmentation(
   nav2_util::declare_parameter_if_not_declared(
     node, name_ + ".segmentation.distance_threshold", rclcpp::ParameterValue(0.04));
   nav2_util::declare_parameter_if_not_declared(
-    node, name_ + ".segmentation.min_points", rclcpp::ParameterValue(20));
+    node, name_ + ".segmentation.min_points", rclcpp::ParameterValue(25));
   nav2_util::declare_parameter_if_not_declared(
-    node, name_ + ".segmentation.max_points", rclcpp::ParameterValue(200));
+    node, name_ + ".segmentation.max_points", rclcpp::ParameterValue(400));
   nav2_util::declare_parameter_if_not_declared(
     node, name_ + ".segmentation.min_distance", rclcpp::ParameterValue(0.0));
   nav2_util::declare_parameter_if_not_declared(
@@ -55,17 +55,21 @@ Segmentation::Segmentation(
 /* This code is a simplification of the segmentation from package laser_segmentation
  * by Alberto Tudela.
  */
-Segments Segmentation::performSegmentation(const sensor_msgs::msg::LaserScan & scan)
+bool Segmentation::performSegmentation(
+  const sensor_msgs::msg::LaserScan & scan, Segments & segments)
 {
   // Convert the scan to points
   auto points = scanToPoints(scan);
+
+  if (points.empty()) {
+    return false;
+  }
 
   // Create the first segment
   Segment current_segment;
   current_segment.points.push_back(points.front());
 
   // Create the segments
-  Segments segments;
   for (uint64_t p = 1; p < points.size(); p++) {
     if (isJumpBetweenPoints(points[p - 1], points[p], distance_threshold_)) {
       segments.push_back(current_segment);
@@ -75,7 +79,7 @@ Segments Segmentation::performSegmentation(const sensor_msgs::msg::LaserScan & s
   }
   segments.push_back(current_segment);
 
-  return segments;
+  return segments.size() > 0;
 }
 
 Segments Segmentation::filterSegments(const Segments & segments)

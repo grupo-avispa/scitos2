@@ -126,7 +126,7 @@ bool Perception::loadDockPointcloud(std::string filepath, Pcloud & dock)
     if (pcl::io::loadPCDFile<pcl::PointXYZ>(filepath, dock) < 0) {
       RCLCPP_ERROR(logger_, "Failed to load the dock from PCD file");
     } else {
-      RCLCPP_INFO(logger_, "Dock loaded from PCD file");
+      RCLCPP_INFO(logger_, "Dock loaded from PCD file with %lu points", dock.size());
       return true;
     }
   }
@@ -148,11 +148,14 @@ bool Perception::storeDockPointcloud(std::string filepath, const Pcloud & dock)
 Clusters Perception::extractClustersFromScan(const sensor_msgs::msg::LaserScan & scan)
 {
   // Perform segmentation on the scan and filter the segments
-  auto segments = segmentation_->performSegmentation(scan);
-  auto filtered_segments = segmentation_->filterSegments(segments);
-
-  // Convert the segments to clusters
-  return segmentsToClusters(scan.header.frame_id, filtered_segments);
+  Segments segments;
+  if (segmentation_->performSegmentation(scan, segments)) {
+    auto filtered_segments = segmentation_->filterSegments(segments);
+    // Convert the segments to clusters
+    return segmentsToClusters(scan.header.frame_id, filtered_segments);
+  } else {
+    return Clusters();
+  }
 }
 
 Clusters Perception::segmentsToClusters(std::string frame, const Segments & segments)
@@ -257,17 +260,29 @@ bool Perception::refineAllClustersPoses(
     tf2::fromMsg(initial_estimate_pose_.pose, tf_stage);
     pcl_ros::transformPointCloud(*cloud_template, *cloud_template_initial, tf_stage);
 
-    // Transforms the target point cloud from the scan frame to the staging frame (map frame)
-    try {
-      auto tf_stamped = tf_buffer_->lookupTransform(
-        initial_estimate_pose_.header.frame_id, cluster.cloud->header.frame_id, tf2::TimePointZero);
-      pcl_ros::transformPointCloud(*(cluster.cloud), *(cluster.cloud), tf_stamped);
-    } catch (const tf2::TransformException & ex) {
-      RCLCPP_WARN(
-        logger_, "Could not transform %s to %s: %s",
-        cluster.cloud->header.frame_id.c_str(),
-        initial_estimate_pose_.header.frame_id.c_str(), ex.what());
-      return false;
+    // Transforms the target point cloud from the scan frame to the global frame (map frame)
+    if (cluster.cloud->header.frame_id != initial_estimate_pose_.header.frame_id) {
+      try {
+        if (!tf_buffer_->canTransform(
+            initial_estimate_pose_.header.frame_id, cluster.cloud->header.frame_id,
+            rclcpp::Time(cluster.cloud->header.stamp * 1000), rclcpp::Duration::from_seconds(0.2)))
+        {
+          RCLCPP_WARN(
+            logger_, "Could not transform %s to %s",
+            cluster.cloud->header.frame_id.c_str(), initial_estimate_pose_.header.frame_id.c_str());
+          return false;
+        }
+        auto tf_stamped = tf_buffer_->lookupTransform(
+          initial_estimate_pose_.header.frame_id, cluster.cloud->header.frame_id,
+          tf2::TimePointZero);
+        pcl_ros::transformPointCloud(*(cluster.cloud), *(cluster.cloud), tf_stamped);
+      } catch (const tf2::TransformException & ex) {
+        RCLCPP_WARN(
+          logger_, "Could not transform %s to %s: %s",
+          cluster.cloud->header.frame_id.c_str(),
+          initial_estimate_pose_.header.frame_id.c_str(), ex.what());
+        return false;
+      }
     }
 
     // Visualizes the target point cloud and estimated dock template pose

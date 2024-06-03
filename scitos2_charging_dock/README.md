@@ -2,124 +2,134 @@
 
 ## Overview
 
-ROS 2 Service to generate 2D navigation goals with orientation in a specifed region. These regionss are described by a polygon 
-defined by its edges in the map frame and a name. The service takes the number of navigation goals (*n*) and a region name (*region_name*) and 
-returns a list of goal poses. 
+This package contains the implementation of the charging dock plugin for the SCITOS and TORY robots from MetraLabs using **[opennav_docking] server**.
 
-The regions are stored in a YAML configuration file. Look for the examples in the `config` folder. The configuration file includes the names of the regions defined by its edges and its name.
+The plugin is responsible for detecting the charging dock and obtaining the final refined pose of the dock in the robot's frame. It uses the Iterative Closest Point (ICP) algorithm to align the template of the charging dock (previously recorded) to the current pointcloud of the dock. The plugin also uses the battery state of the robot to determine when to stop the docking process.
 
-There are optional parameters like:
-- Direction of the goal. The goal can be oriented `outside` the region, `inside` the region, `requested` (see below) or `random` by default.
-- Distance from the border of the region. The goal can be at a distance (in meters) from the border of the region. Default is 0.0.
+A **save_dock** service is provided to save the current pointcloud of the charging dock as the template for future matching.
 
-In addition to the random navigation goals service, it's also included:
-- A service to request the region name of a known position.
-- A latched publisher of the region name where the robot is.
+## Charging Dock plugin
 
-## Usage
+### Subscribed Topics
 
-For the goals generator service, launch the node as follows:
+* **`scan`** ([sensor_msgs/LaserScan])
 
-	ros2 launch semantic_navigation_tasks semantic_navigation_tasks.launch
+	Topic where the laser scan data is published.
 
-You can send a service to request goals as follows:
+* **`battery`** ([sensor_msgs/BatteryState])
 
-	ros2 service call /generate_random_goals '{n: 1, region_name: "region_0", direction: "inside", border: 0.1}'
+	Battery state of the robot.
 
-whereby the first argument is the number of goal locations to be generated (here 1), the second argument is the name of a region specified that match the list in the configuration file (here region_0), the orientation of the goals (here inside) and the distance from the border of the region (here 0.1). 
-The result of the pose generation is additionally published on the topic `/semantic_goals` in order to visualize the result in [RViz].
+### Published Topics
 
-If the service is called with an empty region or the region is not in the configuration file, the full map is considered as region by default. 
+* **`dock/cloud`** ([sensor_msgs/PointCloud2])
 
-	ros2 service call /generate_random_goals '{n: 100, region_name: {}, direction: "random", border: 0.0}'
+	Pointcloud of the charging station extracted from the laser scan data. This can be enable using *debug* parameter.
+
+* **`dock/template`** ([sensor_msgs/PointCloud2])
+
+	Pointcloud of the recorded charging station used for matching. This can be enable using *debug* parameter.
+
+* **`dock/target`** ([sensor_msgs/PointCloud2])
+
+	Pointcloud of the current cluster used in the current matching. This can be enable using *debug* parameter.
+
+### Parameters
+
+* **`staging_x_offset`** (double, default: -0.7)
+
+	Staging pose offset forward (negative) of dock pose (m).
+
+* **`staging_yaw_offset`** (double, default: 0.0)
+
+	Staging pose angle relative to dock pose (rad).
+
+* **`external_detection_timeout`** (double, default: 1.0)
+
+	Timeout at which if the newest detection update does not meet to fail.
+
+* **`external_detection_translation_x`** (double, default: -0.20)
+
+	X offset from detected pose for docking pose (m).
+
+* **`external_detection_translation_y`** (double, default: 0.0)
+
+	Y offset from detected pose for docking pose (m).
+
+* **`external_detection_rotation_roll`** (double, default: -1.57)
+
+	Roll offset from detected pose for docking pose (rad).
+
+* **`external_detection_rotation_pitch`** (double, default: 1.57)
+
+	Pitch offset from detected pose for docking pose (rad).
+
+* **`external_detection_rotation_yaw`** (double, default: 0.0)
+
+	Yaw offset from detected pose for docking pose (rad).
+
+* **`filter_coef`** (double, default: 0.1)
+
+	Dock external detection method filtering algorithm coefficient.
+
+* **`perception.debug`** (bool, default: false)
+
+	Option to visualize the current point clouds used in ICP matching. 
+
+* **`perception.icp_min_score`** (double, default: 0.01)
+
+	ICP Fitness Score Threshold.
+
+* **`perception.icp_max_iter`** (int, default: 200)
+
+	Max number of iterations to fit template cloud to the target cloud.
+
+* **`perception.icp_max_corr_dis`** (double, default: 1.0)
+
+	Max allowable distance for matches in meters.
+
+* **`perception.icp_max_trans_eps`** (double, default: 1.0e-8)
+
+	Max allowable translation squared difference between two consecutive transformations.
+
+* **`perception.icp_max_eucl_fit_eps`** (double, default: 1.0e-8)
+
+	Maximum allowed Euclidean error between two consecutive steps in the ICP loop.
+
+* **`perception.dock_template`** (string, default: "")
+
+	Path to the pointcloud file of the charging station used for matching.
+
+* **`perception.segmentation.distance_threshold`** (double, default: 0.04)
+
+	The maximum distance between points in a cluster.
+
+* **`perception.segmentation.min_points`** (int, default: 25)
+
+	The minimum number of points required for a cluster to be considered valid.
+
+* **`perception.segmentation.max_points`** (int, default: 400)
+
+	The maximum number of points allowed in a cluster.
+
+* **`perception.segmentation.min_distance`** (double, default: 0.0)
+
+	The minimum distance from the sensor to a point in a cluster.
+
+* **`perception.segmentation.max_distance`** (double, default: 2.0)
+
+	The maximum distance from the sensor to a point in a cluster.
+
+* **`perception.segmentation.min_width`** (double, default: 0.3)
+
+	The minimum width of a cluster.
+
+* **`perception.segmentation.max_width`** (double, default: 1.0)
+
+	The maximum width of a cluster.
 
 
-If a specified region includes a point that is outside the map, its *conflicting* coordinates are automatically adjusted to the map's bounding box.
-
-For the position service, to know the name of the region where the robot is, send the service request as follows:
-
-	ros2 service call /get_region_name '{position.x: 0.0, position.y: 0.0, position.z: 0.0}'
-
-## Nodes
-
-### semantic_navigation_tasks
-
-ROS2 Service to generate 2D navigation goals as described above.
-
-
-#### Subscribed Topics
-
-* **`map`** ([nav_msgs/OccupancyGrid])
-
-	The map where the robot moves.
-
-#### Published Topics
-
-* **`semantic_goals`** ([geometry_msgs/PoseArray])
-
-	Topic where the random navigation goals are published.
-
-* **`polygons`** ([polygon_msgs/Polygon2DCollection])
-
-	Topic array with filled polygons of the regions.
-
-* **`names`** ([visualization_msgs/MarkerArray])
-
-	Topic array with the names of the regions.
-
-#### Services
-
-* **`generate_random_goals`** ([semantic_navigation_msgs/GenerateRandomGoals])
-
-	Service to generate random navigation goals in a specified region.
-
-* **`get_region_name`** ([semantic_navigation_msgs/GetRegionName])
-
-	Service to request the region name of a known position.
-
-* **`list_all_regions`** ([semantic_navigation_msgs/ListAllRegions])
-
-	Service to list all the regions defined in the configuration file.
-
-#### Parameters
-
-* **`goals_topic`** (string, default: "semantic_goals")
-
-	Topic where the random navigation goals are published.
-
-* **`polygons_topic`** (string, default: "polygons")
-
-	Topic array with filled polygons of the regions.
-
-* **`names_topic`** (string, default: "names")
-
-	Topic array with the names of the regions.
-
-* **`map_topic`** (string, default: "map")
-
-	Topic of the map where the robot moves.
-
-* **`is_costmap`** (bool, default: false)
-
-	If the map argument is a costmap, you should also set the flag `is_costmap` to `true`. Then the inflation radius in the service call is ignored (a costmap is already inflated)
-
-* **`full_map`** (bool, default: false)
-
-	Option to choose the full map if a requested region is not found in the configuration file or reject the goal request.
-
-* **`inflation_radius`** (float, default: 0.5)
-
-	The inflation radius of the robot's footprint.
-
-* **`regions`** (string, default: "regions.yaml")
-
-	The filepath of the configuration file including the names of regions defined by its points and name.
-
-
-[nav_msgs/OccupancyGrid]: https://docs.ros2.org/humble/api/nav_msgs/msg/OccupancyGrid.html
-[geometry_msgs/PoseArray]: https://docs.ros2.org/humble/api/geometry_msgs/msg/PoseArray.html
-[polygon_msgs/Polygon2DCollection]: https://github.com/MetroRobots/polygon_ros/blob/main/polygon_msgs/msg/Polygon2DCollection.msg
-[visualization_msgs/MarkerArray]: https://docs.ros2.org/humble/api/visualization_msgs/msg/MarkerArray.html
-[semantic_navigation_msgs/GenerateRandomGoals]: ../semantic_navigation_msgs/srv/GenerateRandomGoals.srv
-[semantic_navigation_msgs/GetRegionName]: ../semantic_navigation_msgs/srv/GetRegionName.srv
-[semantic_navigation_msgs/ListAllRegions]: ../semantic_navigation_msgs/srv/ListAllRegions.srv
+[opennav_docking]: https://github.com/open-navigation/opennav_docking
+[sensor_msgs/LaserScan]: https://docs.ros2.org/humble/api/sensor_msgs/msg/LaserScan.html
+[sensor_msgs/BatteryState]: https://docs.ros2.org/humble/api/sensor_msgs/msg/BatteryState.html
+[sensor_msgs/PointCloud2]: https://docs.ros2.org/humble/api/sensor_msgs/msg/PointCloud2.html

@@ -1,4 +1,3 @@
-// Copyright (c) 2024 Open Navigation LLC
 // Copyright (c) 2024 Alberto J. Tudela Roldán
 // Copyright (c) 2024 Grupo Avispa, DTE, Universidad de Málaga
 //
@@ -245,13 +244,19 @@ TEST(SegmentationTest, performSegmentation) {
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("segmentation_test");
   auto segmentation = std::make_shared<SegmentationFixture>(node, "test");
 
+  // Create an empty scan
+  sensor_msgs::msg::LaserScan fake_scan;
+  scitos2_charging_dock::Segments fake_segments;
+  EXPECT_FALSE(segmentation->performSegmentation(fake_scan, fake_segments));
+
   // Set the jump distance to 0.1
   segmentation->setDistanceThreshold(0.1);
-
-  // Set points with a distance of 0.05
+  // Create a scan with points with a distance of 0.05
   auto scan = create_scan(3, 0.05);
+
   // Perform the segmentation
-  auto segments = segmentation->performSegmentation(scan);
+  scitos2_charging_dock::Segments segments;
+  EXPECT_TRUE(segmentation->performSegmentation(scan, segments));
   // Check the number of segments
   // Should be 1 segment as the jump distance is 0.1
   // and the distance between points is 0.05
@@ -263,7 +268,8 @@ TEST(SegmentationTest, performSegmentation) {
   // Now we set the points with a distance of 1.0
   scan = create_scan(3, 1.0);
   // Perform the segmentation
-  segments = segmentation->performSegmentation(scan);
+  segments.clear();
+  EXPECT_TRUE(segmentation->performSegmentation(scan, segments));
   // Check the number of segments
   // Should be 1 segment per point as the jump distance is 0.1
   // and the distance between points is 1.0

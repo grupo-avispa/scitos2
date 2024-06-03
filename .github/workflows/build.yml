@@ -39,6 +39,7 @@ jobs:
           package-name: |
             scitos2
             scitos2_behavior_tree
+            scitos2_charging_dock
             scitos2_common
             scitos2_core
             scitos2_mira

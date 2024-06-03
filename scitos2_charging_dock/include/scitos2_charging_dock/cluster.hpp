@@ -55,11 +55,12 @@ struct Cluster
    */
   geometry_msgs::msg::Point getCentroid()
   {
-    Eigen::Vector4f centroid_vec_4f;
+    Eigen::Vector4f centroid_vec_4f(0, 0, 0, 0);
     pcl::compute3DCentroid(*cloud, centroid_vec_4f);
     geometry_msgs::msg::Point centroid;
     centroid.x = static_cast<double>(centroid_vec_4f[0]);
     centroid.y = static_cast<double>(centroid_vec_4f[1]);
+    centroid.z = static_cast<double>(centroid_vec_4f[2]);
     return centroid;
   }
 

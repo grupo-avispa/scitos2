@@ -32,7 +32,6 @@ docking_server:
     dock_database: ''
     scitos_dock:
       plugin: "scitos2_charging_dock::ChargingDock"
-      docking_threshold: 0.05
       staging_x_offset: -0.75
       staging_yaw_offset: 0.0
       external_detection_timeout: 5.0
@@ -50,12 +49,12 @@ docking_server:
         icp_max_eucl_fit_eps: 1.0e-8
         enable_debug: true
         dock_template: ''
-        segmentation:
-          distance_threshold: 0.04
-          min_points_segment: 20
-          max_points_segment: 400
-          min_distance: 0.0
-          max_distance: 2.0
-          min_segment_width: 0.3
-          max_segment_width: 1.0
+      segmentation:
+        distance_threshold: 0.04
+        min_points_segment: 20
+        max_points_segment: 400
+        min_distance: 0.0
+        max_distance: 2.0
+        min_segment_width: 0.3
+        max_segment_width: 1.0
 

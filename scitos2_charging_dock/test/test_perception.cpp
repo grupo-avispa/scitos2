@@ -1,4 +1,3 @@
-// Copyright (c) 2024 Open Navigation LLC
 // Copyright (c) 2024 Alberto J. Tudela Roldán
 // Copyright (c) 2024 Grupo Avispa, DTE, Universidad de Málaga
 //
@@ -16,8 +15,9 @@
 
 #include "gtest/gtest.h"
 #include <ament_index_cpp/get_package_share_directory.hpp>
-#include "tf2/LinearMath/Transform.h"
+#include "nav2_util/node_utils.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "tf2/LinearMath/Transform.h"
 #include "scitos2_charging_dock/perception.hpp"
 
 class PerceptionFixture : public scitos2_charging_dock::Perception
@@ -60,11 +60,6 @@ public:
   {
     return scitos2_charging_dock::Perception::refineAllClustersPoses(
       clusters, cloud_template, dock_pose);
-  }
-
-  void setDebug(bool debug)
-  {
-    debug_ = debug;
   }
 };
 
@@ -314,8 +309,17 @@ TEST(ScitosDockingPerception, refineClusterToPose) {
 TEST(ScitosDockingPerception, refineAllClustersPoses) {
   // Create a node
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("perception_test");
-  auto perception = std::make_shared<PerceptionFixture>(node, "test", nullptr);
-  // perception->setDebug(true);
+
+  // Create the TF
+  auto tf_buffer = std::make_shared<tf2_ros::Buffer>(node->get_clock());
+
+  // Set debug mode
+  nav2_util::declare_parameter_if_not_declared(
+    node, "test.perception.enable_debug", rclcpp::ParameterValue(true));
+  node->configure();
+
+  // Create the perception module
+  auto perception = std::make_shared<PerceptionFixture>(node, "test", tf_buffer);
 
   // Create two clusters
   scitos2_charging_dock::Clusters clusters;
@@ -347,20 +351,18 @@ TEST(ScitosDockingPerception, refineAllClustersPoses) {
 
   // Set the initial pose
   geometry_msgs::msg::Pose initial_pose;
-  initial_pose.position.x = 1;
-  initial_pose.position.y = 1;
+  initial_pose.position.x = 0.0;
+  initial_pose.position.y = 0.0;
   perception->setInitialEstimate(initial_pose, "test_link");
 
   // Refine the clusters poses
   geometry_msgs::msg::PoseStamped dock_pose;
-  dock_pose.pose = initial_pose;
-  dock_pose.header.frame_id = "test_link";
   bool success = perception->refineAllClustersPoses(clusters, cloud_template, dock_pose);
 
   // Check if the dock is found
   EXPECT_TRUE(success);
   EXPECT_EQ(dock_pose.header.frame_id, "test_link");
-  EXPECT_NEAR(dock_pose.pose.position.x, 1.0, 0.01);
+  EXPECT_NEAR(dock_pose.pose.position.x, 0.0, 0.01);
 }
 
 int main(int argc, char ** argv)
