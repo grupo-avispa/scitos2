@@ -32,6 +32,7 @@ docking_server:
     dock_database: ''
     scitos_dock:
       plugin: "scitos2_charging_dock::ChargingDock"
+      docking_threshold: 0.05
       staging_x_offset: -0.75
       staging_yaw_offset: 0.0
       external_detection_timeout: 5.0

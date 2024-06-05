@@ -129,6 +129,8 @@ protected:
   // Filtering of detected poses
   std::shared_ptr<opennav_docking::PoseFilter> filter_;
 
+  // external pose reference, this is the distance threshold
+  double docking_threshold_;
   // Offset for staging pose relative to dock pose
   double staging_x_offset_;
   double staging_yaw_offset_;

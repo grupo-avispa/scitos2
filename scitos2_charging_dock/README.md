@@ -36,6 +36,10 @@ A **save_dock** service is provided to save the current pointcloud of the chargi
 
 ### Parameters
 
+* **`docking_threshold`** (double, default: 0.05)
+
+	The pose threshold to the docking pose where `isDocked() = true`.
+
 * **`staging_x_offset`** (double, default: -0.7)
 
 	Staging pose offset forward (negative) of dock pose (m).

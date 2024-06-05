@@ -1,3 +1,14 @@
+# Test cluster
+ament_add_gtest(test_scitos2_cluster
+  test_cluster.cpp
+)
+ament_target_dependencies(test_scitos2_cluster
+  ${dependencies}
+)
+target_link_libraries(test_scitos2_cluster
+  ${library_name}
+)
+
 # Test segmentation
 ament_add_gtest(test_scitos2_segmentation
   test_segmentation.cpp
@@ -33,7 +44,7 @@ target_link_libraries(test_scitos2_charging_dock
 
 # Test dock saver
 ament_add_gtest(test_dock_saver
-test_dock_saver.cpp
+  test_dock_saver.cpp
 )
 ament_target_dependencies(test_dock_saver
   ${dependencies}

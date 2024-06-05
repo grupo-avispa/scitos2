@@ -37,14 +37,14 @@ namespace scitos2_charging_dock
  */
 struct Cluster
 {
+  // Identifier of the cluster
+  int id;
   // Original pointcloud of the cluster.
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud;
   // Pointcloud of the cluster after perform ICP.
   pcl::PointCloud<pcl::PointXYZ>::Ptr matched_cloud;
   // Score of the ICP.
   double icp_score;
-  // Distance from the initial pose.
-  double distance_from_initial_pose;
   // Pose of the dock.
   geometry_msgs::msg::PoseStamped icp_pose;
 
@@ -71,7 +71,9 @@ struct Cluster
    */
   double width() const
   {
-    if (!cloud) {return 0;}
+    if (!cloud) {
+      return 0.0;
+    }
 
     double dx = cloud->back().x - cloud->front().x;
     double dy = cloud->back().y - cloud->front().y;

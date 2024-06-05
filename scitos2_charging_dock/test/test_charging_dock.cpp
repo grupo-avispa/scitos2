@@ -140,6 +140,9 @@ TEST(ScitosChargingDock, refinedPoseTest)
   pub->on_activate();
   auto dock = std::make_unique<scitos2_charging_dock::ChargingDock>();
 
+  // Create the TF
+  auto tf_buffer = std::make_shared<tf2_ros::Buffer>(node->get_clock());
+
   // Update parameters to read the test dock template
   std::string pkg = ament_index_cpp::get_package_share_directory("scitos2_charging_dock");
   std::string path = pkg + "/test/dock_test.pcd";
@@ -154,7 +157,7 @@ TEST(ScitosChargingDock, refinedPoseTest)
   nav2_util::declare_parameter_if_not_declared(
     node, "my_dock.segmentation.min_distance", rclcpp::ParameterValue(0.0));
 
-  dock->configure(node, "my_dock", nullptr);
+  dock->configure(node, "my_dock", tf_buffer);
   dock->activate();
 
   geometry_msgs::msg::PoseStamped pose;
@@ -188,6 +191,7 @@ TEST(ScitosChargingDock, refinedPoseTest)
   // as they depend on the perception module and its already tested
   pose.header.frame_id = "my_frame";
   EXPECT_TRUE(dock->getRefinedPose(pose));
+  EXPECT_FALSE(dock->isDocked());
 
   dock->deactivate();
   dock->cleanup();

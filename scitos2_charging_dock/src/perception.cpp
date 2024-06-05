@@ -161,8 +161,10 @@ Clusters Perception::extractClustersFromScan(const sensor_msgs::msg::LaserScan &
 Clusters Perception::segmentsToClusters(std::string frame, const Segments & segments)
 {
   Clusters clusters;
+  int count = 0;
   for (const auto & segment : segments) {
     Cluster cluster;
+    cluster.id = count++;
     cluster.matched_cloud = pcl::PointCloud<pcl::PointXYZ>::Ptr(new pcl::PointCloud<pcl::PointXYZ>);
     cluster.cloud = segmentToPcloud(frame, segment);
     clusters.push_back(cluster);
@@ -222,15 +224,15 @@ bool Perception::refineClusterPose(Cluster & cluster, Pcloud::ConstPtr cloud_tem
     cluster.icp_pose.pose = pose_correct;
     cluster.matched_cloud = matched_cloud;
 
-    RCLCPP_DEBUG(logger_, "ICP converged, cloud matched!");
+    success = true;
+
+    RCLCPP_DEBUG(logger_, "ICP converged for cluster %i", cluster.id);
     RCLCPP_DEBUG(logger_, "ICP fitness score: %f", cluster.icp_score);
     RCLCPP_DEBUG(
       logger_, "ICP transformation: (%f, %f)",
       cluster.icp_pose.pose.position.x, cluster.icp_pose.pose.position.y);
-
-    success = true;
   } else {
-    RCLCPP_DEBUG(logger_, "ICP did not converge");
+    RCLCPP_DEBUG(logger_, "ICP did not converge for cluster %i", cluster.id);
   }
 
   return success;
@@ -239,11 +241,9 @@ bool Perception::refineClusterPose(Cluster & cluster, Pcloud::ConstPtr cloud_tem
 bool Perception::refineAllClustersPoses(
   Clusters & clusters, Pcloud::ConstPtr cloud_template, geometry_msgs::msg::PoseStamped & dock_pose)
 {
-  long double lowest_score = icp_min_score_;
-  int lowest_score_idx = -1;
   bool success = false;
+  Clusters potential_docks;
 
-  int count = 0;
   for (auto & cluster : clusters) {
     // Discard clusters not valid (i.e. clusters not similar to dock by size, ...)
     double dx = (*cloud_template).back().x - (*cloud_template).front().x;
@@ -308,38 +308,29 @@ bool Perception::refineAllClustersPoses(
       if (cluster.icp_score < icp_min_score_) {
         RCLCPP_DEBUG(
           logger_, "Dock potentially identified at cluster %i with score %f",
-          count, cluster.icp_score);
-        if (lowest_score_idx == -1) {
-          lowest_score_idx = count;
-        }
-
-        if (cluster.icp_score <= clusters[lowest_score_idx].icp_score) {
-          lowest_score_idx = count;
-          lowest_score = clusters[lowest_score_idx].icp_score;
-          RCLCPP_DEBUG(
-            logger_, "Dock identified at cluster %i with score %Lf", lowest_score_idx,
-            lowest_score);
-        }
+          cluster.id, cluster.icp_score);
+        potential_docks.push_back(cluster);
       }
     }
-    count++;
   }
 
   // Check if dock is found
-  if (lowest_score_idx != -1) {
-    dock_pose = clusters[lowest_score_idx].icp_pose;
+  if (!potential_docks.empty()) {
+    // Sort the clusters by ICP score
+    std::sort(potential_docks.begin(), potential_docks.end());
+    dock_pose = potential_docks.front().icp_pose;
     // Publish the dock cloud
     if (debug_) {
       sensor_msgs::msg::PointCloud2 cloud_msg;
-      pcl::toROSMsg(*(clusters[lowest_score_idx].matched_cloud), cloud_msg);
+      pcl::toROSMsg(*(clusters.front().matched_cloud), cloud_msg);
       cloud_msg.header.frame_id = initial_estimate_pose_.header.frame_id;
       cloud_msg.header.stamp = clock_->now();
       dock_cloud_pub_->publish(std::move(cloud_msg));
     }
-    RCLCPP_DEBUG(logger_, "Dock successfully identified at cluster %i", lowest_score_idx);
     success = true;
+    RCLCPP_DEBUG(logger_, "Dock successfully identified at cluster %i", potential_docks.front().id);
   } else {
-    RCLCPP_DEBUG(logger_, "Unable to identify the dock");
+    RCLCPP_WARN(logger_, "Unable to identify the dock");
   }
 
   return success;
