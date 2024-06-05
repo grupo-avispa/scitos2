@@ -39,12 +39,14 @@ jobs:
           package-name: |
             scitos2
             scitos2_behavior_tree
+            scitos2_charging_dock
             scitos2_common
             scitos2_core
             scitos2_mira
             scitos2_modules
             scitos2_msgs
           target-ros2-distro: humble
+          vcs-repo-file-url: ./.github/repos.repos
           colcon-defaults: |
             {
               "build": {
