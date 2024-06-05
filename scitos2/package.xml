@@ -9,6 +9,7 @@
   <author email="ajtudela@gmail.com">Alberto Tudela</author>
   <buildtool_depend>ament_cmake</buildtool_depend>
   <exec_depend>scitos2_behavior_tree</exec_depend>
+  <exec_depend>scitos2_charging_dock</exec_depend>
   <exec_depend>scitos2_core</exec_depend>
   <exec_depend>scitos2_mira</exec_depend>
   <exec_depend>scitos2_modules</exec_depend>

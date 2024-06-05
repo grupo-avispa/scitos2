@@ -1,0 +1,10 @@
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package scitos2_charging_dock
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+3.0.0 (XX-XX-XXXX)
+------------------
+* Initial release.
+* Create README.md.
+* Redo the package to use the new docking system.
+* Contributors: Alberto Tudela

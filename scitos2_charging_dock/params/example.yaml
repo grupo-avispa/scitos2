@@ -1,0 +1,61 @@
+#---------------
+# Docking server
+#---------------
+# See param description on https://docs.nav2.org/tutorials/docs/using_docking.html#docking-tutorial
+
+docking_server:
+  ros__parameters:
+    controller_frequency: 50.0
+    initial_perception_timeout: 5.0
+    wait_charge_timeout: 15.0
+    dock_approach_timeout: 30.0
+    undock_linear_tolerance: 0.05
+    undock_angular_tolerance: 0.1
+    max_retries: 3
+    base_frame: "base_link"
+    fixed_frame: "odom"
+    dock_backwards: false
+    dock_prestaging_tolerance: 0.5
+
+    # Docking controller parameters
+    controller:
+      k_phi: 1.0
+      k_delta: 3.0
+      beta: 0.4
+      lambda: 2.0
+      v_linear_min: 0.1
+      v_linear_max: 0.2
+      max_angular_velocity: 0.5
+
+    # Types of docks
+    dock_plugins: ["scitos_dock"]
+    dock_database: ''
+    scitos_dock:
+      plugin: "scitos2_charging_dock::ChargingDock"
+      docking_threshold: 0.05
+      staging_x_offset: -0.75
+      staging_yaw_offset: 0.0
+      external_detection_timeout: 5.0
+      external_detection_translation_x: -0.20
+      external_detection_translation_y: 0.0
+      external_detection_rotation_roll: 0.0
+      external_detection_rotation_pitch: 0.0
+      external_detection_rotation_yaw: 0.0
+      filter_coef: 0.1
+      perception:
+        icp_min_score: 0.01
+        icp_max_iter: 300
+        icp_max_corr_dis: 0.25
+        icp_max_trans_eps: 1.0e-8
+        icp_max_eucl_fit_eps: 1.0e-8
+        enable_debug: true
+        dock_template: ''
+      segmentation:
+        distance_threshold: 0.04
+        min_points_segment: 20
+        max_points_segment: 400
+        min_distance: 0.0
+        max_distance: 2.0
+        min_segment_width: 0.3
+        max_segment_width: 1.0
+

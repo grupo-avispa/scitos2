@@ -46,6 +46,7 @@ set(srv_files
   "srv/ResetBarrierStop.srv"
   "srv/ResetMotorStop.srv"
   "srv/ResetOdometry.srv"
+  "srv/SaveDock.srv"
   "srv/SavePersistentErrors.srv"
   "srv/SuspendBumper.srv"
 )
