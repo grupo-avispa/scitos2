@@ -196,27 +196,7 @@ bool ChargingDock::isCharging()
 
 bool ChargingDock::isDocked()
 {
-  if (dock_pose_.header.frame_id.empty()) {
-    // Dock pose is not yet valid
-    return false;
-  }
-
-  // Find base pose in target frame
-  geometry_msgs::msg::PoseStamped base_pose;
-  base_pose.header.stamp = rclcpp::Time(0);
-  base_pose.header.frame_id = "base_link";
-  base_pose.pose.orientation.w = 1.0;
-  try {
-    tf2_buffer_->transform(base_pose, base_pose, dock_pose_.header.frame_id);
-  } catch (const tf2::TransformException & ex) {
-    return false;
-  }
-
-  // If we are close enough, pretend we are charging
-  double d = std::hypot(
-    base_pose.pose.position.x - dock_pose_.pose.position.x,
-    base_pose.pose.position.y - dock_pose_.pose.position.y);
-  return d < docking_threshold_;
+  return is_charging_;
 }
 
 bool ChargingDock::disableCharging()
