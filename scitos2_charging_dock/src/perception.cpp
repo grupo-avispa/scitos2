@@ -56,6 +56,8 @@ Perception::Perception(
     node, name_ + ".perception.enable_debug", rclcpp::ParameterValue(false));
   nav2_util::declare_parameter_if_not_declared(
     node, name_ + ".perception.dock_template", rclcpp::ParameterValue(""));
+  nav2_util::declare_parameter_if_not_declared(
+    node, name_ + ".perception.use_first_detection", rclcpp::ParameterValue(false));
 
   node->get_parameter(name_ + ".perception.icp_min_score", icp_min_score_);
   node->get_parameter(name_ + ".perception.icp_max_iter", icp_max_iter_);
@@ -63,6 +65,7 @@ Perception::Perception(
   node->get_parameter(name_ + ".perception.icp_max_trans_eps", icp_max_trans_eps_);
   node->get_parameter(name_ + ".perception.icp_max_eucl_fit_eps", icp_max_eucl_fit_eps_);
   node->get_parameter(name_ + ".perception.enable_debug", debug_);
+  node->get_parameter(name_ + ".perception.use_first_detection", use_first_detection_);
 
   // Load the dock template
   std::string dock_template;
@@ -102,11 +105,25 @@ geometry_msgs::msg::PoseStamped Perception::getDockPose(const sensor_msgs::msg::
   // Set the header of the template to the scan header
   dock_template_->header.frame_id = scan.header.frame_id;
 
-  // Refine the pose of each cluster to get the dock pose
+  // Refine the pose of each cluster to get the dock pose the first time
   geometry_msgs::msg::PoseStamped dock_pose;
-  if (refineAllClustersPoses(clusters, dock_template_, dock_pose)) {
-    detected_dock_pose_ = dock_pose;
+  if (!dock_found_) {
+    if (refineAllClustersPoses(clusters, dock_template_, dock_pose)) {
+      dock_found_ = true;
+      detected_dock_pose_ = dock_pose;
+    }
   }
+
+  // If we use the first detection, update the timestamp
+  // Otherwise, refine the pose of the clusters to get the new dock pose
+  if (use_first_detection_) {
+    detected_dock_pose_.header.stamp = clock_->now();
+  } else {
+    if (refineAllClustersPoses(clusters, dock_template_, dock_pose)) {
+      detected_dock_pose_ = dock_pose;
+    }
+  }
+
   return detected_dock_pose_;
 }
 
@@ -116,6 +133,7 @@ void Perception::setInitialEstimate(
   initial_estimate_pose_.pose = pose;
   initial_estimate_pose_.header.frame_id = frame;
   initial_estimate_pose_.header.stamp = clock_->now();
+  dock_found_ = false;
 }
 
 bool Perception::loadDockPointcloud(std::string filepath, Pcloud & dock)
@@ -373,6 +391,8 @@ rcl_interfaces::msg::SetParametersResult Perception::dynamicParametersCallback(
     } else if (type == rclcpp::ParameterType::PARAMETER_BOOL) {
       if (name == name_ + ".perception.enable_debug") {
         debug_ = parameter.as_bool();
+      } else if (name == name_ + ".perception.use_first_detection") {
+        use_first_detection_ = parameter.as_bool();
       }
     }
   }

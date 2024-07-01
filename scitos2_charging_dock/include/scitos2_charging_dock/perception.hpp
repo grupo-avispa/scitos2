@@ -180,6 +180,10 @@ protected:
   geometry_msgs::msg::PoseStamped detected_dock_pose_;
   // Dock template pointcloud
   Pcloud::Ptr dock_template_;
+  // Dock found
+  bool dock_found_;
+  // Only use the first detection
+  bool use_first_detection_{false};
 
   std::string name_;
   rclcpp::Clock::SharedPtr clock_;

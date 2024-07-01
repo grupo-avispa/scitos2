@@ -103,7 +103,8 @@ TEST(ScitosDockingPerception, dynamicParameters) {
       rclcpp::Parameter("test.perception.icp_max_corr_dis", 0.5),
       rclcpp::Parameter("test.perception.icp_max_trans_eps", 0.5),
       rclcpp::Parameter("test.perception.icp_max_eucl_fit_eps", 0.5),
-      rclcpp::Parameter("test.perception.enable_debug", false)});
+      rclcpp::Parameter("test.perception.enable_debug", false),
+      rclcpp::Parameter("test.perception.use_first_detection", true)});
 
   // Spin
   rclcpp::spin_until_future_complete(node->get_node_base_interface(), results);
@@ -115,6 +116,7 @@ TEST(ScitosDockingPerception, dynamicParameters) {
   EXPECT_DOUBLE_EQ(node->get_parameter("test.perception.icp_max_trans_eps").as_double(), 0.5);
   EXPECT_DOUBLE_EQ(node->get_parameter("test.perception.icp_max_eucl_fit_eps").as_double(), 0.5);
   EXPECT_EQ(node->get_parameter("test.perception.enable_debug").as_bool(), false);
+  EXPECT_EQ(node->get_parameter("test.perception.use_first_detection").as_bool(), true);
 
   // Cleaning up
   node->deactivate();
