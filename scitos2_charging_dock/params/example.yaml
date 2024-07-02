@@ -52,10 +52,10 @@ docking_server:
         dock_template: ''
       segmentation:
         distance_threshold: 0.04
-        min_points_segment: 20
-        max_points_segment: 400
+        min_points: 20
+        max_points: 400
         min_distance: 0.0
         max_distance: 2.0
-        min_segment_width: 0.3
-        max_segment_width: 1.0
+        min_width: 0.3
+        max_width: 1.0
 
