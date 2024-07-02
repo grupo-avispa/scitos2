@@ -307,7 +307,7 @@ bool Perception::refineAllClustersPoses(
     if (debug_) {
       // Publish dock template
       sensor_msgs::msg::PointCloud2 template_msg;
-      pcl::toROSMsg(*cloud_template, template_msg);
+      pcl::toROSMsg(*cloud_template_initial, template_msg);
       template_msg.header.frame_id = initial_estimate_pose_.header.frame_id;
       template_msg.header.stamp = clock_->now();
       dock_template_pub_->publish(std::move(template_msg));
