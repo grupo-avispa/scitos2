@@ -55,6 +55,7 @@ find_package(rclcpp_components REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(angles REQUIRED)
 find_package(nav2_util REQUIRED)
 find_package(pcl_ros REQUIRED)
 find_package(pcl_conversions REQUIRED)
@@ -78,6 +79,7 @@ set(dependencies
   pluginlib
   geometry_msgs
   sensor_msgs
+  angles
   nav2_util
   pcl_ros
   pcl_conversions

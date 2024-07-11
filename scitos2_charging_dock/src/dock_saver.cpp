@@ -15,6 +15,7 @@
 
 #include <mutex>
 
+#include "angles/angles.h"
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "scitos2_charging_dock/dock_saver.hpp"
 
@@ -159,14 +160,14 @@ bool DockSaver::saveDockCallback(
     return false;
   }
 
-  // Find closest cluster
-  std::vector<double> distances;
+  // Find the cluster in front of the robot
+  std::vector<double> angles;
   for (auto cluster : clusters) {
-    double distance = std::hypot(cluster.getCentroid().x, cluster.getCentroid().y);
-    distances.push_back(distance);
+    double angle = std::atan2(cluster.getCentroid().y, cluster.getCentroid().x);
+    angles.push_back(angles::normalize_angle_positive(angle));
   }
-  auto min_distance = std::min_element(distances.begin(), distances.end());
-  int idx = std::distance(distances.begin(), min_distance);
+  auto min_angle = std::min_element(angles.begin(), angles.end());
+  int idx = std::distance(angles.begin(), min_angle);
 
   // Store the dock pointcloud to a file
   scitos2_charging_dock::Pcloud::Ptr dock = clusters[idx].cloud;
