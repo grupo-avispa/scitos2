@@ -131,12 +131,12 @@ protected:
    * @brief Refine all the clusters poses using Iterative Closest Point to find the dock.
    *
    * @param clusters The clusters to perform ICP on
-   * @param cloud_template The template to match with the clusters
+   * @param dock_template A cluster with a cloud template to match with the clusters
    * @param dock_pose The dock pose
    * @return bool If the dock is found
    */
   bool refineAllClustersPoses(
-    Clusters & clusters, Pcloud::ConstPtr cloud_template,
+    Clusters & clusters, const Cluster & dock_template,
     geometry_msgs::msg::PoseStamped & dock_pose);
 
   /**
@@ -178,8 +178,8 @@ protected:
 
   // Last detected dock pose
   geometry_msgs::msg::PoseStamped detected_dock_pose_;
-  // Dock template pointcloud
-  Pcloud::Ptr dock_template_;
+  // A cluuster with the dock template pointcloud
+  Cluster dock_template_;
   // Dock found
   bool dock_found_;
   // Only use the first detection

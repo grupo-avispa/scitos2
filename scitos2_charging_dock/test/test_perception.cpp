@@ -55,11 +55,18 @@ public:
 
   bool refineAllClustersPoses(
     scitos2_charging_dock::Clusters & clusters,
-    scitos2_charging_dock::Pcloud::ConstPtr cloud_template,
+    const scitos2_charging_dock::Cluster dock_template,
     geometry_msgs::msg::PoseStamped & dock_pose)
   {
     return scitos2_charging_dock::Perception::refineAllClustersPoses(
-      clusters, cloud_template, dock_pose);
+      clusters, dock_template, dock_pose);
+  }
+
+  bool getDockFound() {return dock_found_;}
+
+  void setUseFirstDetection(bool use_first_detection)
+  {
+    use_first_detection_ = use_first_detection;
   }
 };
 
@@ -344,12 +351,13 @@ TEST(ScitosDockingPerception, refineAllClustersPoses) {
   clusters.push_back(cluster2);
 
   // Create a template
-  auto cloud_template = std::make_shared<scitos2_charging_dock::Pcloud>();
-  cloud_template->header.frame_id = "test_link";
-  cloud_template->push_back(pcl::PointXYZ(0, 0, 0));
-  cloud_template->push_back(pcl::PointXYZ(1, 0, 0));
-  cloud_template->push_back(pcl::PointXYZ(1, 1.5, 0));
-  cloud_template->push_back(pcl::PointXYZ(1, 2, 0));
+  scitos2_charging_dock::Cluster dock_template;
+  dock_template.cloud = std::make_shared<scitos2_charging_dock::Pcloud>();
+  dock_template.cloud->header.frame_id = "test_link";
+  dock_template.cloud->push_back(pcl::PointXYZ(0, 0, 0));
+  dock_template.cloud->push_back(pcl::PointXYZ(1, 0, 0));
+  dock_template.cloud->push_back(pcl::PointXYZ(1, 1.5, 0));
+  dock_template.cloud->push_back(pcl::PointXYZ(1, 2, 0));
 
   // Set the initial pose
   geometry_msgs::msg::Pose initial_pose;
@@ -359,12 +367,86 @@ TEST(ScitosDockingPerception, refineAllClustersPoses) {
 
   // Refine the clusters poses
   geometry_msgs::msg::PoseStamped dock_pose;
-  bool success = perception->refineAllClustersPoses(clusters, cloud_template, dock_pose);
+  bool success = perception->refineAllClustersPoses(clusters, dock_template, dock_pose);
 
   // Check if the dock is found
   EXPECT_TRUE(success);
   EXPECT_EQ(dock_pose.header.frame_id, "test_link");
   EXPECT_NEAR(dock_pose.pose.position.x, 0.0, 0.01);
+}
+
+TEST(ScitosDockingPerception, getDockPose) {
+  // Create a node
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("perception_test");
+  auto tf_buffer = std::make_shared<tf2_ros::Buffer>(node->get_clock());
+
+  // Set the dock template
+  std::string pkg = ament_index_cpp::get_package_share_directory("scitos2_charging_dock");
+  std::string path = pkg + "/test/dock_test.pcd";
+  nav2_util::declare_parameter_if_not_declared(
+    node, "test.perception.dock_template", rclcpp::ParameterValue(path));
+  nav2_util::declare_parameter_if_not_declared(
+    node, "test.segmentation.distance_threshold", rclcpp::ParameterValue(0.5));
+  nav2_util::declare_parameter_if_not_declared(
+    node, "test.segmentation.min_points", rclcpp::ParameterValue(0));
+  nav2_util::declare_parameter_if_not_declared(
+    node, "test.segmentation.min_width", rclcpp::ParameterValue(0.0));
+  nav2_util::declare_parameter_if_not_declared(
+    node, "test.segmentation.min_distance", rclcpp::ParameterValue(0.0));
+  node->configure();
+
+  // Create the perception module
+  auto perception = std::make_shared<PerceptionFixture>(node, "test", tf_buffer);
+
+  // Set the initial pose
+  geometry_msgs::msg::Pose initial_pose;
+  initial_pose.position.x = 0.0;
+  initial_pose.position.y = 0.0;
+  perception->setInitialEstimate(initial_pose, "test_link");
+
+  // Create two scans
+  sensor_msgs::msg::LaserScan scan_template;
+  scan_template.header.stamp = node->now();
+  scan_template.header.frame_id = "test_link";
+  // This three points are a match with the test dock template
+  scan_template.angle_min = -std::atan2(0.1, 0.9);
+  scan_template.angle_max = std::atan2(0.1, 0.9);
+  scan_template.angle_increment = std::atan2(0.1, 0.9);
+  scan_template.ranges = {0.9055, 1.0, 0.9055};
+  scan_template.range_min = 0.9055;
+  scan_template.range_max = 1.0;
+
+  sensor_msgs::msg::LaserScan scan_random;
+  scan_random = scan_template;
+  scan_random.ranges = {5.2, 2.0, 2.25, 4.5, 8.2};
+
+  // The dock is not found yet
+  EXPECT_FALSE(perception->getDockFound());
+
+  // Try to get the dock pose with a random scan
+  // and the use_first_detection parameter set to true
+  perception->setUseFirstDetection(true);
+  auto dock_pose = perception->getDockPose(scan_random);
+  EXPECT_FALSE(perception->getDockFound());
+
+  // Try to get the dock pose with a scan that matches the template
+  // and the use_first_detection parameter set to true
+  perception->setUseFirstDetection(false);
+  dock_pose = perception->getDockPose(scan_template);
+  EXPECT_TRUE(perception->getDockFound());
+  EXPECT_EQ(dock_pose.header.frame_id, "test_link");
+  EXPECT_NEAR(dock_pose.pose.position.x, 0.0, 0.01);
+  EXPECT_NEAR(dock_pose.pose.position.y, 0.0, 0.01);
+
+  // Now set the use_first_detection parameter to true with a dock found
+  perception->setUseFirstDetection(true);
+  dock_pose = perception->getDockPose(scan_random);
+  EXPECT_TRUE(perception->getDockFound());
+
+  // Now set the use_first_detection parameter to false with a dock found
+  perception->setUseFirstDetection(false);
+  dock_pose = perception->getDockPose(scan_template);
+  EXPECT_TRUE(perception->getDockFound());
 }
 
 int main(int argc, char ** argv)

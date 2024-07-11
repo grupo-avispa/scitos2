@@ -69,9 +69,9 @@ Perception::Perception(
 
   // Load the dock template
   std::string dock_template;
-  dock_template_ = Pcloud::Ptr(new Pcloud);
+  dock_template_.cloud = Pcloud::Ptr(new Pcloud);
   node->get_parameter(name_ + ".perception.dock_template", dock_template);
-  loadDockPointcloud(dock_template, *dock_template_);
+  loadDockPointcloud(dock_template, *dock_template_.cloud);
 
   // Publishers
   if (debug_) {
@@ -103,24 +103,15 @@ geometry_msgs::msg::PoseStamped Perception::getDockPose(const sensor_msgs::msg::
   auto clusters = extractClustersFromScan(scan);
 
   // Set the header of the template to the scan header
-  dock_template_->header.frame_id = scan.header.frame_id;
+  dock_template_.cloud->header.frame_id = scan.header.frame_id;
 
-  // Refine the pose of each cluster to get the dock pose the first time
-  geometry_msgs::msg::PoseStamped dock_pose;
-  if (!dock_found_) {
-    if (refineAllClustersPoses(clusters, dock_template_, dock_pose)) {
-      dock_found_ = true;
-      detected_dock_pose_ = dock_pose;
-    }
-  }
-
-  // If we use the first detection, update the timestamp
-  // Otherwise, refine the pose of the clusters to get the new dock pose
-  if (use_first_detection_) {
+  // Refine the pose of each cluster to get the dock pose
+  // If we only wants the first detection, just update the timestamp
+  if (use_first_detection_ && dock_found_) {
     detected_dock_pose_.header.stamp = clock_->now();
   } else {
-    if (refineAllClustersPoses(clusters, dock_template_, dock_pose)) {
-      detected_dock_pose_ = dock_pose;
+    if (refineAllClustersPoses(clusters, dock_template_, detected_dock_pose_)) {
+      dock_found_ = true;
     }
   }
 
@@ -257,17 +248,14 @@ bool Perception::refineClusterPose(Cluster & cluster, Pcloud::ConstPtr cloud_tem
 }
 
 bool Perception::refineAllClustersPoses(
-  Clusters & clusters, Pcloud::ConstPtr cloud_template, geometry_msgs::msg::PoseStamped & dock_pose)
+  Clusters & clusters, const Cluster & dock_template, geometry_msgs::msg::PoseStamped & dock_pose)
 {
   bool success = false;
   Clusters potential_docks;
 
   for (auto & cluster : clusters) {
     // Discard clusters not valid (i.e. clusters not similar to dock by size, ...)
-    double dx = (*cloud_template).back().x - (*cloud_template).front().x;
-    double dy = (*cloud_template).back().y - (*cloud_template).front().y;
-    double template_width = std::hypot(dx, dy);
-    if (!cluster.valid(template_width)) {
+    if (!cluster.valid(dock_template.width())) {
       continue;
     }
 
@@ -276,7 +264,7 @@ bool Perception::refineAllClustersPoses(
     Pcloud::Ptr cloud_template_initial(new pcl::PointCloud<pcl::PointXYZ>);
     tf2::Transform tf_stage;
     tf2::fromMsg(initial_estimate_pose_.pose, tf_stage);
-    pcl_ros::transformPointCloud(*cloud_template, *cloud_template_initial, tf_stage);
+    pcl_ros::transformPointCloud(*dock_template.cloud, *cloud_template_initial, tf_stage);
 
     // Transforms the target point cloud from the scan frame to the global frame (map frame)
     if (cluster.cloud->header.frame_id != initial_estimate_pose_.header.frame_id) {
