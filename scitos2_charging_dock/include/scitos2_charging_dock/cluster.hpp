@@ -31,6 +31,8 @@
 namespace scitos2_charging_dock
 {
 
+using Pcloud = pcl::PointCloud<pcl::PointXYZ>;
+
 /**
  * @class scitos2_charging_dock::Cluster
  * @brief Class to represent a cluster of points.
@@ -40,28 +42,64 @@ struct Cluster
   // Identifier of the cluster
   int id;
   // Original pointcloud of the cluster.
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud;
+  pcl::PointCloud<pcl::PointXYZ> cloud;
   // Pointcloud of the cluster after perform ICP.
-  pcl::PointCloud<pcl::PointXYZ>::Ptr matched_cloud;
+  pcl::PointCloud<pcl::PointXYZ> matched_cloud;
   // Score of the ICP.
   double icp_score;
   // Pose of the dock.
   geometry_msgs::msg::PoseStamped icp_pose;
 
   /**
+   * @brief Get the size of the cluster.
+   * @return int The size of the cluster.
+   */
+  int size() const {return cloud.size();}
+
+  /**
+   * @brief Clear the cluster.
+   */
+  void clear() {cloud.clear();}
+
+  /**
+   * @brief Push a point at the end of the cluster.
+   *
+   * @param point The point to push.
+   */
+  void push_back(geometry_msgs::msg::Point point)
+  {
+    pcl::PointXYZ pcl_point;
+    pcl_point.x = point.x;
+    pcl_point.y = point.y;
+    pcl_point.z = point.z;
+    cloud.push_back(pcl_point);
+  }
+
+  /**
    * @brief Get the centroid of the dock.
    *
    * @return geometry_msgs::msg::Point The centroid of the dock.
    */
-  geometry_msgs::msg::Point getCentroid()
+  geometry_msgs::msg::Point centroid() const
   {
     Eigen::Vector4f centroid_vec_4f(0, 0, 0, 0);
-    pcl::compute3DCentroid(*cloud, centroid_vec_4f);
+    pcl::compute3DCentroid(cloud, centroid_vec_4f);
     geometry_msgs::msg::Point centroid;
     centroid.x = static_cast<double>(centroid_vec_4f[0]);
     centroid.y = static_cast<double>(centroid_vec_4f[1]);
     centroid.z = static_cast<double>(centroid_vec_4f[2]);
     return centroid;
+  }
+
+  /**
+   * @brief Get the length of the centroid.
+   *
+   * @return double The length of the centroid.
+   */
+  double centroid_length() const
+  {
+    auto c = centroid();
+    return sqrt(c.x * c.x + c.y * c.y);
   }
 
   /**
@@ -71,13 +109,22 @@ struct Cluster
    */
   double width() const
   {
-    if (!cloud) {
+    if (cloud.empty()) {
       return 0.0;
     }
 
-    double dx = cloud->back().x - cloud->front().x;
-    double dy = cloud->back().y - cloud->front().y;
+    double dx = cloud.back().x - cloud.front().x;
+    double dy = cloud.back().y - cloud.front().y;
     return std::hypot(dx, dy);
+  }
+
+  /**
+   * @brief Get the width squared of the segment.
+   * @return double The width squared of the segment.
+   */
+  double width_squared() const
+  {
+    return width() * width();
   }
 
   /**
@@ -89,7 +136,7 @@ struct Cluster
   bool valid(double ideal_size) const
   {
     // If there are no points this cannot be valid.
-    if (!cloud) {
+    if (cloud.empty()) {
       return false;
     }
 

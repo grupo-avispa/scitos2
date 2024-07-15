@@ -24,16 +24,16 @@
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "geometry_msgs/msg/point.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
-#include "scitos2_charging_dock/segment.hpp"
+#include "scitos2_charging_dock/cluster.hpp"
 
 namespace scitos2_charging_dock
 {
 
-using Segments = std::vector<Segment>;
+using Clusters = std::vector<Cluster>;
 
 /**
  * @class scitos2_charging_dock::Segmentation
- * @brief Class to perform segmentation on the laserscan to get the segments.
+ * @brief Class to perform segmentation on the laserscan to get the clusters.
  *
  */
 class Segmentation
@@ -56,19 +56,19 @@ public:
   /**
    * @brief Perform a segmentation using a euclidean distance base clustering.
    *
-   * @param scan The laserscan to segment
-   * @param segments The segmented points
+   * @param scan The laserscan to clustering
+   * @param clusters The clusters obtained
    * @return bool If the segmentation was successful
    */
-  bool performSegmentation(const sensor_msgs::msg::LaserScan & scan, Segments & segments);
+  bool performSegmentation(const sensor_msgs::msg::LaserScan & scan, Clusters & clusters);
 
   /**
-   * @brief Filter the segments based on the number of points, the distance between them.
+   * @brief Filter the clusters based on the number of points, the distance between them, etc.
    *
-   * @param segments The segments to filter
-   * @return Segments The filtered segments
+   * @param clusters The clusters to filter
+   * @return Clusters The filtered clusters
    */
-  Segments filterSegments(const Segments & segments);
+  Clusters filterClusters(const Clusters & clusters);
 
   /**
    * @brief Callback executed when a parameter change is detected
@@ -125,18 +125,18 @@ protected:
 
   // Distance threshold for the segmentation
   double distance_threshold_;
-  // Minimum number of points in a segment
-  int min_points_segment_;
-  // Maximum number of points in a segment
-  int max_points_segment_;
-  // Minimum distance from sensor to the centroid of the segment
+  // Minimum number of points in a cluster
+  int min_points_cluster_;
+  // Maximum number of points in a cluster
+  int max_points_cluster_;
+  // Minimum distance from sensor to the centroid of the cluster
   double min_avg_distance_from_sensor_;
-  // Maximum distance from sensor to the centroid of the segment
+  // Maximum distance from sensor to the centroid of the cluster
   double max_avg_distance_from_sensor_;
-  // Minimum width of the segment
-  double min_segment_width_;
-  // Maximum width of the segment
-  double max_segment_width_;
+  // Minimum width of the cluster
+  double min_cluster_width_;
+  // Maximum width of the cluster
+  double max_cluster_width_;
 };
 
 }  // namespace scitos2_charging_dock

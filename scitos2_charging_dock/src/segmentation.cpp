@@ -40,12 +40,12 @@ Segmentation::Segmentation(
     node, name_ + ".segmentation.max_width", rclcpp::ParameterValue(1.0));
 
   node->get_parameter(name_ + ".segmentation.distance_threshold", distance_threshold_);
-  node->get_parameter(name_ + ".segmentation.min_points", min_points_segment_);
-  node->get_parameter(name_ + ".segmentation.max_points", max_points_segment_);
+  node->get_parameter(name_ + ".segmentation.min_points", min_points_cluster_);
+  node->get_parameter(name_ + ".segmentation.max_points", max_points_cluster_);
   node->get_parameter(name_ + ".segmentation.min_distance", min_avg_distance_from_sensor_);
   node->get_parameter(name_ + ".segmentation.max_distance", max_avg_distance_from_sensor_);
-  node->get_parameter(name_ + ".segmentation.min_width", min_segment_width_);
-  node->get_parameter(name_ + ".segmentation.max_width", max_segment_width_);
+  node->get_parameter(name_ + ".segmentation.min_width", min_cluster_width_);
+  node->get_parameter(name_ + ".segmentation.max_width", max_cluster_width_);
 
   // Add callback for dynamic parameters
   dyn_params_handler_ = node->add_on_set_parameters_callback(
@@ -56,7 +56,7 @@ Segmentation::Segmentation(
  * by Alberto Tudela.
  */
 bool Segmentation::performSegmentation(
-  const sensor_msgs::msg::LaserScan & scan, Segments & segments)
+  const sensor_msgs::msg::LaserScan & scan, Clusters & clusters)
 {
   // Convert the scan to points
   auto points = scanToPoints(scan);
@@ -65,54 +65,55 @@ bool Segmentation::performSegmentation(
     return false;
   }
 
-  // Create the first segment
-  Segment current_segment;
-  current_segment.points.push_back(points.front());
+  // Create the first cluster
+  Cluster current_cluster;
+  current_cluster.cloud.header.frame_id = scan.header.frame_id;
+  current_cluster.push_back(points.front());
 
   // Create the segments
   for (uint64_t p = 1; p < points.size(); p++) {
     if (isJumpBetweenPoints(points[p - 1], points[p], distance_threshold_)) {
-      segments.push_back(current_segment);
-      current_segment.points.clear();
+      clusters.push_back(current_cluster);
+      current_cluster.clear();
     }
-    current_segment.points.push_back(points[p]);
+    current_cluster.push_back(points[p]);
   }
-  segments.push_back(current_segment);
+  clusters.push_back(current_cluster);
 
-  return segments.size() > 0;
+  return clusters.size() > 0;
 }
 
-Segments Segmentation::filterSegments(const Segments & segments)
+Clusters Segmentation::filterClusters(const Clusters & clusters)
 {
-  Segments filtered_segments;
-  filtered_segments.reserve(segments.size());
+  Clusters filtered_clusters;
+  filtered_clusters.reserve(clusters.size());
 
-  const double squared_min_segment_width = min_segment_width_ * min_segment_width_;
-  const double squared_max_segment_width = max_segment_width_ * max_segment_width_;
+  const double squared_min_cluster_width = min_cluster_width_ * min_cluster_width_;
+  const double squared_max_cluster_width = max_cluster_width_ * max_cluster_width_;
 
-  for (const auto & segment : segments) {
+  for (const auto & cluster : clusters) {
     // By number of points
-    if (segment.size() < min_points_segment_ || segment.size() > max_points_segment_) {
+    if (cluster.size() < min_points_cluster_ || cluster.size() > max_points_cluster_) {
       continue;
     }
 
     // By distance to sensor
-    if (segment.centroid_length() < min_avg_distance_from_sensor_ ||
-      segment.centroid_length() > max_avg_distance_from_sensor_)
+    if (cluster.centroid_length() < min_avg_distance_from_sensor_ ||
+      cluster.centroid_length() > max_avg_distance_from_sensor_)
     {
       continue;
     }
 
     // By width
-    if (segment.width_squared() < squared_min_segment_width ||
-      segment.width_squared() > squared_max_segment_width)
+    if (cluster.width_squared() < squared_min_cluster_width ||
+      cluster.width_squared() > squared_max_cluster_width)
     {
       continue;
     }
 
-    filtered_segments.push_back(segment);
+    filtered_clusters.push_back(cluster);
   }
-  return filtered_segments;
+  return filtered_clusters;
 }
 
 geometry_msgs::msg::Point Segmentation::fromPolarToCartesian(double range, double angle)
@@ -161,9 +162,9 @@ Segmentation::dynamicParametersCallback(std::vector<rclcpp::Parameter> parameter
     const auto & name = parameter.get_name();
     if (type == rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER) {
       if (name == name_ + ".segmentation.min_points") {
-        min_points_segment_ = parameter.as_int();
+        min_points_cluster_ = parameter.as_int();
       } else if (name == name_ + ".segmentation.max_points") {
-        max_points_segment_ = parameter.as_int();
+        max_points_cluster_ = parameter.as_int();
       }
     } else if (type == rcl_interfaces::msg::ParameterType::PARAMETER_DOUBLE) {
       if (name == name_ + ".segmentation.distance_threshold") {
@@ -173,9 +174,9 @@ Segmentation::dynamicParametersCallback(std::vector<rclcpp::Parameter> parameter
       } else if (name == name_ + ".segmentation.max_distance") {
         max_avg_distance_from_sensor_ = parameter.as_double();
       } else if (name == name_ + ".segmentation.min_width") {
-        min_segment_width_ = parameter.as_double();
+        min_cluster_width_ = parameter.as_double();
       } else if (name == name_ + ".segmentation.max_width") {
-        max_segment_width_ = parameter.as_double();
+        max_cluster_width_ = parameter.as_double();
       }
     }
   }

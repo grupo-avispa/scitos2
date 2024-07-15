@@ -163,15 +163,14 @@ bool DockSaver::saveDockCallback(
   // Find the cluster in front of the robot
   std::vector<double> angles;
   for (auto cluster : clusters) {
-    double angle = std::atan2(cluster.getCentroid().y, cluster.getCentroid().x);
+    double angle = std::atan2(cluster.centroid().y, cluster.centroid().x);
     angles.push_back(angles::normalize_angle_positive(angle));
   }
   auto min_angle = std::min_element(angles.begin(), angles.end());
   int idx = std::distance(angles.begin(), min_angle);
 
   // Store the dock pointcloud to a file
-  scitos2_charging_dock::Pcloud::Ptr dock = clusters[idx].cloud;
-  response->result = perception_->storeDockPointcloud(filename, *dock);
+  response->result = perception_->storeDockPointcloud(filename, clusters[idx].cloud);
 
   return true;
 }

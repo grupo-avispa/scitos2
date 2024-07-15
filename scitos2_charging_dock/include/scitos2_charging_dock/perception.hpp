@@ -39,9 +39,6 @@
 namespace scitos2_charging_dock
 {
 
-using Clusters = std::vector<Cluster>;
-using Pcloud = pcl::PointCloud<pcl::PointXYZ>;
-
 /**
  * @class scitos2_charging_dock::Perception
  * @brief Class to perform ICP matching on clusters to get the docking station.
@@ -101,31 +98,13 @@ public:
 
 protected:
   /**
-   * @brief Convert the segments to clusters.
-   *
-   * @param frame The frame of the segments
-   * @param segments The segments to convert
-   * @return Clusters The clusters
-   */
-  Clusters segmentsToClusters(std::string frame, const Segments & segments);
-
-  /**
-   * @brief Convert the segment to a pointcloud.
-   *
-   * @param frame The frame of the segment
-   * @param segments The segments to convert
-   * @return Pcloud The pointcloud
-   */
-  Pcloud::Ptr segmentToPcloud(std::string frame, const Segment & segment);
-
-  /**
    * @brief Refine the cluster pose using Iterative Closest Point.
    *
    * @param cluster The cluster to perform ICP on
    * @param cloud_template The template to match with the cluster
    * @return bool If the ICP was successful and the template is aligned with the cluster
    */
-  bool refineClusterPose(Cluster & cluster, Pcloud::ConstPtr cloud_template);
+  bool refineClusterPose(Cluster & cluster, const Pcloud & cloud_template);
 
   /**
    * @brief Refine all the clusters poses using Iterative Closest Point to find the dock.

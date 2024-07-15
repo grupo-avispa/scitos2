@@ -69,9 +69,8 @@ Perception::Perception(
 
   // Load the dock template
   std::string dock_template;
-  dock_template_.cloud = Pcloud::Ptr(new Pcloud);
   node->get_parameter(name_ + ".perception.dock_template", dock_template);
-  loadDockPointcloud(dock_template, *dock_template_.cloud);
+  loadDockPointcloud(dock_template, dock_template_.cloud);
 
   // Publishers
   if (debug_) {
@@ -101,9 +100,6 @@ geometry_msgs::msg::PoseStamped Perception::getDockPose(const sensor_msgs::msg::
 {
   // Extract clusters from the scan
   auto clusters = extractClustersFromScan(scan);
-
-  // Set the header of the template to the scan header
-  dock_template_.cloud->header.frame_id = scan.header.frame_id;
 
   // Refine the pose of each cluster to get the dock pose
   // If we only wants the first detection, just update the timestamp
@@ -156,48 +152,16 @@ bool Perception::storeDockPointcloud(std::string filepath, const Pcloud & dock)
 
 Clusters Perception::extractClustersFromScan(const sensor_msgs::msg::LaserScan & scan)
 {
-  // Perform segmentation on the scan and filter the segments
-  Segments segments;
-  if (segmentation_->performSegmentation(scan, segments)) {
-    auto filtered_segments = segmentation_->filterSegments(segments);
-    // Convert the segments to clusters
-    return segmentsToClusters(scan.header.frame_id, filtered_segments);
-  } else {
-    return Clusters();
-  }
-}
-
-Clusters Perception::segmentsToClusters(std::string frame, const Segments & segments)
-{
+  // Perform segmentation on the scan and filter the clusters
   Clusters clusters;
-  int count = 0;
-  for (const auto & segment : segments) {
-    Cluster cluster;
-    cluster.id = count++;
-    cluster.matched_cloud = pcl::PointCloud<pcl::PointXYZ>::Ptr(new pcl::PointCloud<pcl::PointXYZ>);
-    cluster.cloud = segmentToPcloud(frame, segment);
-    clusters.push_back(cluster);
+  if (segmentation_->performSegmentation(scan, clusters)) {
+    clusters = segmentation_->filterClusters(clusters);
   }
   return clusters;
 }
 
-Pcloud::Ptr Perception::segmentToPcloud(std::string frame, const Segment & segment)
-{
-  Pcloud::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
-  cloud->header.frame_id = frame;
 
-  for (const auto & point : segment.points) {
-    pcl::PointXYZ pcl_point;
-    pcl_point.x = point.x;
-    pcl_point.y = point.y;
-    pcl_point.z = point.z;
-    cloud->push_back(pcl_point);
-  }
-
-  return cloud;
-}
-
-bool Perception::refineClusterPose(Cluster & cluster, Pcloud::ConstPtr cloud_template)
+bool Perception::refineClusterPose(Cluster & cluster, const Pcloud & cloud_template)
 {
   bool success = false;
 
@@ -209,10 +173,13 @@ bool Perception::refineClusterPose(Cluster & cluster, Pcloud::ConstPtr cloud_tem
   icp.setEuclideanFitnessEpsilon(icp_max_eucl_fit_eps_);
 
   // Align the cluster to the template
-  icp.setInputSource(cloud_template);
-  icp.setInputTarget(cluster.cloud);
-  Pcloud::Ptr matched_cloud(new pcl::PointCloud<pcl::PointXYZ>());
-  icp.align(*matched_cloud);
+  Pcloud::Ptr cloud_template_ptr(new Pcloud(cloud_template));
+  Pcloud::Ptr cluster_cloud_ptr(new Pcloud(cluster.cloud));
+  Pcloud matched_cloud;
+
+  icp.setInputSource(cloud_template_ptr);
+  icp.setInputTarget(cluster_cloud_ptr);
+  icp.align(matched_cloud);
 
   // If the ICP converged, store the results on the cluster
   if (icp.hasConverged()) {
@@ -261,31 +228,31 @@ bool Perception::refineAllClustersPoses(
 
     // Prepares the template pointcloud for matching by transforming to the initial estimate pose.
     // Usually in global coordinates (map frame)
-    Pcloud::Ptr cloud_template_initial(new pcl::PointCloud<pcl::PointXYZ>);
+    Pcloud cloud_template_initial;
     tf2::Transform tf_stage;
     tf2::fromMsg(initial_estimate_pose_.pose, tf_stage);
-    pcl_ros::transformPointCloud(*dock_template.cloud, *cloud_template_initial, tf_stage);
+    pcl_ros::transformPointCloud(dock_template.cloud, cloud_template_initial, tf_stage);
 
     // Transforms the target point cloud from the scan frame to the global frame (map frame)
-    if (cluster.cloud->header.frame_id != initial_estimate_pose_.header.frame_id) {
+    if (cluster.cloud.header.frame_id != initial_estimate_pose_.header.frame_id) {
       try {
         if (!tf_buffer_->canTransform(
-            initial_estimate_pose_.header.frame_id, cluster.cloud->header.frame_id,
-            rclcpp::Time(cluster.cloud->header.stamp * 1000), rclcpp::Duration::from_seconds(0.2)))
+            initial_estimate_pose_.header.frame_id, cluster.cloud.header.frame_id,
+            rclcpp::Time(cluster.cloud.header.stamp * 1000), rclcpp::Duration::from_seconds(0.2)))
         {
           RCLCPP_WARN(
             logger_, "Could not transform %s to %s",
-            cluster.cloud->header.frame_id.c_str(), initial_estimate_pose_.header.frame_id.c_str());
+            cluster.cloud.header.frame_id.c_str(), initial_estimate_pose_.header.frame_id.c_str());
           return false;
         }
         auto tf_stamped = tf_buffer_->lookupTransform(
-          initial_estimate_pose_.header.frame_id, cluster.cloud->header.frame_id,
+          initial_estimate_pose_.header.frame_id, cluster.cloud.header.frame_id,
           tf2::TimePointZero);
-        pcl_ros::transformPointCloud(*(cluster.cloud), *(cluster.cloud), tf_stamped);
+        pcl_ros::transformPointCloud(cluster.cloud, cluster.cloud, tf_stamped);
       } catch (const tf2::TransformException & ex) {
         RCLCPP_WARN(
           logger_, "Could not transform %s to %s: %s",
-          cluster.cloud->header.frame_id.c_str(),
+          cluster.cloud.header.frame_id.c_str(),
           initial_estimate_pose_.header.frame_id.c_str(), ex.what());
         return false;
       }
@@ -295,14 +262,14 @@ bool Perception::refineAllClustersPoses(
     if (debug_) {
       // Publish dock template
       sensor_msgs::msg::PointCloud2 template_msg;
-      pcl::toROSMsg(*cloud_template_initial, template_msg);
+      pcl::toROSMsg(cloud_template_initial, template_msg);
       template_msg.header.frame_id = initial_estimate_pose_.header.frame_id;
       template_msg.header.stamp = clock_->now();
       dock_template_pub_->publish(std::move(template_msg));
 
       // Publish cluster target
       sensor_msgs::msg::PointCloud2 target_msg;
-      pcl::toROSMsg(*cluster.cloud, target_msg);
+      pcl::toROSMsg(cluster.cloud, target_msg);
       target_msg.header.frame_id = initial_estimate_pose_.header.frame_id;
       target_msg.header.stamp = clock_->now();
       target_cloud_pub_->publish(std::move(target_msg));
@@ -328,7 +295,7 @@ bool Perception::refineAllClustersPoses(
     // Publish the dock cloud
     if (debug_) {
       sensor_msgs::msg::PointCloud2 cloud_msg;
-      pcl::toROSMsg(*(clusters.front().matched_cloud), cloud_msg);
+      pcl::toROSMsg(clusters.front().matched_cloud, cloud_msg);
       cloud_msg.header.frame_id = initial_estimate_pose_.header.frame_id;
       cloud_msg.header.stamp = clock_->now();
       dock_cloud_pub_->publish(std::move(cloud_msg));
