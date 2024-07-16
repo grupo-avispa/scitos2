@@ -104,14 +104,14 @@ geometry_msgs::msg::PoseStamped Perception::getDockPose(const sensor_msgs::msg::
   // Refine the pose of each cluster to get the dock pose
   // If we only wants the first detection, just update the timestamp
   if (use_first_detection_ && dock_found_) {
-    detected_dock_pose_.header.stamp = clock_->now();
+    detected_dock_.pose.header.stamp = clock_->now();
   } else {
-    if (refineAllClustersPoses(clusters, dock_template_, detected_dock_pose_)) {
+    if (refineAllClustersPoses(clusters, dock_template_, detected_dock_)) {
       dock_found_ = true;
     }
   }
 
-  return detected_dock_pose_;
+  return detected_dock_.pose;
 }
 
 void Perception::setInitialEstimate(
@@ -194,19 +194,19 @@ bool Perception::refineClusterPose(Cluster & cluster, const Pcloud & cloud_templ
     tf2::toMsg(tf_correct, pose_correct);
 
     // Update the cluster
-    cluster.icp_score = icp.getFitnessScore();
-    cluster.icp_pose.header.frame_id = initial_estimate_pose_.header.frame_id;
-    cluster.icp_pose.header.stamp = clock_->now();
-    cluster.icp_pose.pose = pose_correct;
-    cluster.matched_cloud = matched_cloud;
+    cluster.score = icp.getFitnessScore();
+    cluster.pose.header.frame_id = initial_estimate_pose_.header.frame_id;
+    cluster.pose.header.stamp = clock_->now();
+    cluster.pose.pose = pose_correct;
+    cluster.cloud = matched_cloud;
 
     success = true;
 
     RCLCPP_DEBUG(logger_, "ICP converged for cluster %i", cluster.id);
-    RCLCPP_DEBUG(logger_, "ICP fitness score: %f", cluster.icp_score);
+    RCLCPP_DEBUG(logger_, "ICP fitness score: %f", cluster.score);
     RCLCPP_DEBUG(
       logger_, "ICP transformation: (%f, %f)",
-      cluster.icp_pose.pose.position.x, cluster.icp_pose.pose.position.y);
+      cluster.pose.pose.position.x, cluster.pose.pose.position.y);
   } else {
     RCLCPP_DEBUG(logger_, "ICP did not converge for cluster %i", cluster.id);
   }
@@ -215,7 +215,7 @@ bool Perception::refineClusterPose(Cluster & cluster, const Pcloud & cloud_templ
 }
 
 bool Perception::refineAllClustersPoses(
-  Clusters & clusters, const Cluster & dock_template, geometry_msgs::msg::PoseStamped & dock_pose)
+  Clusters & clusters, const Cluster & dock_template, Cluster & dock)
 {
   bool success = false;
   Clusters potential_docks;
@@ -278,10 +278,10 @@ bool Perception::refineAllClustersPoses(
     // Refine the cluster to get the dock pose
     if (refineClusterPose(cluster, cloud_template_initial)) {
       // Check if potential dock is found
-      if (cluster.icp_score < icp_min_score_) {
+      if (cluster.score < icp_min_score_) {
         RCLCPP_DEBUG(
           logger_, "Dock potentially identified at cluster %i with score %f",
-          cluster.id, cluster.icp_score);
+          cluster.id, cluster.score);
         potential_docks.push_back(cluster);
       }
     }
@@ -289,19 +289,19 @@ bool Perception::refineAllClustersPoses(
 
   // Check if dock is found
   if (!potential_docks.empty()) {
-    // Sort the clusters by ICP score
+    // Sort the clusters by ICP score and select the best one
     std::sort(potential_docks.begin(), potential_docks.end());
-    dock_pose = potential_docks.front().icp_pose;
+    dock = potential_docks.front();
     // Publish the dock cloud
     if (debug_) {
       sensor_msgs::msg::PointCloud2 cloud_msg;
-      pcl::toROSMsg(clusters.front().matched_cloud, cloud_msg);
+      pcl::toROSMsg(dock.cloud, cloud_msg);
       cloud_msg.header.frame_id = initial_estimate_pose_.header.frame_id;
       cloud_msg.header.stamp = clock_->now();
       dock_cloud_pub_->publish(std::move(cloud_msg));
     }
     success = true;
-    RCLCPP_DEBUG(logger_, "Dock successfully identified at cluster %i", potential_docks.front().id);
+    RCLCPP_DEBUG(logger_, "Dock successfully identified at cluster %i", dock.id);
   } else {
     RCLCPP_WARN(logger_, "Unable to identify the dock");
   }

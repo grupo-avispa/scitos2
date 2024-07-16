@@ -107,14 +107,14 @@ TEST(ScitosDockingCluster, valid) {
 
 TEST(ScitosDockingCluster, operators) {
   scitos2_charging_dock::Cluster cluster1;
-  cluster1.icp_score = 1.0;
+  cluster1.score = 1.0;
   scitos2_charging_dock::Cluster cluster2;
-  cluster2.icp_score = 2.0;
+  cluster2.score = 2.0;
   EXPECT_TRUE(cluster1 < cluster2);
   EXPECT_FALSE(cluster1 > cluster2);
 
-  cluster1.icp_score = 3.0;
-  cluster2.icp_score = 2.0;
+  cluster1.score = 3.0;
+  cluster2.score = 2.0;
   EXPECT_FALSE(cluster1 < cluster2);
   EXPECT_TRUE(cluster1 > cluster2);
 }

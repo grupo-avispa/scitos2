@@ -43,12 +43,10 @@ struct Cluster
   int id;
   // Original pointcloud of the cluster.
   pcl::PointCloud<pcl::PointXYZ> cloud;
-  // Pointcloud of the cluster after perform ICP.
-  pcl::PointCloud<pcl::PointXYZ> matched_cloud;
   // Score of the ICP.
-  double icp_score;
+  double score;
   // Pose of the dock.
-  geometry_msgs::msg::PoseStamped icp_pose;
+  geometry_msgs::msg::PoseStamped pose;
 
   /**
    * @brief Get the size of the cluster.
@@ -148,8 +146,8 @@ struct Cluster
     return true;
   }
 
-  friend bool operator<(const Cluster c1, const Cluster c2) {return c1.icp_score < c2.icp_score;}
-  friend bool operator>(const Cluster c1, const Cluster c2) {return c1.icp_score > c2.icp_score;}
+  friend bool operator<(const Cluster c1, const Cluster c2) {return c1.score < c2.score;}
+  friend bool operator>(const Cluster c1, const Cluster c2) {return c1.score > c2.score;}
 };
 }  // namespace scitos2_charging_dock
 

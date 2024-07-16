@@ -49,10 +49,9 @@ public:
   bool refineAllClustersPoses(
     scitos2_charging_dock::Clusters & clusters,
     const scitos2_charging_dock::Cluster dock_template,
-    geometry_msgs::msg::PoseStamped & dock_pose)
+    scitos2_charging_dock::Cluster & dock)
   {
-    return scitos2_charging_dock::Perception::refineAllClustersPoses(
-      clusters, dock_template, dock_pose);
+    return scitos2_charging_dock::Perception::refineAllClustersPoses(clusters, dock_template, dock);
   }
 
   bool getDockFound() {return dock_found_;}
@@ -241,9 +240,9 @@ TEST(ScitosDockingPerception, refineClusterToPose) {
 
   // Check if the pose was refined
   EXPECT_TRUE(success);
-  EXPECT_EQ(cluster.icp_pose.header.frame_id, "test_link");
-  EXPECT_NEAR(cluster.icp_pose.pose.position.x, 1.0, 0.01);
-  EXPECT_NEAR(cluster.icp_pose.pose.position.y, 1.0, 0.01);
+  EXPECT_EQ(cluster.pose.header.frame_id, "test_link");
+  EXPECT_NEAR(cluster.pose.pose.position.x, 1.0, 0.01);
+  EXPECT_NEAR(cluster.pose.pose.position.y, 1.0, 0.01);
 
   // Now set another cluster different from the template
   cluster.clear();
@@ -308,13 +307,13 @@ TEST(ScitosDockingPerception, refineAllClustersPoses) {
   perception->setInitialEstimate(initial_pose, "test_link");
 
   // Refine the clusters poses
-  geometry_msgs::msg::PoseStamped dock_pose;
-  bool success = perception->refineAllClustersPoses(clusters, dock_template, dock_pose);
+  scitos2_charging_dock::Cluster dock;
+  bool success = perception->refineAllClustersPoses(clusters, dock_template, dock);
 
   // Check if the dock is found
   EXPECT_TRUE(success);
-  EXPECT_EQ(dock_pose.header.frame_id, "test_link");
-  EXPECT_NEAR(dock_pose.pose.position.x, 0.0, 0.01);
+  EXPECT_EQ(dock.pose.header.frame_id, "test_link");
+  EXPECT_NEAR(dock.pose.pose.position.x, 0.0, 0.01);
 }
 
 TEST(ScitosDockingPerception, getDockPose) {

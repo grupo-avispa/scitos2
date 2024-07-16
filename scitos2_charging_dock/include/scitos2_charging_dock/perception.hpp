@@ -111,12 +111,10 @@ protected:
    *
    * @param clusters The clusters to perform ICP on
    * @param dock_template A cluster with a cloud template to match with the clusters
-   * @param dock_pose The dock pose
+   * @param dock The dock found
    * @return bool If the dock is found
    */
-  bool refineAllClustersPoses(
-    Clusters & clusters, const Cluster & dock_template,
-    geometry_msgs::msg::PoseStamped & dock_pose);
+  bool refineAllClustersPoses(Clusters & clusters, const Cluster & dock_template, Cluster & dock);
 
   /**
    * @brief Load the dock template from a PCD file.
@@ -155,10 +153,10 @@ protected:
   // Segmentation
   std::unique_ptr<Segmentation> segmentation_;
 
-  // Last detected dock pose
-  geometry_msgs::msg::PoseStamped detected_dock_pose_;
-  // A cluuster with the dock template pointcloud
+  // A cluster with the dock template pointcloud
   Cluster dock_template_;
+  // Last detected dock
+  Cluster detected_dock_;
   // Dock found
   bool dock_found_;
   // Only use the first detection
