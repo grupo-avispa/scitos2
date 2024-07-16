@@ -35,6 +35,11 @@ public:
     return scitos2_charging_dock::Perception::loadDockPointcloud(filepath, dock);
   }
 
+  sensor_msgs::msg::PointCloud2 createPointCloud2Msg(const scitos2_charging_dock::Pcloud & cloud)
+  {
+    return scitos2_charging_dock::Perception::createPointCloud2Msg(cloud);
+  }
+
   tf2::Transform eigenToTransform(const Eigen::Matrix4f & T)
   {
     return scitos2_charging_dock::Perception::eigenToTransform(T);
@@ -166,6 +171,37 @@ TEST(ScitosDockingPerception, storeDockPointcloud) {
 
   // Check if the docking station was stored
   EXPECT_TRUE(success);
+}
+
+TEST(ScitosDockingPerception, createPointcloudMsg) {
+  // Create a node
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("perception_test");
+  auto perception = std::make_shared<PerceptionFixture>(node, "test", nullptr);
+
+  // Create a pointcloud
+  scitos2_charging_dock::Pcloud cloud;
+  cloud.header.frame_id = "test_link";
+  cloud.push_back(pcl::PointXYZ(0, 0, 0));
+  cloud.push_back(pcl::PointXYZ(1, 0, 0));
+  cloud.push_back(pcl::PointXYZ(1, 1.5, 0));
+  cloud.push_back(pcl::PointXYZ(1, 2, 0));
+
+  // Create a PointCloud2 message
+  auto msg = perception->createPointCloud2Msg(cloud);
+
+  // Check if the message was created
+  EXPECT_EQ(msg.header.frame_id, "test_link");
+  EXPECT_EQ(msg.width, 4);
+  EXPECT_EQ(msg.height, 1);
+  EXPECT_EQ(msg.fields.size(), 3);
+  EXPECT_EQ(msg.fields[0].name, "x");
+  EXPECT_EQ(msg.fields[1].name, "y");
+  EXPECT_EQ(msg.fields[2].name, "z");
+  EXPECT_EQ(msg.point_step, 16);
+  EXPECT_EQ(msg.row_step, 64);
+  EXPECT_EQ(msg.is_dense, true);
+  EXPECT_EQ(msg.is_bigendian, false);
+  EXPECT_EQ(msg.data.size(), 64);
 }
 
 TEST(ScitosDockingPerception, eigenToTransform) {

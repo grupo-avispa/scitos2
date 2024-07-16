@@ -232,6 +232,7 @@ bool Perception::refineAllClustersPoses(
     tf2::Transform tf_stage;
     tf2::fromMsg(initial_estimate_pose_.pose, tf_stage);
     pcl_ros::transformPointCloud(dock_template.cloud, cloud_template_initial, tf_stage);
+    cloud_template_initial.header.frame_id = initial_estimate_pose_.header.frame_id;
 
     // Transforms the target point cloud from the scan frame to the global frame (map frame)
     if (cluster.cloud.header.frame_id != initial_estimate_pose_.header.frame_id) {
@@ -249,6 +250,7 @@ bool Perception::refineAllClustersPoses(
           initial_estimate_pose_.header.frame_id, cluster.cloud.header.frame_id,
           tf2::TimePointZero);
         pcl_ros::transformPointCloud(cluster.cloud, cluster.cloud, tf_stamped);
+        cluster.cloud.header.frame_id = initial_estimate_pose_.header.frame_id;
       } catch (const tf2::TransformException & ex) {
         RCLCPP_WARN(
           logger_, "Could not transform %s to %s: %s",
@@ -260,19 +262,9 @@ bool Perception::refineAllClustersPoses(
 
     // Visualizes the target point cloud and estimated dock template pose
     if (debug_) {
-      // Publish dock template
-      sensor_msgs::msg::PointCloud2 template_msg;
-      pcl::toROSMsg(cloud_template_initial, template_msg);
-      template_msg.header.frame_id = initial_estimate_pose_.header.frame_id;
-      template_msg.header.stamp = clock_->now();
-      dock_template_pub_->publish(std::move(template_msg));
-
-      // Publish cluster target
-      sensor_msgs::msg::PointCloud2 target_msg;
-      pcl::toROSMsg(cluster.cloud, target_msg);
-      target_msg.header.frame_id = initial_estimate_pose_.header.frame_id;
-      target_msg.header.stamp = clock_->now();
-      target_cloud_pub_->publish(std::move(target_msg));
+      // Publish dock template and target cloud
+      dock_template_pub_->publish(createPointCloud2Msg(dock_template.cloud));
+      target_cloud_pub_->publish(createPointCloud2Msg(cluster.cloud));
     }
 
     // Refine the cluster to get the dock pose
@@ -294,11 +286,7 @@ bool Perception::refineAllClustersPoses(
     dock = potential_docks.front();
     // Publish the dock cloud
     if (debug_) {
-      sensor_msgs::msg::PointCloud2 cloud_msg;
-      pcl::toROSMsg(dock.cloud, cloud_msg);
-      cloud_msg.header.frame_id = initial_estimate_pose_.header.frame_id;
-      cloud_msg.header.stamp = clock_->now();
-      dock_cloud_pub_->publish(std::move(cloud_msg));
+      dock_cloud_pub_->publish(createPointCloud2Msg(dock.cloud));
     }
     success = true;
     RCLCPP_DEBUG(logger_, "Dock successfully identified at cluster %i", dock.id);
@@ -307,6 +295,14 @@ bool Perception::refineAllClustersPoses(
   }
 
   return success;
+}
+
+sensor_msgs::msg::PointCloud2 Perception::createPointCloud2Msg(const Pcloud & cloud)
+{
+  sensor_msgs::msg::PointCloud2 msg;
+  pcl::toROSMsg(cloud, msg);
+  msg.header.stamp = clock_->now();
+  return msg;
 }
 
 tf2::Transform Perception::eigenToTransform(const Eigen::Matrix4f & T)

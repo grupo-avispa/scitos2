@@ -126,6 +126,14 @@ protected:
   bool loadDockPointcloud(std::string filepath, Pcloud & dock);
 
   /**
+   * @brief Create a PointCloud2 message from a PCL pointcloud.
+   *
+   * @param cloud The pointcloud
+   * @return sensor_msgs::msg::PointCloud2 The PointCloud2 message
+   */
+  sensor_msgs::msg::PointCloud2 createPointCloud2Msg(const Pcloud & cloud);
+
+  /**
    * @brief Convert a Eigen matrix to a tf2 Transform.
    *
    * @param T The Eigen matrix
