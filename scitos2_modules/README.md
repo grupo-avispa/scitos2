@@ -118,7 +118,7 @@ The Drive module controls the robot's motors, handling velocity commands, odomet
 
 * **`emergency_stop`** ([scitos2_msgs/EmergencyStop])
 
-	This service stops the robot. It is equivalent to the bumper being pressed - the motor stop is engaged, and can be reset with /reset_motorstop.
+	This service stops the robot. It is equivalent to the bumper being pressed - the motor stop is engaged, and can be reset with `/reset_motorstop`.
 
 * **`enable_rfid`** ([scitos2_msgs/EnableRfid])
 
@@ -150,11 +150,11 @@ The Drive module controls the robot's motors, handling velocity commands, odomet
 
 	Specifies the name of the base frame of the robot.
 
-* ** `odom_frame`** (string, default: odom)
+* **`odom_frame`** (string, default: odom)
 
 	Specifies the name of the odometry frame when publishing the TF.
 
-* ** `odom_topic`** (string, default: odom)
+* **`odom_topic`** (string, default: odom)
 
 	Specifies the name of the odometry topic.
 
