@@ -9,4 +9,5 @@ Changelog for package scitos2_modules
 * Rename drive services.
 * Added unit testing.
 * Added footprint to Drive module for visualization.
+* Added IMU module.
 * Contributors: Alberto Tudela.

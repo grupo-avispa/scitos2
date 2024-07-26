@@ -106,6 +106,9 @@ list(APPEND plugin_libs scitos2_drive)
 add_library(scitos2_ebc SHARED src/ebc.cpp)
 list(APPEND plugin_libs scitos2_ebc)
 
+add_library(scitos2_imu SHARED src/imu.cpp)
+list(APPEND plugin_libs scitos2_imu)
+
 foreach(module_plugin ${plugin_libs})
   ament_target_dependencies(${module_plugin} ${dependencies})
   target_link_mira_libraries(${module_plugin})

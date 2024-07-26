@@ -19,4 +19,9 @@
             <description>EBC module</description>
         </class>
     </library>
+    <library path="scitos2_imu">
+        <class type="scitos2_modules::IMU" base_class_type="scitos2_core::Module">
+            <description>IMU module</description>
+        </class>
+    </library>
 </class_libraries>
