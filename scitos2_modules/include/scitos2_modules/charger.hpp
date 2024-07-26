@@ -64,8 +64,7 @@ public:
    * @param name Name of plugin
    */
   void configure(
-    const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
-    std::string name) override;
+    const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std::string name) override;
 
   /**
    * @brief Cleanup the module state machine.
@@ -116,8 +115,7 @@ protected:
    * @return sensor_msgs::msg::BatteryState BatteryState for ROS
    */
   sensor_msgs::msg::BatteryState miraToRosBatteryState(
-    const mira::robot::BatteryState & state,
-    const mira::Time & timestamp);
+    const mira::robot::BatteryState & state, const mira::Time & timestamp);
 
   /**
    * @brief Convert MIRA ChargerStatus to ROS ChargerStatus.
@@ -127,8 +125,7 @@ protected:
    * @return scitos2_msgs::msg::ChargerStatus ChargerStatus for ROS
    */
   scitos2_msgs::msg::ChargerStatus miraToRosChargerStatus(
-    const uint8 & status,
-    const mira::Time & timestamp);
+    const uint8 & status, const mira::Time & timestamp);
 
   // MIRA Authority
   std::shared_ptr<mira::Authority> authority_;

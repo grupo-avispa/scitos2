@@ -51,9 +51,6 @@ TEST(ScitosChargerTest, configure) {
   // Cleaning up
   module->deactivate();
   module->cleanup();
-  node->deactivate();
-  node->cleanup();
-  node->shutdown();
   rclcpp::shutdown();
 }
 

@@ -63,8 +63,7 @@ public:
    * @param name Name of plugin
    */
   void configure(
-    const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
-    std::string name) override;
+    const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std::string name) override;
 
   /**
    * @brief Cleanup the module state machine.

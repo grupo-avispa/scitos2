@@ -48,8 +48,7 @@ public:
    * @param name Name of the module
    */
   virtual void configure(
-    const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
-    std::string name) = 0;
+    const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std::string name) = 0;
 
   /**
    * @brief Method to cleanup resources.
@@ -194,8 +193,7 @@ protected:
    * @return std::string The value of the parameter
    */
   std::string get_mira_param(
-    const std::weak_ptr<mira::Authority> & authority,
-    std::string param_name)
+    const std::weak_ptr<mira::Authority> & authority, std::string param_name)
   {
     // Convert weak_ptr to shared_ptr
     auto sharedAuthority = authority.lock();
