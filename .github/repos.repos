@@ -1,1 +1,1 @@
-- git: {local-name: opennav_docking, uri: 'https://github.com/grupo-avispa/opennav_docking.git', version: following_humble}
+- git: {local-name: opennav_docking, uri: 'https://github.com/grupo-avispa/opennav_docking.git', version: humble}
