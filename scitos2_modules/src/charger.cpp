@@ -16,9 +16,6 @@
 // C++
 #include <limits>
 
-#include "nav2_util/node_utils.hpp"
-#include "pluginlib/class_list_macros.hpp"
-
 #include "scitos2_modules/charger.hpp"
 
 namespace scitos2_modules
@@ -173,4 +170,5 @@ scitos2_msgs::msg::ChargerStatus Charger::miraToRosChargerStatus(
 
 }  // namespace scitos2_modules
 
+#include "pluginlib/class_list_macros.hpp"  // NOLINT
 PLUGINLIB_EXPORT_CLASS(scitos2_modules::Charger, scitos2_core::Module)

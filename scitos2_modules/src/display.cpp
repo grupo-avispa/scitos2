@@ -13,9 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "nav2_util/node_utils.hpp"
-#include "pluginlib/class_list_macros.hpp"
-
 #include "scitos2_modules/display.hpp"
 
 namespace scitos2_modules
@@ -50,7 +47,7 @@ void Display::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
     std::bind(&Display::menuDataCallback, this, std::placeholders::_1));
 
   // Declare and read parameters
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".user_menu_enabled",
     rclcpp::ParameterValue(false), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Enable / disable the user menu entry"));
@@ -59,14 +56,14 @@ void Display::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
     logger_, "The parameter user_menu_enabled is set to: [%s]",
     user_menu_enabled_ ? "true" : "false");
 
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".menu_name",
     rclcpp::ParameterValue("User Menu"), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("The name of the user menu entry in the main menu of the status display"));
   node->get_parameter(plugin_name_ + ".menu_name", menu_name_);
   RCLCPP_INFO(logger_, "The parameter menu_name is set to: [%s]", menu_name_.c_str());
 
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".menu_entry_name_1",
     rclcpp::ParameterValue("Entry 1"), rcl_interfaces::msg::ParameterDescriptor()
     .set__description(
@@ -75,7 +72,7 @@ void Display::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
   RCLCPP_INFO(
     logger_, "The parameter menu_entry_name_1 is set to: [%s]", menu_entry_name_1_.c_str());
 
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".menu_entry_name_2",
     rclcpp::ParameterValue("Entry 2"), rcl_interfaces::msg::ParameterDescriptor()
     .set__description(
@@ -84,7 +81,7 @@ void Display::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
   RCLCPP_INFO(
     logger_, "The parameter menu_entry_name_2 is set to: [%s]", menu_entry_name_2_.c_str());
 
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".menu_entry_name_3",
     rclcpp::ParameterValue("Entry 3"), rcl_interfaces::msg::ParameterDescriptor()
     .set__description(
@@ -187,4 +184,5 @@ void Display::changeMenuEntries()
 
 }  // namespace scitos2_modules
 
+#include "pluginlib/class_list_macros.hpp"  // NOLINT
 PLUGINLIB_EXPORT_CLASS(scitos2_modules::Display, scitos2_core::Module)

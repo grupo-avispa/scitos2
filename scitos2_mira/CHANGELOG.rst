@@ -17,6 +17,7 @@ Changelog for package scitos2_mira
 * Added unit testing.
 * Added composable nodes in launch file.
 * Added default diagnostics.
+* Update CMakeLists.txt to use modern idioms.
 
 1.1.3 (10-10-2023)
 ------------------

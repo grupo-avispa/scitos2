@@ -27,8 +27,6 @@
 
 // ROS
 #include "rclcpp/rclcpp.hpp"
-#include "pluginlib/class_loader.hpp"
-#include "pluginlib/class_list_macros.hpp"
 #include "rcl_interfaces/msg/set_parameters_result.hpp"
 
 // SCITOS2

@@ -10,4 +10,5 @@ Changelog for package scitos2_modules
 * Added unit testing.
 * Added footprint to Drive module for visualization.
 * Added IMU module.
+* Update CMakeLists.txt to use modern idioms.
 * Contributors: Alberto Tudela.

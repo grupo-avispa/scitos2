@@ -27,8 +27,6 @@
 
 // ROS
 #include "rclcpp/rclcpp.hpp"
-#include "pluginlib/class_loader.hpp"
-#include "pluginlib/class_list_macros.hpp"
 #include "sensor_msgs/msg/imu.hpp"
 
 // SCITOS2

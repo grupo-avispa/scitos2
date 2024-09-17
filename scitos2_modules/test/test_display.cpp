@@ -17,7 +17,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "scitos2_modules/display.hpp"
 
-#include "nav2_util/lifecycle_node.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
 
 #include "std_msgs/msg/string.hpp"
 

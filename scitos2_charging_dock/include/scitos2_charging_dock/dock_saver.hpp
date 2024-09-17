@@ -19,11 +19,11 @@
 #include <memory>
 #include <string>
 
-#include "rclcpp/rclcpp.hpp"
 #include "nav2_util/lifecycle_node.hpp"
-#include "tf2_ros/buffer.h"
+#include "rclcpp/rclcpp.hpp"
 #include "scitos2_msgs/srv/save_dock.hpp"
 #include "scitos2_charging_dock/perception.hpp"
+#include "tf2_ros/buffer.h"
 
 namespace scitos2_charging_dock
 {

@@ -16,9 +16,6 @@
 // C++
 #include <limits>
 
-#include "nav2_util/node_utils.hpp"
-#include "pluginlib/class_list_macros.hpp"
-
 #include "scitos2_modules/imu.hpp"
 
 namespace scitos2_modules
@@ -42,7 +39,8 @@ void IMU::configure(
   authority_->checkin("/", plugin_name_);
 
   // Declare and read parameters
-  nav2_util::declare_parameter_if_not_declared(
+  
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".robot_base_frame",
     rclcpp::ParameterValue("base_link"), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("The name of the base frame of the robot"));
@@ -120,4 +118,5 @@ void IMU::gyroscopeDataCallback(mira::ChannelRead<mira::Point3f> data)
 
 }  // namespace scitos2_modules
 
+#include "pluginlib/class_list_macros.hpp"  // NOLINT
 PLUGINLIB_EXPORT_CLASS(scitos2_modules::IMU, scitos2_core::Module)

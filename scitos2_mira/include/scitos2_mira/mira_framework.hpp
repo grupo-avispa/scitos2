@@ -28,8 +28,8 @@
 // ROS
 #include "diagnostic_msgs/msg/diagnostic_array.hpp"
 #include "nav2_util/lifecycle_node.hpp"
+#include "rclcpp/rclcpp.hpp"
 #include "pluginlib/class_loader.hpp"
-#include "pluginlib/class_list_macros.hpp"
 
 // Scitos2
 #include "scitos2_core/module.hpp"

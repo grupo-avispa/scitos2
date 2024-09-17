@@ -1,24 +1,33 @@
 # Test cluster
 ament_add_gtest(test_scitos2_cluster test_cluster.cpp)
-ament_target_dependencies(test_scitos2_cluster ${dependencies})
-target_link_libraries(test_scitos2_cluster ${library_name})
+target_include_directories(test_scitos2_cluster PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+)
+target_link_libraries(test_scitos2_cluster 
+  pcl_ros::pcl_ros_tf
+)
 
 # Test segmentation
 ament_add_gtest(test_scitos2_segmentation test_segmentation.cpp)
-ament_target_dependencies(test_scitos2_segmentation ${dependencies})
-target_link_libraries(test_scitos2_segmentation ${library_name})
+target_link_libraries(test_scitos2_segmentation
+  pcl_ros::pcl_ros_tf
+  rclcpp_lifecycle::rclcpp_lifecycle
+  segmentation
+)
 
 # Test perception
 ament_add_gtest(test_scitos2_perception test_perception.cpp)
-ament_target_dependencies(test_scitos2_perception ${dependencies})
-target_link_libraries(test_scitos2_perception ${library_name})
+target_link_libraries(test_scitos2_perception
+  perception
+  rclcpp::rclcpp
+  tf2_ros::tf2_ros
+)
 
 # Test charging dock
 ament_add_gtest(test_scitos2_charging_dock test_charging_dock.cpp)
-ament_target_dependencies(test_scitos2_charging_dock ${dependencies})
 target_link_libraries(test_scitos2_charging_dock ${library_name})
 
 # Test dock saver
 ament_add_gtest(test_dock_saver test_dock_saver.cpp)
-ament_target_dependencies(test_dock_saver ${dependencies})
-target_link_libraries(test_dock_saver ${library_name})
+target_link_libraries(test_dock_saver dock_saver_core)

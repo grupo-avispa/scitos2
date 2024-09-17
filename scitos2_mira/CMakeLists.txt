@@ -27,6 +27,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 option(COVERAGE_ENABLED "Enable code coverage" FALSE)
+
 if(COVERAGE_ENABLED)
   add_compile_options(--coverage)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
@@ -50,50 +51,49 @@ endif()
 # ###############################################
 # # Find ament macros and libraries
 find_package(ament_cmake REQUIRED)
+find_package(diagnostic_msgs REQUIRED)
+find_package(nav2_util REQUIRED)
+find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
-find_package(nav2_util REQUIRED)
-find_package(scitos2_msgs REQUIRED)
 find_package(scitos2_core REQUIRED)
 find_package(scitos2_common REQUIRED)
-find_package(pluginlib REQUIRED)
-find_package(diagnostic_msgs REQUIRED)
 
 find_mira_path()
 
 # ##########
 # # Build ##
 # ##########
-# # Specify additional locations of header files
-# # Your package locations should be listed before other locations
-include_directories(
-  include
-)
-
 include_mira_packages()
 
-set(dependencies
-  rclcpp
-  rclcpp_components
-  nav2_util
-  scitos2_msgs
-  scitos2_core
-  pluginlib
-  diagnostic_msgs
-)
-
-set(library_name ${PROJECT_NAME}_core)
+set(library_name mira_core)
 set(executable_name mira_framework)
 
 # Add library
 add_library(${library_name} SHARED src/mira_framework.cpp)
-ament_target_dependencies(${library_name} ${dependencies})
+target_include_directories(${library_name} PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+)
+target_link_libraries(${library_name}
+  PUBLIC
+  ${diagnostic_msgs_TARGETS}
+  pluginlib::pluginlib
+  rclcpp::rclcpp
+  scitos2_core::scitos2_core
+  PRIVATE
+  rclcpp_components::component
+)
+
+ament_target_dependencies(${library_name} PUBLIC nav2_util) # TODO(ajtudela): Fix this in jazzy
 target_link_mira_libraries(${library_name})
 
 # Add executable
 add_executable(${executable_name} src/main.cpp)
-ament_target_dependencies(${executable_name} ${dependencies})
-target_link_libraries(${executable_name} ${library_name})
+target_link_libraries(${executable_name} PRIVATE
+  ${library_name}
+  rclcpp::rclcpp
+)
 
 rclcpp_components_register_nodes(${library_name} "scitos2_mira::MiraFramework")
 
@@ -101,6 +101,7 @@ rclcpp_components_register_nodes(${library_name} "scitos2_mira::MiraFramework")
 # # Install ##
 # ############
 install(TARGETS ${library_name}
+  EXPORT ${library_name}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -111,7 +112,7 @@ install(TARGETS ${executable_name}
 )
 
 install(DIRECTORY include/
-  DESTINATION include/
+  DESTINATION include/${PROJECT_NAME}
 )
 
 install(DIRECTORY launch params
@@ -138,7 +139,15 @@ endif()
 # ##################################
 # # ament specific configuration  ##
 # ##################################
-ament_export_include_directories(include)
+ament_export_include_directories(include/${PROJECT_NAME})
 ament_export_libraries(${library_name})
-ament_export_dependencies(${dependencies})
+ament_export_dependencies(
+  diagnostic_msgs
+  nav2_util
+  pluginlib
+  rclcpp
+  rclcpp_components
+  scitos2_core
+)
+ament_export_targets(${library_name})
 ament_package()

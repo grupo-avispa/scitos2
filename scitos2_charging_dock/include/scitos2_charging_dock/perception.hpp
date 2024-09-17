@@ -26,15 +26,15 @@
 #include <vector>
 
 // ROS
+#include "geometry_msgs/msg/pose_stamped.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rcl_interfaces/msg/set_parameters_result.hpp"
-#include "tf2/LinearMath/Transform.h"
-#include "tf2_ros/buffer.h"
-#include "geometry_msgs/msg/pose_stamped.hpp"
-#include "sensor_msgs/msg/laser_scan.hpp"
-#include "sensor_msgs/msg/point_cloud2.hpp"
 #include "scitos2_charging_dock/cluster.hpp"
 #include "scitos2_charging_dock/segmentation.hpp"
+#include "sensor_msgs/msg/laser_scan.hpp"
+#include "sensor_msgs/msg/point_cloud2.hpp"
+#include "tf2/LinearMath/Transform.h"
+#include "tf2_ros/buffer.h"
 
 namespace scitos2_charging_dock
 {

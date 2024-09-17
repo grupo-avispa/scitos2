@@ -22,13 +22,12 @@
 #include <vector>
 
 #include "geometry_msgs/msg/pose_stamped.hpp"
-#include "sensor_msgs/msg/battery_state.hpp"
-#include "sensor_msgs/msg/laser_scan.hpp"
-#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
-#include "tf2/utils.h"
 #include "opennav_docking_core/charging_dock.hpp"
 #include "opennav_docking/pose_filter.hpp"
 #include "scitos2_charging_dock/perception.hpp"
+#include "sensor_msgs/msg/battery_state.hpp"
+#include "sensor_msgs/msg/laser_scan.hpp"
+#include "tf2_ros/buffer.h"
 
 namespace scitos2_charging_dock
 {
@@ -83,7 +82,7 @@ public:
    * @param pose The initial estimate of the dock pose.
    * @param frame The frame of the initial estimate.
    */
-  virtual bool getRefinedPose(geometry_msgs::msg::PoseStamped & pose);
+  virtual bool getRefinedPose(geometry_msgs::msg::PoseStamped & pose, std::string id);
 
   /**
    * @copydoc opennav_docking_core::ChargingDock::isCharging

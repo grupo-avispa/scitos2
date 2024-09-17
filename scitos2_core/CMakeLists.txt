@@ -27,6 +27,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 option(COVERAGE_ENABLED "Enable code coverage" FALSE)
+
 if(COVERAGE_ENABLED)
   add_compile_options(--coverage)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
@@ -52,7 +53,6 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
-find_package(std_msgs REQUIRED)
 find_package(scitos2_common REQUIRED)
 
 find_mira_path()
@@ -60,25 +60,32 @@ find_mira_path()
 # ##########
 # # Build ##
 # ##########
-# # Specify additional locations of header files
-# # Your package locations should be listed before other locations
-include_directories(
-  include
-)
-
 include_mira_packages()
 
-set(dependencies
-  rclcpp
-  rclcpp_components
-  std_msgs
+add_library(scitos2_core INTERFACE)
+target_include_directories(scitos2_core
+  INTERFACE
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+)
+target_link_libraries(scitos2_core INTERFACE
+  ${std_msgs_TARGETS}
+  rclcpp::rclcpp
+  rclcpp_lifecycle::rclcpp_lifecycle
 )
 
 # ############
 # # Install ##
 # ############
+install(TARGETS scitos2_core
+  EXPORT scitos2_core
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
 install(DIRECTORY include/
-  DESTINATION include/
+  DESTINATION include/${PROJECT_NAME}
 )
 
 # ###########
@@ -95,6 +102,11 @@ endif()
 # ##################################
 # # ament specific configuration  ##
 # ##################################
-ament_export_include_directories(include)
-ament_export_dependencies(${dependencies})
+ament_export_include_directories(include/${PROJECT_NAME})
+ament_export_dependencies(
+  rclcpp
+  rclcpp_lifecycle
+  scitos2_common
+)
+ament_export_targets(scitos2_core)
 ament_package()

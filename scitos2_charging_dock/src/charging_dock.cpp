@@ -19,6 +19,8 @@
 #include "nav2_util/node_utils.hpp"
 #include "scitos2_charging_dock/charging_dock.hpp"
 #include "scitos2_charging_dock/segmentation.hpp"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+#include "tf2/utils.h"
 
 namespace scitos2_charging_dock
 {
@@ -127,7 +129,7 @@ geometry_msgs::msg::PoseStamped ChargingDock::getStagingPose(
   return staging_pose;
 }
 
-bool ChargingDock::getRefinedPose(geometry_msgs::msg::PoseStamped & pose)
+bool ChargingDock::getRefinedPose(geometry_msgs::msg::PoseStamped & pose, std::string /*id*/)
 {
   // Get current detections, transform to frame, and apply offsets
   geometry_msgs::msg::PoseStamped detected = perception_->getDockPose(scan_);

@@ -76,7 +76,7 @@ endmacro()
 #
 macro(target_link_mira_libraries target)
   # For transitive linking link against all auto liked libraries
-  target_link_libraries(${target} ${MIRAAutoLinkLibraries} MIRAFramework)
+  target_link_libraries(${target} PUBLIC ${MIRAAutoLinkLibraries} MIRAFramework)
 
   # use, i.e. don't skip the full RPATH for the build tree
   SET(CMAKE_SKIP_BUILD_RPATH FALSE)

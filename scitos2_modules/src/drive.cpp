@@ -18,12 +18,9 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 // ROS
-#include "nav2_util/node_utils.hpp"
-#include "nav2_costmap_2d/footprint.hpp"
-#include "pluginlib/class_list_macros.hpp"
 #include "geometry_msgs/msg/quaternion.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
-
+#include "nav2_costmap_2d/footprint.hpp"
 #include "scitos2_modules/drive.hpp"
 
 namespace scitos2_modules
@@ -49,21 +46,21 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
   authority_->checkin("/", plugin_name_);
 
   // Declare and read parameters
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".robot_base_frame",
     rclcpp::ParameterValue("base_link"), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("The name of the base frame of the robot"));
   node->get_parameter(plugin_name_ + ".robot_base_frame", robot_base_frame_);
   RCLCPP_INFO(logger_, "The parameter robot_base_frame is set to: [%s]", robot_base_frame_.c_str());
 
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".odom_frame",
     rclcpp::ParameterValue("odom"), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("The name of the odometry frame"));
   node->get_parameter(plugin_name_ + ".odom_frame", odom_frame_);
   RCLCPP_INFO(logger_, "The parameter odom_frame is set to: [%s]", odom_frame_.c_str());
 
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".odom_topic",
     rclcpp::ParameterValue("odom"), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("The name of the odometry topic"));
@@ -71,7 +68,7 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
   RCLCPP_INFO(logger_, "The parameter odom_topic is set to: [%s]", odom_topic_.c_str());
 
   bool magnetic_barrier_enabled;
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".magnetic_barrier_enabled",
     rclcpp::ParameterValue(false), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Enable the magnetic strip detector to cut out the motors"));
@@ -80,7 +77,7 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
     logger_, "The parameter magnetic_barrier_enabled is set to: [%s]",
     magnetic_barrier_enabled ? "true" : "false");
 
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".publish_tf",
     rclcpp::ParameterValue(true), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Publish the odometry as a tf2 transform"));
@@ -89,7 +86,7 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
     logger_, "The parameter publish_tf_ is set to: [%s]", publish_tf_ ? "true" : "false");
 
   int rbi = 0;
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".reset_bumper_interval",
     rclcpp::ParameterValue(0), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("The interval in milliseconds to reset the bumper"));
@@ -100,14 +97,14 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
   set_mira_param(
     authority_, "MainControlUnit.RearLaser.Enabled", magnetic_barrier_enabled ? "true" : "false");
 
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".footprint",
     rclcpp::ParameterValue(""), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("The footprint of the robot"));
   node->get_parameter(plugin_name_ + ".footprint", footprint_);
   RCLCPP_INFO(logger_, "The parameter footprint is set to: [%s]", footprint_.c_str());
 
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".robot_radius",
     rclcpp::ParameterValue(0.5), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("The radius of the robot"));
@@ -572,4 +569,5 @@ scitos2_msgs::msg::BarrierStatus Drive::miraToRosBarrierStatus(
 
 }  // namespace scitos2_modules
 
+#include "pluginlib/class_list_macros.hpp"  // NOLINT
 PLUGINLIB_EXPORT_CLASS(scitos2_modules::Drive, scitos2_core::Module)

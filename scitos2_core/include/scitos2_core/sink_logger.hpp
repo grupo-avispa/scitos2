@@ -18,7 +18,7 @@
 
 #include <error/LoggingCore.h>
 
-#include "rclcpp/rclcpp.hpp"
+#include "rclcpp/logger.hpp"
 
 // LCOV_EXCL_START
 namespace scitos2_core

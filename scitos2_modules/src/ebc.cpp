@@ -13,9 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "nav2_util/node_utils.hpp"
-#include "pluginlib/class_list_macros.hpp"
-
 #include "scitos2_modules/ebc.hpp"
 
 namespace scitos2_modules
@@ -37,7 +34,7 @@ void EBC::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std
   authority_->checkin("/", plugin_name_);
 
   bool port_enabled;
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".mcu_5v_enabled",
     rclcpp::ParameterValue(true), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Enable / disable 5V enabled at MCU"));
@@ -47,7 +44,7 @@ void EBC::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std
     logger_, "The parameter mcu_5v_enabled is set to: [%s]",
     port_enabled ? "true" : "false");
 
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".mcu_12v_enabled",
     rclcpp::ParameterValue(true), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Enable / disable 12V enabled at MCU"));
@@ -57,7 +54,7 @@ void EBC::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std
     logger_, "The parameter mcu_12v_enabled is set to: [%s]",
     port_enabled ? "true" : "false");
 
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".mcu_24v_enabled",
     rclcpp::ParameterValue(true), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Enable / disable 24V enabled at MCU"));
@@ -67,7 +64,7 @@ void EBC::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std
     logger_, "The parameter mcu_24v_enabled is set to: [%s]",
     port_enabled ? "true" : "false");
 
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".port0_5v_enabled",
     rclcpp::ParameterValue(true),
     rcl_interfaces::msg::ParameterDescriptor()
@@ -78,7 +75,7 @@ void EBC::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std
     logger_, "The parameter port0_5v_enabled is set to: [%s]",
     port_enabled ? "true" : "false");
 
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".port0_12v_enabled",
     rclcpp::ParameterValue(true), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Enable / disable 12V enabled at port 0"));
@@ -88,7 +85,7 @@ void EBC::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std
     logger_, "The parameter port0_12v_enabled is set to: [%s]",
     port_enabled ? "true" : "false");
 
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".port0_24v_enabled",
     rclcpp::ParameterValue(true), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Enable / disable 24V enabled at port 0"));
@@ -98,7 +95,7 @@ void EBC::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std
     logger_, "The parameter port0_24v_enabled is set to: [%s]",
     port_enabled ? "true" : "false");
 
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".port1_5v_enabled",
     rclcpp::ParameterValue(true), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Enable / disable 5V enabled at port 1"));
@@ -108,7 +105,7 @@ void EBC::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std
     logger_, "The parameter port1_5v_enabled is set to: [%s]",
     port_enabled ? "true" : "false");
 
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".port1_12v_enabled",
     rclcpp::ParameterValue(true), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Enable / disable 12V enabled at port 1"));
@@ -118,7 +115,7 @@ void EBC::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std
     logger_, "The parameter port1_12v_enabled is set to: [%s]",
     port_enabled ? "true" : "false");
 
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".port1_24v_enabled",
     rclcpp::ParameterValue(true), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Enable / disable 24V enabled at port 1"));
@@ -129,7 +126,7 @@ void EBC::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std
     port_enabled ? "true" : "false");
 
   float port_max_current;
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".mcu_5v_max_current",
     rclcpp::ParameterValue(2.5), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Maximum current for MCU 5V in A")
@@ -143,7 +140,7 @@ void EBC::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std
   set_mira_param(authority_, "MainControlUnit.EBC_5V.MaxCurrent", std::to_string(port_max_current));
   RCLCPP_INFO(logger_, "The parameter mcu_5v_max_current is set to: [%f]", port_max_current);
 
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".mcu_12v_max_current",
     rclcpp::ParameterValue(2.5), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Maximum current for MCU 12V in A")
@@ -159,7 +156,7 @@ void EBC::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std
     std::to_string(port_max_current));
   RCLCPP_INFO(logger_, "The parameter mcu_12v_max_current is set to: [%f]", port_max_current);
 
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".mcu_24v_max_current",
     rclcpp::ParameterValue(2.5), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Maximum current for MCU 24V in A")
@@ -175,7 +172,7 @@ void EBC::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std
     std::to_string(port_max_current));
   RCLCPP_INFO(logger_, "The parameter mcu_24v_max_current is set to: [%f]", port_max_current);
 
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".port0_5v_max_current",
     rclcpp::ParameterValue(2.5), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Maximum current for port 0 5V in A")
@@ -189,7 +186,7 @@ void EBC::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std
   set_mira_param(authority_, "EBC7.Port0_5V.MaxCurrent", std::to_string(port_max_current));
   RCLCPP_INFO(logger_, "The parameter port0_5v_max_current is set to: [%f]", port_max_current);
 
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".port0_12v_max_current",
     rclcpp::ParameterValue(2.5), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Maximum current for port 0 12V in A")
@@ -203,7 +200,7 @@ void EBC::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std
   set_mira_param(authority_, "EBC7.Port0_12V.MaxCurrent", std::to_string(port_max_current));
   RCLCPP_INFO(logger_, "The parameter port0_12v_max_current is set to: [%f]", port_max_current);
 
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".port0_24v_max_current",
     rclcpp::ParameterValue(2.5), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Maximum current for port 0 24V in A")
@@ -217,7 +214,7 @@ void EBC::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std
   set_mira_param(authority_, "EBC7.Port0_24V.MaxCurrent", std::to_string(port_max_current));
   RCLCPP_INFO(logger_, "The parameter port0_24v_max_current is set to: [%f]", port_max_current);
 
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".port1_5v_max_current",
     rclcpp::ParameterValue(2.5), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Maximum current for port 1 5V in A")
@@ -231,7 +228,7 @@ void EBC::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std
   set_mira_param(authority_, "EBC7.Port1_5V.MaxCurrent", std::to_string(port_max_current));
   RCLCPP_INFO(logger_, "The parameter port1_5v_max_current is set to: [%f]", port_max_current);
 
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".port1_12v_max_current",
     rclcpp::ParameterValue(2.5), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Maximum current for port 1 12V in A")
@@ -245,7 +242,7 @@ void EBC::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std
   set_mira_param(authority_, "EBC7.Port1_12V.MaxCurrent", std::to_string(port_max_current));
   RCLCPP_INFO(logger_, "The parameter port1_12v_max_current is set to: [%f]", port_max_current);
 
-  nav2_util::declare_parameter_if_not_declared(
+  declare_parameter_if_not_declared(
     node, plugin_name_ + ".port1_24v_max_current",
     rclcpp::ParameterValue(4.0), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Maximum current for port 1 24V in A")
@@ -456,4 +453,5 @@ rcl_interfaces::msg::SetParametersResult EBC::dynamicParametersCallback(
 
 }  // namespace scitos2_modules
 
+#include "pluginlib/class_list_macros.hpp"  // NOLINT
 PLUGINLIB_EXPORT_CLASS(scitos2_modules::EBC, scitos2_core::Module)
