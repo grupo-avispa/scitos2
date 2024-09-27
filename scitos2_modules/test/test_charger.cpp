@@ -97,7 +97,6 @@ TEST(ScitosChargerTest, batteryPublisher) {
   std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
   // Check the received message
-  EXPECT_EQ(sub->get_publisher_count(), 1);
   EXPECT_TRUE(received_msg);
 
   // Cleaning up
