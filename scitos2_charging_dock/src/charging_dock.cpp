@@ -129,7 +129,7 @@ geometry_msgs::msg::PoseStamped ChargingDock::getStagingPose(
   return staging_pose;
 }
 
-bool ChargingDock::getRefinedPose(geometry_msgs::msg::PoseStamped & pose, std::string /*id*/)
+bool ChargingDock::getRefinedPose(geometry_msgs::msg::PoseStamped & pose)
 {
   // Get current detections, transform to frame, and apply offsets
   geometry_msgs::msg::PoseStamped detected = perception_->getDockPose(scan_);

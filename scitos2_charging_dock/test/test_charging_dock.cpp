@@ -164,7 +164,7 @@ TEST(ScitosChargingDock, refinedPoseTest)
 
   // Timestamps are outdated; this is after timeout
   EXPECT_FALSE(dock->isDocked());
-  EXPECT_FALSE(dock->getRefinedPose(pose, std::string("")));
+  EXPECT_FALSE(dock->getRefinedPose(pose));
 
   // Just call the function to set the staging pose in the perception module
   // befor the callback is called
@@ -190,7 +190,7 @@ TEST(ScitosChargingDock, refinedPoseTest)
   // The actual values are not important for this test
   // as they depend on the perception module and its already tested
   pose.header.frame_id = "my_frame";
-  EXPECT_TRUE(dock->getRefinedPose(pose, std::string("")));
+  EXPECT_TRUE(dock->getRefinedPose(pose));
   EXPECT_FALSE(dock->isDocked());
 
   dock->deactivate();
