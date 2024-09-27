@@ -124,7 +124,7 @@ TEST(ScitosDisplayTest, menuEntryPublisher) {
   bool received_msg = false;
   auto sub = sub_node->create_subscription<scitos2_msgs::msg::MenuEntry>(
     "user_menu_selected", 1,
-    [&](const scitos2_msgs::msg::MenuEntry & msg) {
+    [&](const scitos2_msgs::msg::MenuEntry & /*msg*/) {
       RCLCPP_INFO(sub_node->get_logger(), "Received message");
       received_msg = true;
     });
@@ -135,8 +135,12 @@ TEST(ScitosDisplayTest, menuEntryPublisher) {
   writer->value() = status;
   writer.finish();
 
+  // Wait for the message to be received
+  std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
   // Check the received message
   EXPECT_EQ(sub->get_publisher_count(), 1);
+  EXPECT_TRUE(received_msg);
 
   // Cleaning up
   module->deactivate();

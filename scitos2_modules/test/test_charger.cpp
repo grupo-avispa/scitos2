@@ -82,7 +82,7 @@ TEST(ScitosChargerTest, batteryPublisher) {
   bool received_msg = false;
   auto sub = sub_node->create_subscription<sensor_msgs::msg::BatteryState>(
     "battery", 1,
-    [&](const sensor_msgs::msg::BatteryState & msg) {
+    [&](const sensor_msgs::msg::BatteryState & /*msg*/) {
       RCLCPP_INFO(sub_node->get_logger(), "Received message");
       received_msg = true;
     });
@@ -93,8 +93,12 @@ TEST(ScitosChargerTest, batteryPublisher) {
   writer->value() = state;
   writer.finish();
 
+  // Wait for the message to be received
+  std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
   // Check the received message
   EXPECT_EQ(sub->get_publisher_count(), 1);
+  EXPECT_TRUE(received_msg);
 
   // Cleaning up
   module->deactivate();
@@ -135,7 +139,7 @@ TEST(ScitosChargerTest, statusPublisher) {
   bool received_msg = false;
   auto sub = sub_node->create_subscription<scitos2_msgs::msg::ChargerStatus>(
     "charger_status", 1,
-    [&](const scitos2_msgs::msg::ChargerStatus & msg) {
+    [&](const scitos2_msgs::msg::ChargerStatus & /*msg*/) {
       RCLCPP_INFO(sub_node->get_logger(), "Received message");
       received_msg = true;
     });
@@ -146,19 +150,21 @@ TEST(ScitosChargerTest, statusPublisher) {
   writer->value() = status;
   writer.finish();
 
+  // Wait for the message to be received
+  std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
   // Check the received message
   EXPECT_EQ(sub->get_publisher_count(), 1);
+  EXPECT_TRUE(received_msg);
 
   // Cleaning up
   module->deactivate();
   sub_node->deactivate();
-  charger_node->deactivate();
   module->cleanup();
   sub_node->cleanup();
-  charger_node->cleanup();
   sub_node->shutdown();
-  charger_node->shutdown();
   rclcpp::shutdown();
+
   // Have to join thread after rclcpp is shut down otherwise test hangs
   charger_thread.join();
   sub_thread.join();
@@ -196,9 +202,6 @@ TEST(ScitosChargerTest, savePersistentError) {
   // Cleaning up
   module->deactivate();
   module->cleanup();
-  node->deactivate();
-  node->cleanup();
-  node->shutdown();
   rclcpp::shutdown();
 }
 
