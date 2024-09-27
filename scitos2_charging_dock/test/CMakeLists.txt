@@ -4,7 +4,7 @@ target_include_directories(test_scitos2_cluster PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
-target_link_libraries(test_scitos2_cluster 
+target_link_libraries(test_scitos2_cluster
   pcl_ros::pcl_ros_tf
 )
 
