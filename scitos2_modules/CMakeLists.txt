@@ -146,6 +146,7 @@ target_include_directories(scitos2_imu PUBLIC
 )
 target_link_libraries(scitos2_imu
   PUBLIC
+  ${geometry_msgs_TARGETS}
   rclcpp::rclcpp
   scitos2_core::scitos2_core
   ${sensor_msgs_TARGETS}

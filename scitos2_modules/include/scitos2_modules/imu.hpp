@@ -26,6 +26,7 @@
 #include <string>
 
 // ROS
+#include "geometry_msgs/msg/vector3.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/imu.hpp"
 
@@ -79,18 +80,34 @@ public:
 
 protected:
   /**
-   * @brief Callback for Acceleration data.
+   * @brief Callback for Acceleration data. The units and ranges are +- 2g.
    *
    * @param data Acceleration data
    */
   void accelerationDataCallback(mira::ChannelRead<mira::Point3f> data);
 
   /**
-   * @brief Callback for Gyroscope data.
+   * @brief Callback for Gyroscope data. The units and ranges are +- 250 degree/sec.
    *
    * @param data Gyroscope data
    */
   void gyroscopeDataCallback(mira::ChannelRead<mira::Point3f> data);
+
+  /**
+   * @brief Convert MIRA Acceleration Point3f to ROS Vector3.
+   *
+   * @param acceleration Acceleration data from MIRA
+   * @return geometry_msgs::msg::Vector3 Acceleration data for ROS
+   */
+  geometry_msgs::msg::Vector3 miraToRosAcceleration(const mira::Point3f & acceleration);
+
+  /**
+   * @brief Convert MIRA Gyroscope Point3f to ROS Vector3.
+   *
+   * @param gyroscope Gyroscope data from MIRA
+   * @return geometry_msgs::msg::Vector3 Gyroscope data for ROS
+   */
+  geometry_msgs::msg::Vector3 miraToRosGyroscope(const mira::Point3f & gyroscope);
 
   // MIRA Authority
   std::shared_ptr<mira::Authority> authority_;

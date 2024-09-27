@@ -39,7 +39,6 @@ void IMU::configure(
   authority_->checkin("/", plugin_name_);
 
   // Declare and read parameters
-  
   declare_parameter_if_not_declared(
     node, plugin_name_ + ".robot_base_frame",
     rclcpp::ParameterValue("base_link"), rcl_interfaces::msg::ParameterDescriptor()
@@ -73,7 +72,7 @@ void IMU::configure(
 void IMU::cleanup()
 {
   RCLCPP_INFO(
-    logger_, "Cleaning up module : %s of type scitos2_module::Imu", plugin_name_.c_str());
+    logger_, "Cleaning up module : %s of type scitos2_module::IMU", plugin_name_.c_str());
   authority_.reset();
   imu_pub_.reset();
   timer_.reset();
@@ -100,21 +99,34 @@ void IMU::accelerationDataCallback(mira::ChannelRead<mira::Point3f> data)
 {
   std::lock_guard<std::mutex> lock_data(mutex_);
   imu_msg_.header.stamp = rclcpp::Time(data->timestamp.toUnixNS());
-  // TODO(ajtudela): Check if the units are correct
-  imu_msg_.linear_acceleration.x = data->x();
-  imu_msg_.linear_acceleration.y = data->y();
-  imu_msg_.linear_acceleration.z = data->z();
+  imu_msg_.linear_acceleration = miraToRosAcceleration(*data);
 }
 
 void IMU::gyroscopeDataCallback(mira::ChannelRead<mira::Point3f> data)
 {
   std::lock_guard<std::mutex> lock_data(mutex_);
   imu_msg_.header.stamp = rclcpp::Time(data->timestamp.toUnixNS());
-  // TODO(ajtudela): Check if the units are correct
-  imu_msg_.angular_velocity.x = data->x();
-  imu_msg_.angular_velocity.y = data->y();
-  imu_msg_.angular_velocity.z = data->z();
+  imu_msg_.angular_velocity = miraToRosGyroscope(*data);
 }
+
+geometry_msgs::msg::Vector3 IMU::miraToRosAcceleration(const mira::Point3f & acceleration)
+{
+  geometry_msgs::msg::Vector3 ros_acceleration;
+  ros_acceleration.x = acceleration.x() * 9.80665;
+  ros_acceleration.y = acceleration.y() * 9.80665;
+  ros_acceleration.z = acceleration.z() * 9.80665;
+  return ros_acceleration;
+}
+
+geometry_msgs::msg::Vector3 IMU::miraToRosGyroscope(const mira::Point3f & gyroscope)
+{
+  geometry_msgs::msg::Vector3 ros_gyroscope;
+  ros_gyroscope.x = gyroscope.x() * M_PI / 180.0;
+  ros_gyroscope.y = gyroscope.y() * M_PI / 180.0;
+  ros_gyroscope.z = gyroscope.z() * M_PI / 180.0;
+  return ros_gyroscope;
+}
+
 
 }  // namespace scitos2_modules
 

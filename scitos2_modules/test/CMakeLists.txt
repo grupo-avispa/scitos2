@@ -29,3 +29,11 @@ ament_add_gtest(test_ebc
 target_link_libraries(test_ebc
   scitos2_ebc
 )
+
+# Test for imu
+ament_add_gtest(test_imu
+  test_imu.cpp
+)
+target_link_libraries(test_imu
+  scitos2_imu
+)
