@@ -274,7 +274,13 @@ void EBC::activate()
 {
   RCLCPP_INFO(
     logger_, "Activating module : %s of type scitos2_module::EBC", plugin_name_.c_str());
-  authority_->start();
+
+  try {
+    authority_->start();
+  } catch (const mira::Exception & ex) {
+    RCLCPP_ERROR(logger_, "Failed to start scitos2_module::EBC. Exception: %s", ex.what());
+    return;
+  }
 }
 
 void EBC::deactivate()

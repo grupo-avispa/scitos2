@@ -227,8 +227,14 @@ void Drive::activate()
   mileage_pub_->on_activate();
   odometry_pub_->on_activate();
   rfid_pub_->on_activate();
-  authority_->start();
-  is_active_ = true;
+
+  try {
+    authority_->start();
+    is_active_ = true;
+  } catch (const mira::Exception & ex) {
+    RCLCPP_ERROR(logger_, "Failed to start scitos2_module::Drive. Exception: %s", ex.what());
+    return;
+  }
 }
 
 void Drive::deactivate()

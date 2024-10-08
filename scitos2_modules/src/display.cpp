@@ -107,7 +107,13 @@ void Display::activate()
   RCLCPP_INFO(
     logger_, "Activating module : %s of type scitos2_module::Display", plugin_name_.c_str());
   display_data_pub_->on_activate();
-  authority_->start();
+
+  try {
+    authority_->start();
+  } catch (const mira::Exception & ex) {
+    RCLCPP_ERROR(logger_, "Failed to start scitos2_module::Display. Exception: %s", ex.what());
+    return;
+  }
 }
 
 void Display::deactivate()

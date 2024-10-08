@@ -72,7 +72,13 @@ void Charger::activate()
     logger_, "Activating module : %s of type scitos2_module::Charger", plugin_name_.c_str());
   battery_pub_->on_activate();
   charger_pub_->on_activate();
-  authority_->start();
+
+  try {
+    authority_->start();
+  } catch (const mira::Exception & ex) {
+    RCLCPP_ERROR(logger_, "Failed to start scitos2_module::Charger. Exception: %s", ex.what());
+    return;
+  }
 }
 
 void Charger::deactivate()

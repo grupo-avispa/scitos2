@@ -37,6 +37,7 @@ MiraFramework::MiraFramework(const rclcpp::NodeOptions & options)
 
   // Redirect MIRA logger
   MIRA_LOGGER.registerSink(scitos2_core::SinkLogger(this->get_logger()));
+  MIRA_LOGGER.setSeverityLevel(mira::SeverityLevel::DEBUG);
 
   framework_ = std::make_unique<mira::Framework>(0, nullptr);
 }
@@ -52,7 +53,7 @@ MiraFramework::~MiraFramework()
   timer_.reset();
 }
 
-nav2_util::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::State &)
+nav2_util::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::State & state)
 {
   auto node = shared_from_this();
 
@@ -72,6 +73,7 @@ nav2_util::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::St
       loaded_ = true;
     } else {
       RCLCPP_ERROR(get_logger(), "Can't read parameter 'scitos_config'");
+      on_cleanup(state);
       return nav2_util::CallbackReturn::FAILURE;
     }
   } else {
@@ -119,6 +121,7 @@ nav2_util::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::St
       modules_.insert({module_ids_[i], module});
     } catch (const pluginlib::PluginlibException & ex) {
       RCLCPP_FATAL(get_logger(), "Failed to create module. Exception: %s", ex.what());
+      on_cleanup(state);
       return nav2_util::CallbackReturn::FAILURE;
     }
   }
@@ -128,8 +131,7 @@ nav2_util::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::St
   }
 
   RCLCPP_INFO(
-    get_logger(),
-    "MIRA framework has %s modules available.", module_ids_concat_.c_str());
+    get_logger(), "MIRA framework has %s modules available.", module_ids_concat_.c_str());
 
   // Create a publisher for diagnostics
   diag_pub_ = this->create_publisher<diagnostic_msgs::msg::DiagnosticArray>(
@@ -138,18 +140,30 @@ nav2_util::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::St
   return nav2_util::CallbackReturn::SUCCESS;
 }
 
-nav2_util::CallbackReturn MiraFramework::on_activate(const rclcpp_lifecycle::State & /*state*/)
+nav2_util::CallbackReturn MiraFramework::on_activate(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "Activating");
 
   // Activate the modules
   ModuleMap::iterator it;
   for (it = modules_.begin(); it != modules_.end(); ++it) {
-    it->second->activate();
+    try {
+      it->second->activate();
+    } catch (const std::exception & ex) {
+      RCLCPP_ERROR(get_logger(), "Failed to activate module. Exception: %s", ex.what());
+      on_deactivate(state);
+      return nav2_util::CallbackReturn::FAILURE;
+    }
   }
 
   // Start the MIRA framework
-  framework_->start();
+  try {
+    framework_->start();
+  } catch (const mira::Exception & ex) {
+    RCLCPP_ERROR(get_logger(), "Failed to start MIRA framework. Exception: %s", ex.what());
+    on_deactivate(state);
+    return nav2_util::CallbackReturn::FAILURE;
+  }
 
   // Create a timer to publish diagnostics
   timer_ = this->create_wall_timer(
@@ -192,7 +206,12 @@ nav2_util::CallbackReturn MiraFramework::on_cleanup(const rclcpp_lifecycle::Stat
   diag_pub_.reset();
   timer_.reset();
 
-  framework_->requestTermination();
+  try {
+    framework_->requestTermination();
+  } catch (const mira::Exception & ex) {
+    RCLCPP_ERROR(get_logger(), "Failed to request termination. Exception: %s", ex.what());
+    return nav2_util::CallbackReturn::FAILURE;
+  }
 
   return nav2_util::CallbackReturn::SUCCESS;
 }
