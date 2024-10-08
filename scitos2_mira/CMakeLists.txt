@@ -123,6 +123,10 @@ install(FILES test/scitos_config.xml
   DESTINATION share/${PROJECT_NAME}/test
 )
 
+install(FILES rules/99-SCITOS.rules
+  DESTINATION "/etc/udev/rules.d"
+)
+
 # ###########
 # Testing  ##
 # ###########

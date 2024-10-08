@@ -1,0 +1,12 @@
+###############################################################################
+# udev rules for MetraLabs MCU and HG4
+###############################################################################
+
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6011", ATTRS{manufacturer}=="MetraLabs", ATTRS{product}=="SCITOS MCU", ENV{ID_USB_INTERFACE_NUM}=="00", SYMLINK+="USB_LaserFront"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6011", ATTRS{manufacturer}=="MetraLabs", ATTRS{product}=="SCITOS MCU", ENV{ID_USB_INTERFACE_NUM}=="01", SYMLINK+="USB_LaserBack"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6011", ATTRS{manufacturer}=="MetraLabs", ATTRS{product}=="SCITOS MCU", ENV{ID_USB_INTERFACE_NUM}=="02", SYMLINK+="USB_MLCAN"
+#SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6011", ATTRS{manufacturer}=="MetraLabs", ATTRS{product}=="SCITOS MCU", ENV{ID_USB_INTERFACE_NUM}=="03", SYMLINK+="USB_unused"
+
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", ATTRS{manufacturer}=="MetraLabs", ATTRS{product}=="ML-LIDAR0", ENV{ID_USB_INTERFACE_NUM}=="00", SYMLINK+="USB_Lidar0"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", ATTRS{manufacturer}=="MetraLabs", ATTRS{product}=="ML-LIDAR0", ENV{ID_USB_INTERFACE_NUM}=="01", SYMLINK+="USB_Lidar1"
+
