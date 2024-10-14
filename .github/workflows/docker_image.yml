@@ -1,0 +1,62 @@
+name: Docker Image
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Build"]
+    types:
+      - completed
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dsr-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+      - name: Checkout
+        uses: actions/checkout@v4.1.6
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5.5.1
+        with:
+          images: grupoavispa/scitos2
+          tags: |
+            type=ref, suffix=latest, event=branch
+            type=sha
+
+      - name: Docker Setup Buildx
+        uses: docker/setup-buildx-action@v3.3.0
+        id: scitos2-builder
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4.0.2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Login to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3.1.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build against scitos2-builder
+        uses: docker/build-push-action@v5.3.0
+        with:
+          builder: ${{ steps.scitos2-builder.outputs.name }}
+          context: docker
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new

@@ -1,0 +1,19 @@
+services:
+  scitos:
+    container_name: scitos2
+    image: grupoavispa/scitos2:latest
+    build: .
+    network_mode: host
+    ipc: host
+    pid: host
+    mac_address: XX:XX:XX:XX:XX:XX
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+      - NET_INTERFACE=XXXXX
+    devices:
+      - /dev/ttyUSB2:/dev/USB_MLCAN
+    privileged: true
+    restart: unless-stopped
+    volumes:
+      - /opt/MIRA-licenses:/opt/MIRA-licenses
+      - /opt/SCITOS:/opt/SCITOS
