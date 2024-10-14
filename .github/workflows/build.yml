@@ -26,6 +26,8 @@ jobs:
           packages: g++ cmake subversion doxygen libxml2-dev libssl-dev libsqlite3-dev libboost-all-dev libogre-1.9-dev libsvn-dev libopencv-dev binutils-dev libiberty-dev libcurl4-gnutls-dev libprocps-dev libqwt-qt5-dev libqt5webkit5-dev libqwtmathml-qt5-dev libqt5opengl5-dev libqt5svg5-dev qt*5-dev qttools5-dev-tools git
       - name: Checkout Repository
         uses: actions/checkout@v4
+      - name: Make ccache directory
+        run: mkdir -p ${{ env.CCACHE_DIR }}
       - name: Cache ccache
         uses: actions/cache@v4
         with:
