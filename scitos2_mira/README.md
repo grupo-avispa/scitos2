@@ -16,6 +16,16 @@ The `scitos2_mira` package serves as the primary interface between the MIRA fram
 ros2 launch scitos2_mira mira_launch.py
 ```
 
+## Setup udev rules
+
+This rules are necessary to allow the SCITOS robot to be accessed by the MIRA framework. This rules should be installed during the MIRA software installation. Hoverer, if you need to install them manually, follow the instructions below.
+
+```bash
+cd scitos2/scitos2_mira
+sudo cp rules/99-SCITOS.rules /etc/udev/rules.d/
+sudo udevadm control --reload-rules && sudo udevadm trigger
+```
+
 ## Nodes
 
 ### mira_framework
