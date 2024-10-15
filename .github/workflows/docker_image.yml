@@ -28,7 +28,7 @@ jobs:
         with:
           images: grupoavispa/scitos2
           tags: |
-            type=ref, suffix=latest, event=branch
+            type=ref, event=branch
             type=sha
 
       - name: Docker Setup Buildx

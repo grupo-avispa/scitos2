@@ -68,4 +68,3 @@ COPY ./docker/ros_entrypoint.sh /
 RUN chmod +x /ros_entrypoint.sh
 COPY ./docker/cyclonedds.xml /
 ENTRYPOINT ["/ros_entrypoint.sh"]
-CMD ["ros2", "launch", "scitos2_mira", "mira.launch.py"]

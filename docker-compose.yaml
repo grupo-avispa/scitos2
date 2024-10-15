@@ -1,8 +1,9 @@
 services:
-  scitos:
-    container_name: scitos2
-    image: grupoavispa/scitos2:latest
+  # Main container
+  base:
+    image: grupoavispa/scitos2:main
     build: .
+    tty: true
     network_mode: host
     ipc: host
     pid: host
@@ -13,7 +14,20 @@ services:
     devices:
       - /dev/ttyUSB2:/dev/USB_MLCAN
     privileged: true
-    restart: unless-stopped
     volumes:
       - /opt/MIRA-licenses:/opt/MIRA-licenses
       - /opt/SCITOS:/opt/SCITOS
+
+  # Mira framework + drive & charger modules container
+  mira:
+    extends:
+      service: base
+    command: ros2 launch scitos2_mira mira.launch.py
+    restart: unless-stopped
+
+  # Docking server container
+  docking:
+    extends:
+      service: base
+    command: ros2 launch scitos2_charging_dock docking_server.launch.py
+    restart: unless-stopped
