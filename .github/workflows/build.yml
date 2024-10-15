@@ -38,6 +38,10 @@ jobs:
     runs-on: ubuntu-22.04
     needs: install-mira
     steps:
+      - name: Cache APT Packages
+        uses: awalsh128/cache-apt-pkgs-action@v1.4.2
+        with:
+          packages: libprocps-dev
       - name: Checkout Repository
         uses: actions/checkout@v4
       - name: Cache
@@ -58,8 +62,6 @@ jobs:
         with:
           path: ${{ env.MIRA_PATH }}
           key: mira-${{ runner.os }}-ubuntu-22.04
-      - name: Check MIRA cache
-        run: ls -la ${{ env.MIRA_PATH }} && cat ${{ env.MIRA_PATH }}/mira.root
       - name: Build packages
         env:
           MIRA_PATH: ${{ env.MIRA_PATH }}
