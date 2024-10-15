@@ -44,8 +44,6 @@ jobs:
         with:
           path: ${{ env.MIRA_PATH }}
           key: mira-${{ runner.os }}-ubuntu-22.04
-      - name: Check MIRA cache
-        run: ls -la ${{ env.MIRA_PATH }}
       - name: Checkout Repository
         uses: actions/checkout@v4
       - name: Cache
@@ -60,7 +58,11 @@ jobs:
         uses: ros-tooling/setup-ros@0.7.5
         with:
           required-ros-distributions: humble
+      - name: Check MIRA cache
+        run: ls -la ${{ env.MIRA_PATH }} && cat ${{ env.MIRA_PATH }}/mira.root
       - name: Build packages
+        env:
+          MIRA_PATH: ${{ env.MIRA_PATH }}
         uses: ros-tooling/action-ros-ci@0.3.13
         with:
           package-name: |
