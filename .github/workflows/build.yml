@@ -43,7 +43,7 @@ jobs:
         with:
           packages: libprocps-dev
       - name: Checkout Repository
-        uses: actions/checkout@v4-
+        uses: actions/checkout@v4
       - name: Setup ROS 2
         uses: ros-tooling/setup-ros@0.7.5
         with:
