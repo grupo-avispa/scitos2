@@ -15,7 +15,7 @@ env:
   MIRA_URL: https://www.mira-project.org/downloads/
 
 jobs:
-  build:
+  install-mira:
     runs-on: ubuntu-22.04
     env:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
@@ -24,25 +24,14 @@ jobs:
         uses: awalsh128/cache-apt-pkgs-action@v1.4.2
         with:
           packages: g++ cmake subversion doxygen libxml2-dev libssl-dev libsqlite3-dev libboost-all-dev libogre-1.9-dev libsvn-dev libopencv-dev binutils-dev libiberty-dev libcurl4-gnutls-dev libprocps-dev libqwt-qt5-dev libqt5webkit5-dev libqwtmathml-qt5-dev libqt5opengl5-dev libqt5svg5-dev qt*5-dev qttools5-dev-tools git
-      - name: Checkout Repository
-        uses: actions/checkout@v4
       - name: Restore MIRA cache
         id: restore-mira-cache
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.MIRA_PATH }}
           key: mira-${{ runner.os }}-ubuntu-22.04
-      # - name: Make ccache directory
-      #   run: mkdir -p ${{ env.CCACHE_DIR }}
-      # - name: Cache ccache
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ${{ env.CCACHE_DIR }}
-      #     key: ccache-${{ runner.os }}-${{ github.sha }}-${{ github.run_id }}
-      #     restore-keys: |
-      #       ccache-${{ runner.os }}-${{ github.sha }}
-      #       ccache-${{ runner.os }}
       - name: Install MIRA
+        if: steps.restore-mira-cache.outputs.cache-hit != 'true'
         run: | 
           curl -o mira-installer-binary.sh https://www.mira-project.org/downloads/mira-installer-binary.sh
           chmod +x mira-installer-binary.sh
@@ -54,6 +43,20 @@ jobs:
           key: ${{ steps.restore-mira-cache.outputs.cache-primary-key }}
 
 
+      # - name: Make ccache directory
+      #   run: mkdir -p ${{ env.CCACHE_DIR }}
+      # - name: Cache ccache
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ${{ env.CCACHE_DIR }}
+      #     key: ccache-${{ runner.os }}-${{ github.sha }}-${{ github.run_id }}
+      #     restore-keys: |
+      #       ccache-${{ runner.os }}-${{ github.sha }}
+      #       ccache-${{ runner.os }}
+
+
+      # - name: Checkout Repository
+      #   uses: actions/checkout@v4
       # - name: Setup ROS 2
       #   uses: ros-tooling/setup-ros@0.7.5
       #   with:
