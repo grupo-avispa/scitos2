@@ -38,12 +38,6 @@ jobs:
     runs-on: ubuntu-22.04
     needs: install-mira
     steps:
-      - name: Restore MIRA cache
-        id: restore-cache-mira
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.MIRA_PATH }}
-          key: mira-${{ runner.os }}-ubuntu-22.04
       - name: Checkout Repository
         uses: actions/checkout@v4
       - name: Cache
@@ -58,6 +52,12 @@ jobs:
         uses: ros-tooling/setup-ros@0.7.5
         with:
           required-ros-distributions: humble
+      - name: Restore MIRA cache
+        id: restore-cache-mira
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.MIRA_PATH }}
+          key: mira-${{ runner.os }}-ubuntu-22.04
       - name: Check MIRA cache
         run: ls -la ${{ env.MIRA_PATH }} && cat ${{ env.MIRA_PATH }}/mira.root
       - name: Build packages
