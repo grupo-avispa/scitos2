@@ -8,7 +8,7 @@
 
 ## Overview
 
-scitos2 is a ROS 2 stack designed for Metralabs robots that utilize the MIRA framework, including models such as SCITOS, TORY, MORPHIA, etc. This stack comprises several packages, each serving a unique purpose:
+`scitos2` is a ROS 2 stack designed for Metralabs robots that utilize the MIRA framework, including models such as SCITOS, TORY, MORPHIA, etc. This stack comprises several packages, each serving a unique purpose:
 
  * [scitos2_behavior_tree]: This package contains behavior tree nodes that extend your robot's functionalities, such as emergency stop, reset motor stop, etc.
  * [scitos2_charging_dock]: This package contains the implementation of the charging dock plugin for the SCITOS and TORY robots from MetraLabs using the opennav_docking server.
