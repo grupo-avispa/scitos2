@@ -23,20 +23,28 @@ jobs:
         with:
           packages: g++ cmake subversion doxygen libxml2-dev libssl-dev libsqlite3-dev libboost-all-dev libogre-1.9-dev libsvn-dev libopencv-dev binutils-dev libiberty-dev libcurl4-gnutls-dev libprocps-dev libqwt-qt5-dev libqt5webkit5-dev libqwtmathml-qt5-dev libqt5opengl5-dev libqt5svg5-dev qt*5-dev qttools5-dev-tools git
       - name: Cache MIRA
-        id: restore-mira-cache
+        id: cache-mira
         uses: actions/cache@v4
         with:
           path: ${{ env.MIRA_PATH }}
           key: mira-${{ runner.os }}-ubuntu-22.04
       - name: Install MIRA
-        if: steps.restore-mira-cache.outputs.cache-hit != 'true'
+        if: steps.cache-mira.outputs.cache-hit != 'true'
         run: | 
           curl -o mira-installer-binary.sh https://www.mira-project.org/downloads/mira-installer-binary.sh
           chmod +x mira-installer-binary.sh
           ./mira-installer-binary.sh -s ubuntu-2204lts-x64 -d ${{ env.MIRA_PATH }}
+      - 
   install-scitos2:
     runs-on: ubuntu-22.04
+    needs: install-mira
     steps:
+      - name: Restore MIRA cache
+        id: restore-cache-mira
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.MIRA_PATH }}
+          key: mira-${{ runner.os }}-ubuntu-22.04
       - name: Checkout Repository
         uses: actions/checkout@v4
       - name: Cache
@@ -51,7 +59,7 @@ jobs:
         uses: ros-tooling/setup-ros@0.7.5
         with:
           required-ros-distributions: humble
-      - name: Install dependencies
+      - name: Build packages
         uses: ros-tooling/action-ros-ci@0.3.13
         with:
           package-name: |
@@ -64,7 +72,7 @@ jobs:
             scitos2_modules
             scitos2_msgs
           target-ros2-distro: humble
-          vcs-repo-file-url: ./.github/repos.repos
+          vcs-repo-file-url: ./.github/dependencies.repos
           colcon-defaults: |
             {
               "build": {
