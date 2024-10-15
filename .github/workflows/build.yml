@@ -34,7 +34,6 @@ jobs:
           curl -o mira-installer-binary.sh https://www.mira-project.org/downloads/mira-installer-binary.sh
           chmod +x mira-installer-binary.sh
           ./mira-installer-binary.sh -s ubuntu-2204lts-x64 -d ${{ env.MIRA_PATH }}
-      - 
   install-scitos2:
     runs-on: ubuntu-22.04
     needs: install-mira
