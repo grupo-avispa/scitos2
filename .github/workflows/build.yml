@@ -44,6 +44,8 @@ jobs:
         with:
           path: ${{ env.MIRA_PATH }}
           key: mira-${{ runner.os }}-ubuntu-22.04
+      - name: Check MIRA cache
+        run: ls -la ${{ env.MIRA_PATH }}
       - name: Checkout Repository
         uses: actions/checkout@v4
       - name: Cache
