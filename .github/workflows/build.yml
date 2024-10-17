@@ -47,6 +47,8 @@ jobs:
         uses: awalsh128/cache-apt-pkgs-action@v1.4.2
         with:
           packages: libprocps-dev
+      - name: Checkout Repository
+        uses: actions/checkout@v4
       - name: Setup ROS 2
         uses: ros-tooling/setup-ros@0.7.5
         with:
@@ -65,8 +67,6 @@ jobs:
           restore-keys: |
             scitos2-${{ runner.os }}-${{ github.sha }}
             scitos2-${{ runner.os }}
-      - name: Checkout Repository
-        uses: actions/checkout@v4
       - name: Build packages
         env:
           MIRA_PATH: ${{ env.MIRA_PATH }}
