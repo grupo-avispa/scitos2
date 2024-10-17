@@ -14,11 +14,13 @@ concurrency:
 jobs:
   docker-image:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Extract branch name
         shell: bash
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
         id: extract_branch
+
       - name: Checkout
         uses: actions/checkout@v4.1.6
 
