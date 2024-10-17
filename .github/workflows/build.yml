@@ -67,37 +67,39 @@ jobs:
           restore-keys: |
             scitos2-${{ runner.os }}-${{ github.sha }}
             scitos2-${{ runner.os }}
-      - name: Build packages
-        env:
-          MIRA_PATH: ${{ env.MIRA_PATH }}
-        uses: ros-tooling/action-ros-ci@0.3.13
-        with:
-          package-name: |
-            scitos2
-            scitos2_behavior_tree
-            scitos2_charging_dock
-            scitos2_common
-            scitos2_core
-            scitos2_mira
-            scitos2_modules
-            scitos2_msgs
-          target-ros2-distro: humble
-          vcs-repo-file-url: ./.github/dependencies.repos
-          colcon-defaults: |
-            {
-              "build": {
-                "mixin": ["coverage-gcc", "coverage-pytest"]
-              },
-              "test": {
-                "mixin": ["coverage-pytest"]
-              }
-            }
-          skip-tests: false
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4.4.1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ros_ws/lcov/total_coverage.info,ros_ws/coveragepy/.coverage
-          flags: unittests
-          name: codecov-umbrella
-          slug: grupo-avispa/scitos2
+      - name: Check ls
+        run: ls -la ${{ github.workspace }}
+      # - name: Build packages
+      #   env:
+      #     MIRA_PATH: ${{ env.MIRA_PATH }}
+      #   uses: ros-tooling/action-ros-ci@0.3.13
+      #   with:
+      #     package-name: |
+      #       scitos2
+      #       scitos2_behavior_tree
+      #       scitos2_charging_dock
+      #       scitos2_common
+      #       scitos2_core
+      #       scitos2_mira
+      #       scitos2_modules
+      #       scitos2_msgs
+      #     target-ros2-distro: humble
+      #     vcs-repo-file-url: ./.github/dependencies.repos
+      #     colcon-defaults: |
+      #       {
+      #         "build": {
+      #           "mixin": ["coverage-gcc", "coverage-pytest"]
+      #         },
+      #         "test": {
+      #           "mixin": ["coverage-pytest"]
+      #         }
+      #       }
+      #     skip-tests: false
+      # - name: Upload coverage reports to Codecov
+      #   uses: codecov/codecov-action@v4.4.1
+      #   with:
+      #     token: ${{ secrets.CODECOV_TOKEN }}
+      #     files: ros_ws/lcov/total_coverage.info,ros_ws/coveragepy/.coverage
+      #     flags: unittests
+      #     name: codecov-umbrella
+      #     slug: grupo-avispa/scitos2
