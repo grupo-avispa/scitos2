@@ -33,7 +33,7 @@ jobs:
         id: scitos2-builder
 
       - name: Cache Docker layers
-        uses: actions/cache@v4.0.2
+        uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
@@ -48,7 +48,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build against scitos2-builder
-        uses: docker/build-push-action@v5.3.0
+        uses: docker/build-push-action@v6
         with:
           builder: ${{ steps.scitos2-builder.outputs.name }}
           context: .
@@ -57,3 +57,11 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
+
+      # Temp fix
+      # https://github.com/docker/build-push-action/issues/252
+      # https://github.com/moby/buildkit/issues/1896
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
