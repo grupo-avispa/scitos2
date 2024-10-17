@@ -47,7 +47,7 @@ RUN apt update && apt install --no-install-recommends -y \
     ros-dev-tools \
     python3-vcstool \
     python3-colcon-clean \
-    ros-$ROS_DISTRO-rmw-cyclonedds-cpp 
+    ros-$ROS_DISTRO-rmw-cyclonedds-cpp
 RUN vcs import src < src/scitos2/.github/dependencies.repos
 RUN rosdep init && rosdep update
 RUN . /opt/ros/$ROS_DISTRO/setup.sh && \

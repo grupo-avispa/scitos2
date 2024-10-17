@@ -49,26 +49,16 @@ jobs:
           packages: libprocps-dev
       - name: Checkout Repository
         uses: actions/checkout@v4
-      - name: Restore cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ github.workspace }}
-          key: scitos2-${{ runner.os }}-${{ github.sha }}-${{ github.run_id }}
-          restore-keys: |
-            scitos2-${{ runner.os }}-${{ github.sha }}
-            scitos2-${{ runner.os }}
       - name: Setup ROS 2
         uses: ros-tooling/setup-ros@0.7.5
         with:
           required-ros-distributions: humble
-      # - name: Restore MIRA cache
-      #   id: restore-cache-mira
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ${{ env.MIRA_PATH }}
-      #     key: mira-${{ runner.os }}-ubuntu-22.04
-      # - name: Check ls
-      #   run: ls -la ${{ github.workspace }}
+      - name: Restore MIRA cache
+        id: restore-cache-mira
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.MIRA_PATH }}
+          key: mira-${{ runner.os }}-ubuntu-22.04
       - name: Build packages
         env:
           MIRA_PATH: ${{ env.MIRA_PATH }}
