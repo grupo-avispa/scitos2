@@ -8,6 +8,8 @@ The plugin is responsible for detecting the charging dock and obtaining the fina
 
 A **save_dock** service is provided to save the current pointcloud of the charging dock as the template for future matching.
 
+![Docking](<doc/Docking Animation.gif>)
+
 ## Charging Dock plugin
 
 ### Subscribed Topics
