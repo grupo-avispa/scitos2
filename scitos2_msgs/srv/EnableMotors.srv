@@ -1,0 +1,6 @@
+# This service requests enable or disable the motors.
+# If the motors are disabled, the drive system should be in a idle mode.
+# That means, that the robot should be movable by hand ("free run"), i.e. the motors must be turned off.
+
+bool enable         # True to enable the motors, false to disable them.
+---

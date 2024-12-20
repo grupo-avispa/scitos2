@@ -1,4 +1,0 @@
-# This service requests save the hardware errors to a file.
-
-string filename         # Name of the file
----

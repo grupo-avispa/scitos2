@@ -1,5 +1,0 @@
-# This service requests performs an emergency stop and sets the motor emergency stop flag.
-# Hardware, that does not support an emergency stop explicitly must set the velocity to 0 
-# and make sure that no other velocity can be set until ResetMotorStop.srv is called.
-
----

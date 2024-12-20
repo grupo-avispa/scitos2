@@ -1,0 +1,33 @@
+services:
+  # Main container
+  base:
+    image: grupoavispa/scitos2:main
+    build: .
+    tty: true
+    network_mode: host
+    ipc: host
+    pid: host
+    mac_address: XX:XX:XX:XX:XX:XX
+    environment:
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID}
+      - NET_INTERFACE=XXXXX
+    devices:
+      - /dev/ttyUSB2:/dev/USB_MLCAN
+    privileged: true
+    volumes:
+      - /opt/MIRA-licenses:/opt/MIRA-licenses
+      - /opt/SCITOS:/opt/SCITOS
+
+  # Mira framework + drive & charger modules container
+  mira:
+    extends:
+      service: base
+    command: ros2 launch scitos2_mira mira.launch.py
+    restart: unless-stopped
+
+  # Docking server container
+  docking:
+    extends:
+      service: base
+    command: ros2 launch scitos2_charging_dock docking_server.launch.py
+    restart: unless-stopped

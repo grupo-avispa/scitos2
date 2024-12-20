@@ -1,4 +1,0 @@
-# This service requests enable or disable the RFID reader.
-
-bool enable         # True to enable the RFID reader, false to disable it.
----
