@@ -1,3 +1,4 @@
+---
 #---------------
 # Docking server
 #---------------
@@ -29,7 +30,7 @@ docking_server:
 
     # Types of docks
     dock_plugins: ["scitos_dock"]
-    dock_database: ''
+    dock_database: ""
     scitos_dock:
       plugin: "scitos2_charging_dock::ChargingDock"
       docking_threshold: 0.05
@@ -49,7 +50,7 @@ docking_server:
         icp_max_trans_eps: 1.0e-8
         icp_max_eucl_fit_eps: 1.0e-8
         enable_debug: true
-        dock_template: ''
+        dock_template: ""
       segmentation:
         distance_threshold: 0.04
         min_points: 20
@@ -58,4 +59,3 @@ docking_server:
         max_distance: 2.0
         min_width: 0.3
         max_width: 1.0
-
