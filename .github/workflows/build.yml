@@ -5,7 +5,7 @@ name: Build
 
 on:
   push:
-    branches: [main, humble]
+    branches: [main]
   pull_request:
 
 env:
