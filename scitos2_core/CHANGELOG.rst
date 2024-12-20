@@ -2,7 +2,7 @@
 Changelog for package scitos2_core
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.0.0 (XX-04-2024)
+2.0.0 (XX-XX-XXXX)
 ------------------
 * Initial release.
 * Create README.md.

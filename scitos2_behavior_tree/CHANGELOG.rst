@@ -2,7 +2,7 @@
 Changelog for package scitos2_behavior_tree
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.0.0 (XX-04-2024)
+2.0.0 (XX-XX-XXXX)
 ------------------
 * Rename package to scitos2_behavior_tree.
 * Improve formatting.
