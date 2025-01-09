@@ -1,9 +1,11 @@
 name: Docker Image
-
 on:
   workflow_dispatch:
   workflow_run:
     workflows: ["Build"]
+    branches:
+      - main
+      - humble
     types:
       - completed
 
