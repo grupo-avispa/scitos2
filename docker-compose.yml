@@ -1,3 +1,4 @@
+name: scitos2
 services:
   # Main container
   base:
