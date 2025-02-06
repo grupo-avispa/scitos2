@@ -122,7 +122,7 @@ target_link_libraries(scitos2_drive
   pluginlib::pluginlib
   tf2_geometry_msgs::tf2_geometry_msgs
 )
-ament_target_dependencies(scitos2_drive PUBLIC nav2_costmap_2d) # TODO(ajtudela): Fix this in jazzy
+ament_target_dependencies(scitos2_drive PUBLIC nav2_costmap_2d) # TODO(ajtudela): Fix this in kilted
 target_link_mira_libraries(scitos2_drive)
 
 add_library(scitos2_ebc SHARED src/ebc.cpp)

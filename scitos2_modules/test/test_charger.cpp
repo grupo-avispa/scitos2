@@ -258,7 +258,7 @@ TEST(ScitosChargerTest, batteryStateFull) {
   // Check the conversion
   EXPECT_DOUBLE_EQ(battery.voltage, battery_state.voltage);
   EXPECT_DOUBLE_EQ(battery.current, -battery_state.current);
-  EXPECT_TRUE(isnan(battery.charge));
+  EXPECT_TRUE(std::isnan(battery.charge));
   EXPECT_DOUBLE_EQ(battery.percentage, 1.0);
   EXPECT_EQ(
     battery.power_supply_status,
@@ -284,8 +284,8 @@ TEST(ScitosChargerTest, batteryStateNotCharging) {
   // Check the conversion
   EXPECT_DOUBLE_EQ(battery.voltage, battery_state.voltage);
   EXPECT_DOUBLE_EQ(battery.current, -battery_state.current);
-  EXPECT_TRUE(isnan(battery.charge));
-  EXPECT_TRUE(isnan(battery.percentage));
+  EXPECT_TRUE(std::isnan(battery.charge));
+  EXPECT_TRUE(std::isnan(battery.percentage));
   EXPECT_EQ(
     battery.power_supply_status,
     sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_NOT_CHARGING);
@@ -310,8 +310,8 @@ TEST(ScitosChargerTest, batteryStateDischarging) {
   // Check the conversion
   EXPECT_DOUBLE_EQ(battery.voltage, battery_state.voltage);
   EXPECT_DOUBLE_EQ(battery.current, -battery_state.current);
-  EXPECT_TRUE(isnan(battery.charge));
-  EXPECT_TRUE(isnan(battery.percentage));
+  EXPECT_TRUE(std::isnan(battery.charge));
+  EXPECT_TRUE(std::isnan(battery.percentage));
   EXPECT_EQ(
     battery.power_supply_status,
     sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_DISCHARGING);
@@ -336,8 +336,8 @@ TEST(ScitosChargerTest, batteryStateUnknown) {
   // Check the conversion
   EXPECT_DOUBLE_EQ(battery.voltage, battery_state.voltage);
   EXPECT_DOUBLE_EQ(battery.current, -battery_state.current);
-  EXPECT_TRUE(isnan(battery.charge));
-  EXPECT_TRUE(isnan(battery.percentage));
+  EXPECT_TRUE(std::isnan(battery.charge));
+  EXPECT_TRUE(std::isnan(battery.percentage));
   EXPECT_EQ(
     battery.power_supply_status,
     sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_UNKNOWN);

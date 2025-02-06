@@ -136,6 +136,6 @@ A **save_dock** service is provided to save the current pointcloud of the chargi
 
 
 [opennav_docking]: https://github.com/open-navigation/opennav_docking
-[sensor_msgs/LaserScan]: https://docs.ros2.org/humble/api/sensor_msgs/msg/LaserScan.html
-[sensor_msgs/BatteryState]: https://docs.ros2.org/humble/api/sensor_msgs/msg/BatteryState.html
-[sensor_msgs/PointCloud2]: https://docs.ros2.org/humble/api/sensor_msgs/msg/PointCloud2.html
+[sensor_msgs/LaserScan]: https://docs.ros2.org/jazzy/api/sensor_msgs/msg/LaserScan.html
+[sensor_msgs/BatteryState]: https://docs.ros2.org/jazzy/api/sensor_msgs/msg/BatteryState.html
+[sensor_msgs/PointCloud2]: https://docs.ros2.org/jazzy/api/sensor_msgs/msg/PointCloud2.html

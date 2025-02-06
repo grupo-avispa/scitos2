@@ -6,7 +6,7 @@ target_link_libraries(test_scitos2_action_emergency_stop_service
   scitos2_emergency_stop_service_bt_node
 )
 ament_target_dependencies(test_scitos2_action_emergency_stop_service
-  behaviortree_cpp_v3
+  behaviortree_cpp
 )
 
 # Test for the reset motor stop service
@@ -17,5 +17,5 @@ target_link_libraries(test_scitos2_action_reset_motor_stop_service
   scitos2_reset_motor_stop_service_bt_node
 )
 ament_target_dependencies(test_scitos2_action_reset_motor_stop_service
-  behaviortree_cpp_v3
+  behaviortree_cpp
 )

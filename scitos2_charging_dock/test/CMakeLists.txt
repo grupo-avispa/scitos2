@@ -1,3 +1,5 @@
+find_package(ament_index_cpp REQUIRED)
+
 # Test cluster
 ament_add_gtest(test_scitos2_cluster test_cluster.cpp)
 target_include_directories(test_scitos2_cluster PUBLIC
@@ -19,6 +21,7 @@ target_link_libraries(test_scitos2_segmentation
 # Test perception
 ament_add_gtest(test_scitos2_perception test_perception.cpp)
 target_link_libraries(test_scitos2_perception
+  ament_index_cpp::ament_index_cpp
   perception
   rclcpp::rclcpp
   tf2_ros::tf2_ros

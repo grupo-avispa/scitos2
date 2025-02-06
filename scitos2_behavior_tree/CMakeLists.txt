@@ -50,7 +50,7 @@ endif()
 # ###############################################
 # # Find ament macros and libraries
 find_package(ament_cmake REQUIRED)
-find_package(behaviortree_cpp_v3 REQUIRED)
+find_package(behaviortree_cpp REQUIRED)
 find_package(nav2_behavior_tree REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
@@ -67,13 +67,10 @@ target_include_directories(scitos2_is_bumper_activated_condition_bt_node PUBLIC
 )
 target_link_libraries(scitos2_is_bumper_activated_condition_bt_node
   PUBLIC
+  behaviortree_cpp::behaviortree_cpp
   rclcpp::rclcpp
   ${scitos2_msgs_TARGETS}
 )
-ament_target_dependencies(scitos2_is_bumper_activated_condition_bt_node
-  PUBLIC
-  behaviortree_cpp_v3
-) # TODO(ajtudela): Fix this in jazzy
 target_compile_definitions(scitos2_is_bumper_activated_condition_bt_node PRIVATE BT_PLUGIN_EXPORT)
 
 add_library(scitos2_emergency_stop_service_bt_node SHARED src/action/emergency_stop_service.cpp)
@@ -83,12 +80,13 @@ target_include_directories(scitos2_emergency_stop_service_bt_node PUBLIC
 )
 target_link_libraries(scitos2_emergency_stop_service_bt_node
   PUBLIC
+  behaviortree_cpp::behaviortree_cpp
   ${scitos2_msgs_TARGETS}
 )
 ament_target_dependencies(scitos2_emergency_stop_service_bt_node
   PUBLIC
   nav2_behavior_tree
-) # TODO(ajtudela): Fix this in jazzy
+) # TODO(ajtudela): Fix this in kilted
 target_compile_definitions(scitos2_emergency_stop_service_bt_node PRIVATE BT_PLUGIN_EXPORT)
 
 add_library(scitos2_reset_motor_stop_service_bt_node SHARED src/action/reset_motor_stop_service.cpp)
@@ -103,7 +101,7 @@ target_link_libraries(scitos2_reset_motor_stop_service_bt_node
 ament_target_dependencies(scitos2_reset_motor_stop_service_bt_node
   PUBLIC
   nav2_behavior_tree
-) # TODO(ajtudela): Fix this in jazzy
+) # TODO(ajtudela): Fix this in kilted
 target_compile_definitions(scitos2_reset_motor_stop_service_bt_node PRIVATE BT_PLUGIN_EXPORT)
 
 # ############
@@ -124,7 +122,9 @@ set(GENERATED_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
 configure_file(plugins_list.hpp.in ${GENERATED_DIR}/plugins_list.hpp)
 
 add_executable(generate_scitos2_tree_nodes_xml src/generate_scitos2_tree_nodes_xml.cpp)
-ament_target_dependencies(generate_scitos2_tree_nodes_xml PUBLIC behaviortree_cpp_v3) # TODO(ajtudela): Fix this in jazzy
+target_link_libraries(generate_scitos2_tree_nodes_xml PRIVATE
+  behaviortree_cpp::behaviortree_cpp
+)
 
 # allow generate_scitos2_tree_nodes_xml to find plugins_list.hpp
 target_include_directories(generate_scitos2_tree_nodes_xml PRIVATE ${GENERATED_DIR})
@@ -132,10 +132,6 @@ install(TARGETS generate_scitos2_tree_nodes_xml DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY include/
   DESTINATION include/${PROJECT_NAME}
-)
-
-install(DIRECTORY test/utils/
-  DESTINATION include/${PROJECT_NAME}/utils/
 )
 
 install(FILES scitos2_tree_nodes.xml DESTINATION share/${PROJECT_NAME})
@@ -164,7 +160,7 @@ ament_export_libraries(
   scitos2_reset_motor_stop_service_bt_node
 )
 ament_export_dependencies(
-  behaviortree_cpp_v3
+  behaviortree_cpp
   nav2_behavior_tree
   rclcpp
   rclcpp_action

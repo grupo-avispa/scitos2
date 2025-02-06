@@ -15,7 +15,7 @@
 
 #include "gtest/gtest.h"
 #include "rclcpp/rclcpp.hpp"
-#include <ament_index_cpp/get_package_share_directory.hpp>
+#include "ament_index_cpp/get_package_share_directory.hpp"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "nav2_util/lifecycle_node.hpp"
 #include "nav2_util/node_utils.hpp"

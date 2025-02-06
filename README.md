@@ -1,6 +1,6 @@
 # scitos2
 
-![ROS2](https://img.shields.io/badge/ros2-humble-blue?logo=ros&logoColor=white)
+![ROS2](https://img.shields.io/badge/ros2-jazzy-blue?logo=ros&logoColor=white)
 ![License](https://img.shields.io/github/license/grupo-avispa/scitos2)
 [![Build](https://github.com/grupo-avispa/scitos2/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/grupo-avispa/scitos2/actions/workflows/build.yml)
 [![Docker image](https://github.com/grupo-avispa/scitos2/actions/workflows/docker_image.yml/badge.svg?branch=main)](https://github.com/grupo-avispa/scitos2/actions/workflows/docker_image.yml)
@@ -24,7 +24,7 @@ scitos2 is a ROS 2 stack designed for Metralabs robots that utilize the MIRA fra
 
 #### Dependencies
 
-- [Robot Operating System (ROS) 2](https://docs.ros.org/en/rolling/) (middleware for robotics)
+- [Robot Operating System (ROS) 2](https://docs.ros.org/en/jazzy/) (middleware for robotics)
 - [MIRA](https://www.mira-project.org/) (Metralabs middleware for robotic applications)
 
 #### Building
@@ -34,7 +34,7 @@ To build from source, clone the latest version from this repository into your co
 cd colcon_workspace/src
 git clone https://github.com/grupo-avispa/scitos2.git
 cd ../
-rosdep install -i --from-path src --rosdistro rolling -y
+rosdep install -i --from-path src --rosdistro jazzy -y
 colcon build --symlink-install
 ```
 

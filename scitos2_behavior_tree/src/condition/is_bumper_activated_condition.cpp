@@ -55,7 +55,7 @@ void IsBumperActivatedCondition::bumperCallback(scitos2_msgs::msg::BumperStatus:
 
 }  // namespace scitos2_behavior_tree
 
-#include "behaviortree_cpp_v3/bt_factory.h"
+#include "behaviortree_cpp/bt_factory.h"
 BT_REGISTER_NODES(factory) {
   factory.registerNodeType<scitos2_behavior_tree::IsBumperActivatedCondition>("IsBumperActivated");
 }

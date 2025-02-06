@@ -1,10 +1,10 @@
-ARG BASE_IMAGE="humble-ros-core-jammy"
+ARG BASE_IMAGE="jazzy-ros-core-noble"
 ARG MIRA_WS=/opt/mira
 ARG OVERLAY_WS=/opt/overlay_ws
-ARG SYSTEM=ubuntu-2204lts-x64
+ARG SYSTEM=ubuntu-2404lts-x64
 
 # Install MIRA
-FROM ubuntu:22.04 AS mira-base
+FROM ubuntu:24.04 AS mira-base
 ARG DEBIAN_FRONTEND=noninteractive
 ARG MIRA_WS
 ARG SYSTEM

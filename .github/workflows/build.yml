@@ -5,7 +5,7 @@ name: Build
 
 on:
   push:
-    branches: [main, humble]
+    branches: [main, jazzy, humble]
   pull_request:
 
 env:
@@ -15,7 +15,7 @@ env:
 
 jobs:
   install-mira:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Cache APT Packages
         uses: awalsh128/cache-apt-pkgs-action@v1.4.2
@@ -30,34 +30,34 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.MIRA_PATH }}
-          key: mira-${{ runner.os }}-ubuntu-22.04
+          key: mira-${{ runner.os }}-ubuntu-24.04
       - name: Install MIRA
         if: steps.cache-mira.outputs.cache-hit != 'true'
         run: | 
           curl -o mira-installer-binary.sh ${{ env.MIRA_URL }}/mira-installer-binary.sh
           chmod +x mira-installer-binary.sh
-          ./mira-installer-binary.sh -s ubuntu-2204lts-x64 -d ${{ env.MIRA_PATH }}
+          ./mira-installer-binary.sh -s ubuntu-2404lts-x64 -d ${{ env.MIRA_PATH }}
 
   install-scitos2:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: install-mira
     steps:
       - name: Cache APT Packages
-        uses: awalsh128/cache-apt-pkgs-action@v1.4.2
+        uses: awalsh128/cache-apt-pkgs-action@v1.4.3
         with:
           packages: libprocps-dev
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
       - name: Setup ROS 2
         uses: ros-tooling/setup-ros@0.7.5
         with:
-          required-ros-distributions: humble
+          required-ros-distributions: jazzy
       - name: Restore MIRA cache
         id: restore-cache-mira
         uses: actions/cache@v4
         with:
           path: ${{ env.MIRA_PATH }}
-          key: mira-${{ runner.os }}-ubuntu-22.04
+          key: mira-${{ runner.os }}-ubuntu-24.04
       - name: Build packages
         env:
           MIRA_PATH: ${{ env.MIRA_PATH }}
@@ -72,8 +72,7 @@ jobs:
             scitos2_mira
             scitos2_modules
             scitos2_msgs
-          target-ros2-distro: humble
-          vcs-repo-file-url: ./.github/dependencies.repos
+          target-ros2-distro: jazzy
           colcon-defaults: |
             {
               "build": {

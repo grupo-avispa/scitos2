@@ -88,7 +88,7 @@ target_link_libraries(segmentation
   PRIVATE
   pcl_ros::pcl_ros_tf
 )
-ament_target_dependencies(segmentation PUBLIC nav2_util) # TODO(ajtudela): Fix this in jazzy
+ament_target_dependencies(segmentation PUBLIC nav2_util) # TODO(ajtudela): Fix this in kilted
 
 # Add perception library
 add_library(perception SHARED src/perception.cpp)
@@ -111,7 +111,7 @@ ament_target_dependencies(perception
   PUBLIC
   nav2_util
   pcl_conversions
-) # TODO(ajtudela): Fix this in jazzy
+) # TODO(ajtudela): Fix this in kilted
 
 # Add charging dock library
 add_library(${library_name} SHARED src/charging_dock.cpp)
@@ -136,7 +136,7 @@ ament_target_dependencies(${library_name}
   nav2_util
   opennav_docking_core
   opennav_docking # Pose filter
-) # TODO(ajtudela): Fix this in jazzy
+) # TODO(ajtudela): Fix this in kilted
 
 pluginlib_export_plugin_description_file(opennav_docking_core plugins.xml)
 
@@ -157,7 +157,7 @@ target_link_libraries(dock_saver_core
   ${sensor_msgs_TARGETS}
   rclcpp_components::component
 )
-ament_target_dependencies(dock_saver_core PUBLIC nav2_util) # TODO(ajtudela): Fix this in jazzy
+ament_target_dependencies(dock_saver_core PUBLIC nav2_util) # TODO(ajtudela): Fix this in kilted
 
 # Add dock saver executable
 add_executable(${dock_saver_executable} src/main_saver.cpp)

@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   workflow_run:
     workflows: ["Build"]
-    branches: [main, humble]
+    branches: [main, jazzy, humble]
     types:
       - completed
 
@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   docker-image:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout

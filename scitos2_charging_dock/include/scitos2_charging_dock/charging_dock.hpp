@@ -81,7 +81,7 @@ public:
    * @brief Method to obtain the refined pose of the dock, based on sensor
    * @param pose The initial estimate of the dock pose.
    */
-  virtual bool getRefinedPose(geometry_msgs::msg::PoseStamped & pose);
+  virtual bool getRefinedPose(geometry_msgs::msg::PoseStamped & pose, std::string id);
 
   /**
    * @copydoc opennav_docking_core::ChargingDock::isCharging

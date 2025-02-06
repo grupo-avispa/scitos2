@@ -21,7 +21,7 @@
 
 #include "scitos2_msgs/msg/bumper_status.hpp"
 
-#include "utils/test_behavior_tree_fixture.hpp"
+#include "nav2_behavior_tree/utils/test_behavior_tree_fixture.hpp"
 #include "scitos2_behavior_tree/condition/is_bumper_activated_condition.hpp"
 
 class IsBumperActivatedConditionTestFixture : public ::testing::Test
@@ -88,13 +88,13 @@ TEST_F(IsBumperActivatedConditionTestFixture, test_behavior_power_supply_status)
   bumper_pub_->publish(bumper_msg);
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
   rclcpp::spin_some(node_);
-  EXPECT_EQ(tree.tickRoot(), BT::NodeStatus::FAILURE);
+  EXPECT_EQ(tree.tickOnce(), BT::NodeStatus::FAILURE);
 
   bumper_msg.bumper_activated = true;
   bumper_pub_->publish(bumper_msg);
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
   rclcpp::spin_some(node_);
-  EXPECT_EQ(tree.tickRoot(), BT::NodeStatus::SUCCESS);
+  EXPECT_EQ(tree.tickOnce(), BT::NodeStatus::SUCCESS);
 }
 
 int main(int argc, char ** argv)

@@ -22,7 +22,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "scitos2_msgs/msg/bumper_status.hpp"
-#include "behaviortree_cpp_v3/condition_node.h"
+#include "behaviortree_cpp/condition_node.h"
 
 namespace scitos2_behavior_tree
 {

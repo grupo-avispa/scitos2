@@ -1,4 +1,5 @@
 find_package(geometry_msgs REQUIRED)
+find_package(nav2_behavior_tree REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(tf2_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
@@ -15,3 +16,6 @@ target_link_libraries(test_scitos2_condition_is_bumper_activated
   ${tf2_msgs_TARGETS}
   tf2_ros::tf2_ros
 )
+ament_target_dependencies(test_scitos2_condition_is_bumper_activated
+  nav2_behavior_tree
+) # TODO(ajtudela): Fix this in kilted

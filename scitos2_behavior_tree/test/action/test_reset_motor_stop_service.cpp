@@ -20,9 +20,9 @@
 #include <set>
 #include <string>
 
-#include "behaviortree_cpp_v3/bt_factory.h"
+#include "behaviortree_cpp/bt_factory.h"
 
-#include "utils/test_service.hpp"
+#include "nav2_behavior_tree/utils/test_service.hpp"
 #include "scitos2_behavior_tree/action/reset_motor_stop_service.hpp"
 
 class ResetMotorStopService : public TestService<scitos2_msgs::srv::ResetMotorStop>

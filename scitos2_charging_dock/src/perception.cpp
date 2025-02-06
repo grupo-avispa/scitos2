@@ -126,17 +126,18 @@ void Perception::setInitialEstimate(
 
 bool Perception::loadDockPointcloud(std::string filepath, Pcloud & dock)
 {
+  bool success = false;
   if (filepath.empty()) {
     RCLCPP_ERROR(logger_, "Couldn't load the dock from an empty file path");
   } else {
-    if (pcl::io::loadPCDFile<pcl::PointXYZ>(filepath, dock) < 0) {
+    if (pcl::io::loadPCDFile<pcl::PointXYZ>(filepath, dock) == -1 || dock.empty()) {
       RCLCPP_ERROR(logger_, "Failed to load the dock from PCD file");
     } else {
       RCLCPP_INFO(logger_, "Dock loaded from PCD file with %lu points", dock.size());
-      return true;
+      success = true;
     }
   }
-  return false;
+  return success;
 }
 
 bool Perception::storeDockPointcloud(std::string filepath, const Pcloud & dock)

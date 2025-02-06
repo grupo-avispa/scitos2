@@ -2,7 +2,7 @@
 Changelog for package scitos2_mira
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-2.0.0 (XX-XX-XXXX)
+2.0.0 (06-02-2025)
 ------------------
 * Rename package to scitos2_mira.
 * Rename header and source files.
@@ -18,6 +18,7 @@ Changelog for package scitos2_mira
 * Added composable nodes in launch file.
 * Added default diagnostics.
 * Update CMakeLists.txt to use modern idioms.
+* First jazzy release.
 
 1.1.3 (10-10-2023)
 ------------------

@@ -257,10 +257,10 @@ The EBC module controls the power for extra devices.
 	Sets the maximum current for port 1 24V in A. The value must be between 0-4A.
 
 
-[nav_msgs/Odometry]: http://docs.ros2.org/humble/api/nav_msgs/msg/Odometry.html
-[geometry_msgs/Twist]: http://docs.ros2.org/humble/api/geometry_msgs/msg/Twist.html
+[nav_msgs/Odometry]: http://docs.ros2.org/jazzy/api/nav_msgs/msg/Odometry.html
+[geometry_msgs/Twist]: http://docs.ros2.org/jazzy/api/geometry_msgs/msg/Twist.html
 [visualization_msgs/MarkerArray]: http://docs.ros.org/api/visualization_msgs/html/msg/MarkerArray.html
-[sensor_msgs/BatteryState]: https://docs.ros2.org/humble/api/sensor_msgs/msg/BatteryState.html
+[sensor_msgs/BatteryState]: https://docs.ros2.org/jazzy/api/sensor_msgs/msg/BatteryState.html
 [scitos2_msgs/BarrierStatus]: ../scitos2_msgs/msg/BarrierStatus.msg
 [scitos2_msgs/BumperStatus]: ../scitos2_msgs/msg/BumperStatus.msg
 [scitos2_msgs/ChargerStatus]: ../scitos2_msgs/msg/ChargerStatus.msg

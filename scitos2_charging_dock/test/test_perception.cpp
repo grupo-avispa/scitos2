@@ -14,7 +14,7 @@
 // limitations under the License.
 
 #include "gtest/gtest.h"
-#include <ament_index_cpp/get_package_share_directory.hpp>
+#include "ament_index_cpp/get_package_share_directory.hpp"
 #include "nav2_util/node_utils.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tf2/LinearMath/Transform.h"

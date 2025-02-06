@@ -85,7 +85,7 @@ target_link_libraries(${library_name}
   rclcpp_components::component
 )
 
-ament_target_dependencies(${library_name} PUBLIC nav2_util) # TODO(ajtudela): Fix this in jazzy
+ament_target_dependencies(${library_name} PUBLIC nav2_util) # TODO(ajtudela): Fix this in kilted
 target_link_mira_libraries(${library_name})
 
 # Add executable
