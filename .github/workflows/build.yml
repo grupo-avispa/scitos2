@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Cache APT Packages
-        uses: awalsh128/cache-apt-pkgs-action@v1.4.2
+        uses: awalsh128/cache-apt-pkgs-action@v1.4.3
         with:
           packages: git g++ cmake subversion doxygen libxml2-dev libssl-dev \
             libsqlite3-dev libboost-all-dev libogre-1.9-dev libsvn-dev \
@@ -27,7 +27,7 @@ jobs:
             libqt5opengl5-dev libqt5svg5-dev qt*5-dev qttools5-dev-tools
       - name: Cache MIRA
         id: cache-mira
-        uses: actions/cache@v4
+        uses: actions/cache@v4.2.0
         with:
           path: ${{ env.MIRA_PATH }}
           key: mira-${{ runner.os }}-ubuntu-24.04
@@ -54,7 +54,7 @@ jobs:
           required-ros-distributions: jazzy
       - name: Restore MIRA cache
         id: restore-cache-mira
-        uses: actions/cache@v4
+        uses: actions/cache@v4.2.0
         with:
           path: ${{ env.MIRA_PATH }}
           key: mira-${{ runner.os }}-ubuntu-24.04
