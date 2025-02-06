@@ -23,7 +23,7 @@ jobs:
           packages: git g++ cmake subversion doxygen libxml2-dev libssl-dev \
             libsqlite3-dev libboost-all-dev libogre-1.9-dev libsvn-dev \
             libopencv-dev binutils-dev libiberty-dev libcurl4-gnutls-dev \
-            libprocps-dev libqwt-qt5-dev libqt5webkit5-dev libqwtmathml-qt5-dev \
+            libproc2-dev libqwt-qt5-dev libqt5webkit5-dev libqwtmathml-qt5-dev \
             libqt5opengl5-dev libqt5svg5-dev qt*5-dev qttools5-dev-tools
       - name: Cache MIRA
         id: cache-mira
@@ -45,7 +45,7 @@ jobs:
       - name: Cache APT Packages
         uses: awalsh128/cache-apt-pkgs-action@v1.4.3
         with:
-          packages: libprocps-dev
+          packages: libproc2-dev
       - name: Checkout Repository
         uses: actions/checkout@v4.2.2
       - name: Setup ROS 2

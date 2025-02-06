@@ -14,7 +14,7 @@ RUN apt update && apt install --no-install-recommends -y \
     libsqlite3-dev libboost-all-dev \
     libogre-1.9-dev libsvn-dev \
     libopencv-dev binutils-dev \
-    libiberty-dev libcurl4-gnutls-dev libprocps-dev \
+    libiberty-dev libcurl4-gnutls-dev libproc2-dev \
     libqwt-qt5-dev libqt5webkit5-dev libqwtmathml-qt5-dev \
     libqt5opengl5-dev libqt5svg5-dev qt*5-dev qttools5-dev-tools && \
     rm -rf /var/lib/apt/lists/*
@@ -42,7 +42,7 @@ COPY . ./src/scitos2
 
 # Install MIRA and ROS2 dependencies
 RUN apt update && apt install --no-install-recommends -y \
-    libopencv-dev libprocps-dev \
+    libopencv-dev libproc2-dev \
     python3-pip \
     ros-dev-tools \
     python3-vcstool \
