@@ -99,7 +99,7 @@ TEST_F(EmergencyStopServiceTestFixture, test_tick)
 {
   std::string xml_txt =
     R"(
-      <root>
+      <root BTCPP_format="4">
         <BehaviorTree ID="MainTree">
             <EmergencyStop service_name="emergency_stop"/>
         </BehaviorTree>

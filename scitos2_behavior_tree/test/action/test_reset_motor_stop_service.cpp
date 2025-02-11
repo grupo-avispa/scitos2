@@ -99,7 +99,7 @@ TEST_F(ResetMotorStopServiceTestFixture, test_tick)
 {
   std::string xml_txt =
     R"(
-      <root>
+      <root BTCPP_format="4">
         <BehaviorTree ID="MainTree">
             <ResetMotorStop service_name="reset_motor_stop"/>
         </BehaviorTree>
