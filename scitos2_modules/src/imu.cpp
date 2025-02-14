@@ -47,7 +47,7 @@ void IMU::configure(
   RCLCPP_INFO(logger_, "The parameter robot_base_frame is set to: [%s]", robot_base_frame_.c_str());
 
   // Create ROS publishers
-  imu_pub_ = node->create_publisher<sensor_msgs::msg::Imu>("imu", 1);
+  imu_pub_ = node->create_publisher<sensor_msgs::msg::Imu>("imu", rclcpp::SystemDefaultsQoS());
 
   // Create MIRA subscribers
   authority_->subscribe<mira::Point3f>(

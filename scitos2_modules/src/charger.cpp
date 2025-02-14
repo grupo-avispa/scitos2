@@ -39,9 +39,10 @@ void Charger::configure(
   authority_->checkin("/", plugin_name_);
 
   // Create ROS publishers
-  battery_pub_ = node->create_publisher<sensor_msgs::msg::BatteryState>("battery", 1);
+  battery_pub_ = node->create_publisher<sensor_msgs::msg::BatteryState>(
+    "battery", rclcpp::SystemDefaultsQoS());
   charger_pub_ = node->create_publisher<scitos2_msgs::msg::ChargerStatus>(
-    "charger_status", 1);
+    "charger_status", rclcpp::SystemDefaultsQoS());
 
   // Create MIRA subscribers
   authority_->subscribe<mira::robot::BatteryState>(

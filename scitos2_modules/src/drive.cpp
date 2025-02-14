@@ -132,16 +132,19 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
   bumper_pub_ = node->create_publisher<scitos2_msgs::msg::BumperStatus>(
     "bumper", latched_profile);
   bumper_markers_pub_ = node->create_publisher<visualization_msgs::msg::MarkerArray>(
-    "bumper/visualization", 20);
+    "bumper/visualization", rclcpp::SystemDefaultsQoS());
   drive_status_pub_ = node->create_publisher<scitos2_msgs::msg::DriveStatus>(
-    "drive_status", 20);
+    "drive_status", rclcpp::SystemDefaultsQoS());
   emergency_stop_pub_ = node->create_publisher<scitos2_msgs::msg::EmergencyStopStatus>(
     "emergency_stop_status", latched_profile);
   magnetic_barrier_pub_ = node->create_publisher<scitos2_msgs::msg::BarrierStatus>(
     "barrier_status", latched_profile);
-  mileage_pub_ = node->create_publisher<scitos2_msgs::msg::Mileage>("mileage", 20);
-  odometry_pub_ = node->create_publisher<nav_msgs::msg::Odometry>(odom_topic_, 10);
-  rfid_pub_ = node->create_publisher<scitos2_msgs::msg::RfidTag>("rfid", 20);
+  mileage_pub_ = node->create_publisher<scitos2_msgs::msg::Mileage>(
+    "mileage", rclcpp::SystemDefaultsQoS());
+  odometry_pub_ = node->create_publisher<nav_msgs::msg::Odometry>(
+    odom_topic_, rclcpp::SystemDefaultsQoS());
+  rfid_pub_ = node->create_publisher<scitos2_msgs::msg::RfidTag>(
+    "rfid", rclcpp::SystemDefaultsQoS());
 
   // Create MIRA subscribers
   authority_->subscribe<mira::robot::Odometry2>(
@@ -157,7 +160,7 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
 
   // Create ROS subscribers
   cmd_vel_sub_ = node->create_subscription<geometry_msgs::msg::Twist>(
-    "cmd_vel", 1, std::bind(&Drive::velocityCommandCallback, this, _1));
+    "cmd_vel", rclcpp::SystemDefaultsQoS(), std::bind(&Drive::velocityCommandCallback, this, _1));
 
   // Create ROS services
   change_force_service_ = node->create_service<scitos2_msgs::srv::ChangeForce>(
