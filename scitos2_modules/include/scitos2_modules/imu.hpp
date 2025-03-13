@@ -115,7 +115,7 @@ protected:
   std::string plugin_name_;
   rclcpp::Logger logger_{rclcpp::get_logger("IMU")};
 
-  std::string robot_base_frame_;
+  std::string robot_base_frame_, imu_topic_;
   sensor_msgs::msg::Imu imu_msg_;
   std::mutex mutex_;
 

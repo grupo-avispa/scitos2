@@ -2,6 +2,10 @@
 Changelog for package scitos2_modules
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.1 (13-03-2025)
+------------------
+* Added imu_topic parameter to IMU module.
+
 2.0.0 (06-02-2025)
 ------------------
 * Import modules from scitos_mira package.
