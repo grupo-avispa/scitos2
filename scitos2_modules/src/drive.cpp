@@ -159,7 +159,7 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
     "/robot/RFIDUserTag", std::bind(&Drive::rfidStatusCallback, this, _1));
 
   // Create ROS subscribers
-  cmd_vel_sub_ = node->create_subscription<geometry_msgs::msg::Twist>(
+  cmd_vel_sub_ = node->create_subscription<geometry_msgs::msg::TwistStamped>(
     "cmd_vel", rclcpp::SystemDefaultsQoS(), std::bind(&Drive::velocityCommandCallback, this, _1));
 
   // Create ROS services
@@ -370,10 +370,10 @@ void Drive::rfidStatusCallback(mira::ChannelRead<uint64> data)
   rfid_pub_->publish(tag_msg);
 }
 
-void Drive::velocityCommandCallback(const geometry_msgs::msg::Twist & msg)
+void Drive::velocityCommandCallback(const geometry_msgs::msg::TwistStamped & msg)
 {
   if (!emergency_stop_activated_ && is_active_) {
-    mira::Velocity2 speed(msg.linear.x, 0, msg.angular.z);
+    mira::Velocity2 speed(msg.twist.linear.x, 0, msg.twist.angular.z);
     call_mira_service(authority_, "setVelocity", std::optional<mira::Velocity2>(speed));
   }
 }

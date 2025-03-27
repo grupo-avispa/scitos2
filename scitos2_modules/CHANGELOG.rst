@@ -2,6 +2,10 @@
 Changelog for package scitos2_modules
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.0 (27-03-2025)
+------------------
+* Replaced cmd_vel topic from Twist to TwistStamped in Drive module.
+
 2.0.1 (13-03-2025)
 ------------------
 * Added imu_topic parameter to IMU module.

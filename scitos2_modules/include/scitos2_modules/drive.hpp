@@ -29,7 +29,7 @@
 // ROS
 #include "rclcpp/rclcpp.hpp"
 #include "rcl_interfaces/msg/set_parameters_result.hpp"
-#include "geometry_msgs/msg/twist.hpp"
+#include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "tf2_ros/transform_broadcaster.h"
 #include "visualization_msgs/msg/marker_array.hpp"
@@ -139,7 +139,7 @@ protected:
    *
    * @param msg Velocity command
    */
-  void velocityCommandCallback(const geometry_msgs::msg::Twist & msg);
+  void velocityCommandCallback(const geometry_msgs::msg::TwistStamped & msg);
 
   /**
    * @brief Service to change the force.
@@ -343,7 +343,7 @@ protected:
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Odometry>> odometry_pub_;
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<scitos2_msgs::msg::RfidTag>> rfid_pub_;
 
-  std::shared_ptr<rclcpp::Subscription<geometry_msgs::msg::Twist>> cmd_vel_sub_;
+  std::shared_ptr<rclcpp::Subscription<geometry_msgs::msg::TwistStamped>> cmd_vel_sub_;
 
   // ROS Services
   std::shared_ptr<rclcpp::Service<scitos2_msgs::srv::ChangeForce>> change_force_service_;

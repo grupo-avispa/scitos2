@@ -72,7 +72,7 @@ The Drive module controls the robot's motors, handling velocity commands, odomet
 
 #### Subscribed Topics
 
-* **`cmd_vel`** ([geometry_msgs/Twist])
+* **`cmd_vel`** ([geometry_msgs/TwistStamped])
 
 	Subscribes to the velocity of the robot sent to the motor controller.
 
@@ -258,7 +258,7 @@ The EBC module controls the power for extra devices.
 
 
 [nav_msgs/Odometry]: http://docs.ros2.org/jazzy/api/nav_msgs/msg/Odometry.html
-[geometry_msgs/Twist]: http://docs.ros2.org/jazzy/api/geometry_msgs/msg/Twist.html
+[geometry_msgs/TwistStamped]: http://docs.ros2.org/jazzy/api/geometry_msgs/msg/TwistStamped.html
 [visualization_msgs/MarkerArray]: http://docs.ros.org/api/visualization_msgs/html/msg/MarkerArray.html
 [sensor_msgs/BatteryState]: https://docs.ros2.org/jazzy/api/sensor_msgs/msg/BatteryState.html
 [scitos2_msgs/BarrierStatus]: ../scitos2_msgs/msg/BarrierStatus.msg
