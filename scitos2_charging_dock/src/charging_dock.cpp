@@ -63,6 +63,10 @@ void ChargingDock::configure(
   nav2_util::declare_parameter_if_not_declared(
     node_, name + ".staging_yaw_offset", rclcpp::ParameterValue(0.0));
 
+  // Direction of docking
+  nav2_util::declare_parameter_if_not_declared(
+    node_, name + ".dock_direction", rclcpp::ParameterValue(std::string("forward")));
+
   node_->get_parameter(name + ".external_detection_timeout", external_detection_timeout_);
   node_->get_parameter(
     name + ".external_detection_translation_x", external_detection_translation_x_);
@@ -76,6 +80,7 @@ void ChargingDock::configure(
   node_->get_parameter(name + ".docking_threshold", docking_threshold_);
   node_->get_parameter(name + ".staging_x_offset", staging_x_offset_);
   node_->get_parameter(name + ".staging_yaw_offset", staging_yaw_offset_);
+  node_->get_parameter(name + ".dock_direction", dock_direction_);
 
   // Setup perception
   perception_ = std::make_unique<Perception>(node_, name, tf2_buffer_);
@@ -209,6 +214,18 @@ bool ChargingDock::disableCharging()
 bool ChargingDock::hasStoppedCharging()
 {
   return !isCharging();
+}
+
+opennav_docking_core::DockDirection ChargingDock::getDockDirection()
+{
+  if (dock_direction_ == "forward") {
+    return opennav_docking_core::DockDirection::FORWARD;
+  } else if (dock_direction_ == "backward") {
+    return opennav_docking_core::DockDirection::BACKWARD;
+  } else {
+    RCLCPP_ERROR(node_->get_logger(), "Invalid dock direction: %s", dock_direction_.c_str());
+    return opennav_docking_core::DockDirection::UNKNOWN;
+  }
 }
 
 }  // namespace scitos2_charging_dock

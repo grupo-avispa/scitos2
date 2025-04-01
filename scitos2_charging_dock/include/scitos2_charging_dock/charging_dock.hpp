@@ -35,6 +35,8 @@ namespace scitos2_charging_dock
 class ChargingDock : public opennav_docking_core::ChargingDock
 {
 public:
+  using DockDirection = opennav_docking_core::DockDirection;
+
   /**
    * @brief Constructor
    */
@@ -47,24 +49,24 @@ public:
    * @param  name The name of this planner
    * @param  tf A pointer to a TF buffer
    */
-  virtual void configure(
+  void configure(
     const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
-    const std::string & name, std::shared_ptr<tf2_ros::Buffer> tf);
+    const std::string & name, std::shared_ptr<tf2_ros::Buffer> tf) override;
 
   /**
    * @brief Method to cleanup resources used on shutdown.
    */
-  virtual void cleanup() {}
+  void cleanup() override {}
 
   /**
    * @brief Method to active Behavior and any threads involved in execution.
    */
-  virtual void activate() {}
+  void activate() override {}
 
   /**
    * @brief Method to deactive Behavior and any threads involved in execution.
    */
-  virtual void deactivate() {}
+  void deactivate() override {}
 
   /**
    * @brief Method to obtain the dock's staging pose. This method should likely
@@ -74,34 +76,41 @@ public:
    * @param frame Dock's frame of pose
    * @return PoseStamped of staging pose in the specified frame
    */
-  virtual geometry_msgs::msg::PoseStamped getStagingPose(
-    const geometry_msgs::msg::Pose & pose, const std::string & frame);
+  geometry_msgs::msg::PoseStamped getStagingPose(
+    const geometry_msgs::msg::Pose & pose, const std::string & frame) override;
 
   /**
    * @brief Method to obtain the refined pose of the dock, based on sensor
    * @param pose The initial estimate of the dock pose.
    */
-  virtual bool getRefinedPose(geometry_msgs::msg::PoseStamped & pose, std::string id);
+  bool getRefinedPose(geometry_msgs::msg::PoseStamped & pose, std::string id) override;
 
   /**
    * @copydoc opennav_docking_core::ChargingDock::isCharging
    */
-  virtual bool isCharging();
+  bool isCharging() override;
 
   /**
    * @copydoc opennav_docking_core::ChargingDock::isDocked
    */
-  virtual bool isDocked();
+  bool isDocked() override;
 
   /**
    * @copydoc opennav_docking_core::ChargingDock::disableCharging
    */
-  virtual bool disableCharging();
+  bool disableCharging() override;
 
   /**
    * @brief Similar to isCharging() but called when undocking.
    */
-  virtual bool hasStoppedCharging();
+  bool hasStoppedCharging() override;
+
+  /**
+   * @brief Indicates the direction of the dock. This is used to determine if the
+   * robot should drive forwards or backwards onto the dock.
+   * @return DockDirection The direction of the dock
+   */
+  DockDirection getDockDirection() override;
 
 protected:
   // Subscribe to a scan topic
@@ -132,6 +141,8 @@ protected:
   // Offset for staging pose relative to dock pose
   double staging_x_offset_;
   double staging_yaw_offset_;
+  // Does the robot drive backwards onto the dock? Default is forwards
+  std::string dock_direction_;
 
   // Perception
   std::unique_ptr<Perception> perception_;
