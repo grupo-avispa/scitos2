@@ -22,7 +22,7 @@
 
 #include "behaviortree_cpp/bt_factory.h"
 
-#include "nav2_behavior_tree/utils/test_service.hpp"
+#include "nav2_behavior_tree/test/utils/test_service.hpp"
 #include "scitos2_behavior_tree/action/reset_motor_stop_service.hpp"
 
 class ResetMotorStopService : public TestService<scitos2_msgs::srv::ResetMotorStop>
