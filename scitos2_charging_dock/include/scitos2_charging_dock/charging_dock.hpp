@@ -105,13 +105,6 @@ public:
    */
   bool hasStoppedCharging() override;
 
-  /**
-   * @brief Indicates the direction of the dock. This is used to determine if the
-   * robot should drive forwards or backwards onto the dock.
-   * @return DockDirection The direction of the dock
-   */
-  DockDirection getDockDirection() override;
-
 protected:
   // Subscribe to a scan topic
   rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;
@@ -141,8 +134,6 @@ protected:
   // Offset for staging pose relative to dock pose
   double staging_x_offset_;
   double staging_yaw_offset_;
-  // Does the robot drive backwards onto the dock? Default is forwards
-  std::string dock_direction_;
 
   // Perception
   std::unique_ptr<Perception> perception_;

@@ -17,6 +17,7 @@
 #include <cmath>
 
 #include "nav2_util/node_utils.hpp"
+#include "opennav_docking/utils.hpp"
 #include "scitos2_charging_dock/charging_dock.hpp"
 #include "scitos2_charging_dock/segmentation.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
@@ -80,7 +81,13 @@ void ChargingDock::configure(
   node_->get_parameter(name + ".docking_threshold", docking_threshold_);
   node_->get_parameter(name + ".staging_x_offset", staging_x_offset_);
   node_->get_parameter(name + ".staging_yaw_offset", staging_yaw_offset_);
-  node_->get_parameter(name + ".dock_direction", dock_direction_);
+
+  std::string dock_direction;
+  node_->get_parameter(name + ".dock_direction", dock_direction);
+  dock_direction_ = utils::getDockDirectionFromString(dock_direction);
+  if (dock_direction_ == opennav_docking_core::DockDirection::UNKNOWN) {
+    throw std::runtime_error{"Dock direction is not valid. Valid options are: forward or backward"};
+  }
 
   // Setup perception
   perception_ = std::make_unique<Perception>(node_, name, tf2_buffer_);
@@ -214,18 +221,6 @@ bool ChargingDock::disableCharging()
 bool ChargingDock::hasStoppedCharging()
 {
   return !isCharging();
-}
-
-opennav_docking_core::DockDirection ChargingDock::getDockDirection()
-{
-  if (dock_direction_ == "forward") {
-    return opennav_docking_core::DockDirection::FORWARD;
-  } else if (dock_direction_ == "backward") {
-    return opennav_docking_core::DockDirection::BACKWARD;
-  } else {
-    RCLCPP_ERROR(node_->get_logger(), "Invalid dock direction: %s", dock_direction_.c_str());
-    return opennav_docking_core::DockDirection::UNKNOWN;
-  }
 }
 
 }  // namespace scitos2_charging_dock
