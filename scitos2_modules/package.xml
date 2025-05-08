@@ -2,7 +2,7 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>scitos2_modules</name>
-  <version>2.1.0</version>
+  <version>2.2.0</version>
   <description>Package containing robot modules using the MIRA framework.</description>
   <maintainer email="ajtudela@gmail.com">Alberto Tudela</maintainer>
   <license>Apache-2.0</license>
@@ -11,6 +11,7 @@
   <depend>geometry_msgs</depend>
   <depend>rclcpp</depend>
   <depend>nav2_costmap_2d</depend>
+  <depend>nav2_util</depend>
   <depend>nav_msgs</depend>
   <depend>pluginlib</depend>
   <depend>scitos2_msgs</depend>

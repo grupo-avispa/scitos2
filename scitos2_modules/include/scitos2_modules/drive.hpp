@@ -139,7 +139,7 @@ protected:
    *
    * @param msg Velocity command
    */
-  void velocityCommandCallback(const geometry_msgs::msg::TwistStamped & msg);
+  void velocityCommandCallback(const geometry_msgs::msg::Twist & msg);
 
   /**
    * @brief Service to change the force.
@@ -343,7 +343,8 @@ protected:
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Odometry>> odometry_pub_;
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<scitos2_msgs::msg::RfidTag>> rfid_pub_;
 
-  std::shared_ptr<rclcpp::Subscription<geometry_msgs::msg::TwistStamped>> cmd_vel_sub_;
+  std::shared_ptr<rclcpp::Subscription<geometry_msgs::msg::Twist>> cmd_vel_sub_;
+  std::shared_ptr<rclcpp::Subscription<geometry_msgs::msg::TwistStamped>> cmd_vel_stamped_sub_;
 
   // ROS Services
   std::shared_ptr<rclcpp::Service<scitos2_msgs::srv::ChangeForce>> change_force_service_;
@@ -359,6 +360,7 @@ protected:
   bool emergency_stop_activated_;
   scitos2_msgs::msg::BarrierStatus barrier_status_;
   bool is_active_;
+  bool is_stamped_;
 
   // Bumper
   bool bumper_activated_;

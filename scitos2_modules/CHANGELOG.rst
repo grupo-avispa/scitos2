@@ -2,6 +2,10 @@
 Changelog for package scitos2_modules
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.2.0 (08-05-2025)
+------------------
+* Added 'enable_stamped_cmd_vel' parameter to Drive module.
+
 2.1.0 (27-03-2025)
 ------------------
 * Replaced cmd_vel topic from Twist to TwistStamped in Drive module.

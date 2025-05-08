@@ -67,6 +67,15 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
   node->get_parameter(plugin_name_ + ".odom_topic", odom_topic_);
   RCLCPP_INFO(logger_, "The parameter odom_topic is set to: [%s]", odom_topic_.c_str());
 
+  declare_parameter_if_not_declared(
+    node, plugin_name_ + ".enable_stamped_cmd_vel",
+    rclcpp::ParameterValue(true), rcl_interfaces::msg::ParameterDescriptor()
+    .set__description("Enable the stamped cmd_vel topic"));
+  node->get_parameter(plugin_name_ + ".enable_stamped_cmd_vel", is_stamped_);
+  RCLCPP_INFO(
+    logger_, "The parameter enable_stamped_cmd_vel is set to: [%s]",
+      is_stamped_ ? "true" : "false");
+
   bool magnetic_barrier_enabled;
   declare_parameter_if_not_declared(
     node, plugin_name_ + ".magnetic_barrier_enabled",
@@ -159,8 +168,21 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
     "/robot/RFIDUserTag", std::bind(&Drive::rfidStatusCallback, this, _1));
 
   // Create ROS subscribers
-  cmd_vel_sub_ = node->create_subscription<geometry_msgs::msg::TwistStamped>(
-    "cmd_vel", rclcpp::SystemDefaultsQoS(), std::bind(&Drive::velocityCommandCallback, this, _1));
+  if (is_stamped_) {
+    cmd_vel_stamped_sub_ = node->create_subscription<geometry_msgs::msg::TwistStamped>(
+      "cmd_vel",
+      rclcpp::SystemDefaultsQoS(),
+      [this](const geometry_msgs::msg::TwistStamped::SharedPtr msg) {
+        velocityCommandCallback(msg->twist);
+      });
+  } else {
+    cmd_vel_sub_ = node->create_subscription<geometry_msgs::msg::Twist>(
+      "cmd_vel",
+      rclcpp::SystemDefaultsQoS(),
+      [this](const geometry_msgs::msg::Twist::SharedPtr msg) {
+        velocityCommandCallback(*msg);
+      });
+  }
 
   // Create ROS services
   change_force_service_ = node->create_service<scitos2_msgs::srv::ChangeForce>(
@@ -207,6 +229,8 @@ void Drive::cleanup()
   mileage_pub_.reset();
   odometry_pub_.reset();
   rfid_pub_.reset();
+  cmd_vel_sub_.reset();
+  cmd_vel_stamped_sub_.reset();
   change_force_service_.reset();
   emergency_stop_service_.reset();
   enable_motors_service_.reset();
@@ -370,10 +394,10 @@ void Drive::rfidStatusCallback(mira::ChannelRead<uint64> data)
   rfid_pub_->publish(tag_msg);
 }
 
-void Drive::velocityCommandCallback(const geometry_msgs::msg::TwistStamped & msg)
+void Drive::velocityCommandCallback(const geometry_msgs::msg::Twist & msg)
 {
   if (!emergency_stop_activated_ && is_active_) {
-    mira::Velocity2 speed(msg.twist.linear.x, 0, msg.twist.angular.z);
+    mira::Velocity2 speed(msg.linear.x, 0, msg.angular.z);
     call_mira_service(authority_, "setVelocity", std::optional<mira::Velocity2>(speed));
   }
 }
