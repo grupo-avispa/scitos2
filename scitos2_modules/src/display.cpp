@@ -35,7 +35,8 @@ void Display::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
   authority_->checkin("/", plugin_name_);
 
   // Create publisher
-  display_data_pub_ = node->create_publisher<scitos2_msgs::msg::MenuEntry>("user_menu_selected", 1);
+  display_data_pub_ = node->create_publisher<scitos2_msgs::msg::MenuEntry>(
+    "user_menu_selected", rclcpp::SystemDefaultsQoS());
 
   // Callback for monitor changes in parameters
   dyn_params_handler_ = node->add_on_set_parameters_callback(

@@ -46,8 +46,15 @@ void IMU::configure(
   node->get_parameter(plugin_name_ + ".robot_base_frame", robot_base_frame_);
   RCLCPP_INFO(logger_, "The parameter robot_base_frame is set to: [%s]", robot_base_frame_.c_str());
 
+  declare_parameter_if_not_declared(
+    node, plugin_name_ + ".imu_topic",
+    rclcpp::ParameterValue("imu"), rcl_interfaces::msg::ParameterDescriptor()
+    .set__description("The name of the IMU topic"));
+  node->get_parameter(plugin_name_ + ".imu_topic", imu_topic_);
+  RCLCPP_INFO(logger_, "The parameter imu_topic is set to: [%s]", imu_topic_.c_str());
+
   // Create ROS publishers
-  imu_pub_ = node->create_publisher<sensor_msgs::msg::Imu>("imu", 1);
+  imu_pub_ = node->create_publisher<sensor_msgs::msg::Imu>("imu", rclcpp::SystemDefaultsQoS());
 
   // Create MIRA subscribers
   authority_->subscribe<mira::Point3f>(
@@ -118,9 +125,10 @@ void IMU::gyroscopeDataCallback(mira::ChannelRead<mira::Point3f> data)
 geometry_msgs::msg::Vector3 IMU::miraToRosAcceleration(const mira::Point3f & acceleration)
 {
   geometry_msgs::msg::Vector3 ros_acceleration;
-  ros_acceleration.x = acceleration.x() * 9.80665;
-  ros_acceleration.y = acceleration.y() * 9.80665;
-  ros_acceleration.z = acceleration.z() * 9.80665;
+  const double G = 9.80665;
+  ros_acceleration.x = acceleration.x() * G;
+  ros_acceleration.y = acceleration.y() * G;
+  ros_acceleration.z = acceleration.z() * G;
   return ros_acceleration;
 }
 

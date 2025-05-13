@@ -1011,7 +1011,7 @@ TEST(ScitosDriveTest, velocityCommand) {
   auto pub_node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("velocity_publisher");
   pub_node->configure();
   // Create a publisher for the velocity
-  auto vel_pub = pub_node->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 1);
+  auto vel_pub = pub_node->create_publisher<geometry_msgs::msg::TwistStamped>("cmd_vel", 1);
   ASSERT_EQ(vel_pub->get_subscription_count(), 0);
   EXPECT_FALSE(vel_pub->is_activated());
   // Activate the publisher
@@ -1028,9 +1028,9 @@ TEST(ScitosDriveTest, velocityCommand) {
   auto drive_thread = std::thread([&]() {rclcpp::spin(drive_node->get_node_base_interface());});
 
   // Create the message
-  geometry_msgs::msg::Twist vel;
-  vel.linear.x = 1.0;
-  vel.angular.z = 1.0;
+  geometry_msgs::msg::TwistStamped vel;
+  vel.twist.linear.x = 1.0;
+  vel.twist.angular.z = 1.0;
 
   // Publish the message
   module->activateEmergencyStop();

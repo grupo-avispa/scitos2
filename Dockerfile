@@ -48,7 +48,6 @@ RUN apt update && apt install --no-install-recommends -y \
     python3-vcstool \
     python3-colcon-clean \
     ros-$ROS_DISTRO-rmw-cyclonedds-cpp
-RUN vcs import src < src/scitos2/.github/dependencies.repos
 RUN rosdep init && rosdep update
 RUN . /opt/ros/$ROS_DISTRO/setup.sh && \
     rosdep install -q -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO && \
