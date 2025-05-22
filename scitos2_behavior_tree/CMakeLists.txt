@@ -81,12 +81,9 @@ target_include_directories(scitos2_emergency_stop_service_bt_node PUBLIC
 target_link_libraries(scitos2_emergency_stop_service_bt_node
   PUBLIC
   behaviortree_cpp::behaviortree_cpp
+  nav2_behavior_tree::nav2_behavior_tree
   ${scitos2_msgs_TARGETS}
 )
-ament_target_dependencies(scitos2_emergency_stop_service_bt_node
-  PUBLIC
-  nav2_behavior_tree
-) # TODO(ajtudela): Fix this in kilted
 target_compile_definitions(scitos2_emergency_stop_service_bt_node PRIVATE BT_PLUGIN_EXPORT)
 
 add_library(scitos2_reset_motor_stop_service_bt_node SHARED src/action/reset_motor_stop_service.cpp)
@@ -96,12 +93,9 @@ target_include_directories(scitos2_reset_motor_stop_service_bt_node PUBLIC
 )
 target_link_libraries(scitos2_reset_motor_stop_service_bt_node
   PUBLIC
+  nav2_behavior_tree::nav2_behavior_tree
   ${scitos2_msgs_TARGETS}
 )
-ament_target_dependencies(scitos2_reset_motor_stop_service_bt_node
-  PUBLIC
-  nav2_behavior_tree
-) # TODO(ajtudela): Fix this in kilted
 target_compile_definitions(scitos2_reset_motor_stop_service_bt_node PRIVATE BT_PLUGIN_EXPORT)
 
 # ############
