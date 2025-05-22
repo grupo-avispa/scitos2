@@ -78,14 +78,13 @@ target_include_directories(${library_name} PUBLIC
 target_link_libraries(${library_name}
   PUBLIC
   ${diagnostic_msgs_TARGETS}
+  nav2_util::nav2_util_core
   pluginlib::pluginlib
   rclcpp::rclcpp
   scitos2_core::scitos2_core
   PRIVATE
   rclcpp_components::component
 )
-
-ament_target_dependencies(${library_name} PUBLIC nav2_util) # TODO(ajtudela): Fix this in kilted
 target_link_mira_libraries(${library_name})
 
 # Add executable

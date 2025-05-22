@@ -22,7 +22,7 @@
 #include "sensor_msgs/msg/joint_state.hpp"
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
-#include "tf2/utils.h"
+#include "tf2/utils.hpp"
 #include "scitos2_charging_dock/charging_dock.hpp"
 
 TEST(ScitosChargingDock, objectLifecycle)

@@ -22,6 +22,7 @@ target_link_libraries(test_scitos2_segmentation
 ament_add_gtest(test_scitos2_perception test_perception.cpp)
 target_link_libraries(test_scitos2_perception
   ament_index_cpp::ament_index_cpp
+  nav2_util::nav2_util_core
   perception
   rclcpp::rclcpp
   tf2_ros::tf2_ros
@@ -29,8 +30,14 @@ target_link_libraries(test_scitos2_perception
 
 # Test charging dock
 ament_add_gtest(test_scitos2_charging_dock test_charging_dock.cpp)
-target_link_libraries(test_scitos2_charging_dock ${library_name})
+target_link_libraries(test_scitos2_charging_dock
+  ${library_name}
+  nav2_util::nav2_util_core
+)
 
 # Test dock saver
 ament_add_gtest(test_dock_saver test_dock_saver.cpp)
-target_link_libraries(test_dock_saver dock_saver_core)
+target_link_libraries(test_dock_saver
+  dock_saver_core
+  nav2_util::nav2_util_core
+)

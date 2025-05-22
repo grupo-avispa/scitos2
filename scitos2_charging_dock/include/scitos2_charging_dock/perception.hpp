@@ -33,7 +33,7 @@
 #include "scitos2_charging_dock/segmentation.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "sensor_msgs/msg/point_cloud2.hpp"
-#include "tf2/LinearMath/Transform.h"
+#include "tf2/LinearMath/Transform.hpp"
 #include "tf2_ros/buffer.h"
 
 namespace scitos2_charging_dock

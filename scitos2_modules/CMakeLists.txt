@@ -120,13 +120,11 @@ target_link_libraries(scitos2_drive
   tf2_ros::tf2_ros
   ${visualization_msgs_TARGETS}
   PRIVATE
+  nav2_costmap_2d::nav2_costmap_2d_core
+  nav2_util::nav2_util_core
   pluginlib::pluginlib
   tf2_geometry_msgs::tf2_geometry_msgs
 )
-
-# TODO(ajtudela): Fix this in kilted
-ament_target_dependencies(scitos2_drive PUBLIC nav2_costmap_2d nav2_util)
-
 target_link_mira_libraries(scitos2_drive)
 
 add_library(scitos2_ebc SHARED src/ebc.cpp)

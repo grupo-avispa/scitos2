@@ -86,9 +86,9 @@ target_link_libraries(segmentation
   rclcpp_lifecycle::rclcpp_lifecycle
   ${sensor_msgs_TARGETS}
   PRIVATE
+  nav2_util::nav2_util_core
   pcl_ros::pcl_ros_tf
 )
-ament_target_dependencies(segmentation PUBLIC nav2_util) # TODO(ajtudela): Fix this in kilted
 
 # Add perception library
 add_library(perception SHARED src/perception.cpp)
@@ -99,19 +99,17 @@ target_include_directories(perception PUBLIC
 target_link_libraries(perception
   PUBLIC
   ${geometry_msgs_TARGETS}
+  ${PCL_LIBRARIES}
   rclcpp::rclcpp
   segmentation
   ${sensor_msgs_TARGETS}
   tf2_ros::tf2_ros
   PRIVATE
+  nav2_util::nav2_util_core
   pcl_ros::pcl_ros_tf
+  pcl_conversions::pcl_conversions
   ${tf2_geometry_msgs_TARGETS}
 )
-ament_target_dependencies(perception
-  PUBLIC
-  nav2_util
-  pcl_conversions
-) # TODO(ajtudela): Fix this in kilted
 
 # Add charging dock library
 add_library(${library_name} SHARED src/charging_dock.cpp)
@@ -123,20 +121,18 @@ target_link_libraries(${library_name}
   PUBLIC
   ${geometry_msgs_TARGETS}
   perception
+  opennav_docking_core::opennav_docking_core
+  opennav_docking::pose_filter
   rclcpp_lifecycle::rclcpp_lifecycle
   ${scitos2_msgs_TARGETS}
   ${sensor_msgs_TARGETS}
   tf2_ros::tf2_ros
   PRIVATE
+  angles::angles
+  nav2_util::nav2_util_core
   pluginlib::pluginlib
   ${tf2_geometry_msgs_TARGETS}
 )
-ament_target_dependencies(${library_name}
-  PUBLIC
-  nav2_util
-  opennav_docking_core
-  opennav_docking # Pose filter
-) # TODO(ajtudela): Fix this in kilted
 
 pluginlib_export_plugin_description_file(opennav_docking_core plugins.xml)
 
@@ -148,6 +144,7 @@ target_include_directories(dock_saver_core PUBLIC
 )
 target_link_libraries(dock_saver_core
   PUBLIC
+  nav2_util::nav2_util_core
   perception
   rclcpp::rclcpp
   ${scitos2_msgs_TARGETS}
@@ -157,7 +154,6 @@ target_link_libraries(dock_saver_core
   ${sensor_msgs_TARGETS}
   rclcpp_components::component
 )
-ament_target_dependencies(dock_saver_core PUBLIC nav2_util) # TODO(ajtudela): Fix this in kilted
 
 # Add dock saver executable
 add_executable(${dock_saver_executable} src/main_saver.cpp)

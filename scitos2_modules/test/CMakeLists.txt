@@ -19,6 +19,7 @@ ament_add_gtest(test_drive
   test_drive.cpp
 )
 target_link_libraries(test_drive
+  nav2_util::nav2_util_core
   scitos2_drive
 )
 

@@ -21,7 +21,7 @@
 #include "scitos2_charging_dock/charging_dock.hpp"
 #include "scitos2_charging_dock/segmentation.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
-#include "tf2/utils.h"
+#include "tf2/utils.hpp"
 
 namespace scitos2_charging_dock
 {

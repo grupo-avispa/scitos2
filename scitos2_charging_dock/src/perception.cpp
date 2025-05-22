@@ -19,7 +19,7 @@
 #include <pcl/registration/icp.h>
 
 // TF
-#include "tf2/transform_datatypes.h"
+#include "tf2/transform_datatypes.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 
 // ROS

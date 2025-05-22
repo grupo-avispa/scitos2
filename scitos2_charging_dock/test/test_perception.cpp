@@ -17,7 +17,7 @@
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "nav2_util/node_utils.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "tf2/LinearMath/Transform.h"
+#include "tf2/LinearMath/Transform.hpp"
 #include "scitos2_charging_dock/perception.hpp"
 
 class PerceptionFixture : public scitos2_charging_dock::Perception
