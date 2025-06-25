@@ -52,6 +52,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(behaviortree_cpp REQUIRED)
 find_package(nav2_behavior_tree REQUIRED)
+find_package(nav2_ros_common REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
@@ -64,6 +65,7 @@ add_library(scitos2_is_bumper_activated_condition_bt_node SHARED src/condition/i
 target_include_directories(scitos2_is_bumper_activated_condition_bt_node PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+  "$<BUILD_INTERFACE:${nav2_ros_common_INCLUDE_DIRS}>"
 )
 target_link_libraries(scitos2_is_bumper_activated_condition_bt_node
   PUBLIC
@@ -77,6 +79,7 @@ add_library(scitos2_emergency_stop_service_bt_node SHARED src/action/emergency_s
 target_include_directories(scitos2_emergency_stop_service_bt_node PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+  "$<BUILD_INTERFACE:${nav2_ros_common_INCLUDE_DIRS}>"
 )
 target_link_libraries(scitos2_emergency_stop_service_bt_node
   PUBLIC
@@ -90,6 +93,7 @@ add_library(scitos2_reset_motor_stop_service_bt_node SHARED src/action/reset_mot
 target_include_directories(scitos2_reset_motor_stop_service_bt_node PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+  "$<BUILD_INTERFACE:${nav2_ros_common_INCLUDE_DIRS}>"
 )
 target_link_libraries(scitos2_reset_motor_stop_service_bt_node
   PUBLIC

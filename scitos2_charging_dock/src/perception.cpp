@@ -25,7 +25,7 @@
 // ROS
 
 #include "geometry_msgs/msg/transform_stamped.hpp"
-#include "nav2_util/node_utils.hpp"
+#include "nav2_ros_common/node_utils.hpp"
 #include "pcl_conversions/pcl_conversions.h"
 #include "pcl_ros/transforms.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -43,21 +43,21 @@ Perception::Perception(
   clock_ = node->get_clock();
   tf_buffer_ = tf;
 
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".perception.icp_min_score", rclcpp::ParameterValue(0.01));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".perception.icp_max_iter", rclcpp::ParameterValue(300));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".perception.icp_max_corr_dis", rclcpp::ParameterValue(0.25));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".perception.icp_max_trans_eps", rclcpp::ParameterValue(0.000000001));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".perception.icp_max_eucl_fit_eps", rclcpp::ParameterValue(0.000000001));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".perception.enable_debug", rclcpp::ParameterValue(false));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".perception.dock_template", rclcpp::ParameterValue(""));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".perception.use_first_detection", rclcpp::ParameterValue(false));
 
   node->get_parameter(name_ + ".perception.icp_min_score", icp_min_score_);

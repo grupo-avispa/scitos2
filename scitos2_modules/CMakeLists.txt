@@ -54,7 +54,7 @@ find_package(ament_cmake REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(nav2_costmap_2d REQUIRED)
-find_package(nav2_util)
+find_package(nav2_ros_common)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
@@ -121,7 +121,7 @@ target_link_libraries(scitos2_drive
   ${visualization_msgs_TARGETS}
   PRIVATE
   nav2_costmap_2d::nav2_costmap_2d_core
-  nav2_util::nav2_util_core
+  nav2_ros_common::nav2_ros_common
   pluginlib::pluginlib
   tf2_geometry_msgs::tf2_geometry_msgs
 )
@@ -202,6 +202,7 @@ ament_export_libraries(
 ament_export_dependencies(
   geometry_msgs
   nav2_costmap_2d
+  nav2_ros_common
   nav_msgs
   pluginlib
   rclcpp

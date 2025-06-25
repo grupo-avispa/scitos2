@@ -15,7 +15,8 @@
 // limitations under the License.
 
 #include "gtest/gtest.h"
-#include "nav2_util/node_utils.hpp"
+#include "nav2_ros_common/lifecycle_node.hpp"
+#include "nav2_ros_common/node_utils.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "sensor_msgs/msg/battery_state.hpp"
@@ -27,7 +28,7 @@
 
 TEST(ScitosChargingDock, objectLifecycle)
 {
-  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("test");
+  auto node = std::make_shared<nav2::LifecycleNode>("test");
 
   auto dock = std::make_unique<scitos2_charging_dock::ChargingDock>();
   dock->configure(node, "my_dock", nullptr);
@@ -45,7 +46,7 @@ TEST(ScitosChargingDock, objectLifecycle)
 
 TEST(ScitosChargingDock, batteryState)
 {
-  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("test");
+  auto node = std::make_shared<nav2::LifecycleNode>("test");
   auto pub = node->create_publisher<sensor_msgs::msg::BatteryState>(
     "battery", rclcpp::QoS(1));
   pub->on_activate();
@@ -84,7 +85,7 @@ TEST(ScitosChargingDock, batteryState)
 
 TEST(ScitosChargingDock, stagingPose)
 {
-  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("test");
+  auto node = std::make_shared<nav2::LifecycleNode>("test");
   auto dock = std::make_unique<scitos2_charging_dock::ChargingDock>();
 
   dock->configure(node, "my_dock", nullptr);
@@ -113,7 +114,7 @@ TEST(ScitosChargingDock, stagingPoseWithYawOffset)
   }
   );
 
-  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("test", options);
+  auto node = std::make_shared<nav2::LifecycleNode>("test", options);
   auto dock = std::make_unique<scitos2_charging_dock::ChargingDock>();
 
   dock->configure(node, "my_dock", nullptr);
@@ -135,7 +136,7 @@ TEST(ScitosChargingDock, stagingPoseWithYawOffset)
 
 TEST(ScitosChargingDock, refinedPoseTest)
 {
-  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("test");
+  auto node = std::make_shared<nav2::LifecycleNode>("test");
   auto pub = node->create_publisher<sensor_msgs::msg::LaserScan>("scan", 1);
   pub->on_activate();
   auto dock = std::make_unique<scitos2_charging_dock::ChargingDock>();
@@ -146,15 +147,15 @@ TEST(ScitosChargingDock, refinedPoseTest)
   // Update parameters to read the test dock template
   std::string pkg = ament_index_cpp::get_package_share_directory("scitos2_charging_dock");
   std::string path = pkg + "/test/dock_test.pcd";
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "my_dock.perception.dock_template", rclcpp::ParameterValue(path));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "my_dock.segmentation.distance_threshold", rclcpp::ParameterValue(0.5));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "my_dock.segmentation.min_points", rclcpp::ParameterValue(0));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "my_dock.segmentation.min_width", rclcpp::ParameterValue(0.0));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "my_dock.segmentation.min_distance", rclcpp::ParameterValue(0.0));
 
   dock->configure(node, "my_dock", tf_buffer);

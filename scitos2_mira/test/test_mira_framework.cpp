@@ -17,8 +17,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include "ament_index_cpp/get_package_share_directory.hpp"
 #include "lifecycle_msgs/msg/state.hpp"
-#include "nav2_util/lifecycle_node.hpp"
-#include "nav2_util/node_utils.hpp"
+#include "nav2_ros_common/lifecycle_node.hpp"
+#include "nav2_ros_common/node_utils.hpp"
 #include "scitos2_mira/mira_framework.hpp"
 #include "scitos2_core/module.hpp"
 
@@ -90,7 +90,7 @@ TEST(ScitosMiraFrameworkTest, configure) {
   auto node = std::make_shared<MiraFrameworkFixture>();
 
   // Set an empty scitos config parameter
-  nav2_util::declare_parameter_if_not_declared(node, "scitos_config", rclcpp::ParameterValue(""));
+  nav2::declare_parameter_if_not_declared(node, "scitos_config", rclcpp::ParameterValue(""));
 
   // Configure the node
   node->configure();
@@ -104,10 +104,10 @@ TEST(ScitosMiraFrameworkTest, configure) {
   node->set_parameter(
     rclcpp::Parameter(
       "scitos_config", rclcpp::ParameterValue(std::string(pkg + "/test/scitos_config.xml"))));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "module_plugins",
     rclcpp::ParameterValue(std::vector<std::string>(1, "drive")));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "drive.plugin", rclcpp::ParameterValue("drive"));
 
   // Configure the node

@@ -19,10 +19,13 @@
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "scitos2_charging_dock/dock_saver.hpp"
 
+using namespace std::placeholders;
+
 namespace scitos2_charging_dock
 {
+
 DockSaver::DockSaver(const rclcpp::NodeOptions & options)
-: nav2_util::LifecycleNode("dock_saver", "", options)
+: nav2::LifecycleNode("dock_saver", "", options)
 {
   RCLCPP_INFO(get_logger(), "Creating the dock saver node");
 
@@ -34,7 +37,7 @@ DockSaver::~DockSaver()
 {
 }
 
-nav2_util::CallbackReturn
+nav2::CallbackReturn
 DockSaver::on_configure(const rclcpp_lifecycle::State & /*state*/)
 {
   RCLCPP_INFO(get_logger(), "Configuring");
@@ -48,16 +51,16 @@ DockSaver::on_configure(const rclcpp_lifecycle::State & /*state*/)
   // Create a service that saves the pointcloud from a dock to a file
   save_dock_service_ = create_service<scitos2_msgs::srv::SaveDock>(
     service_prefix + save_dock_service_name_,
-    std::bind(&DockSaver::saveDockCallback, this, std::placeholders::_1, std::placeholders::_2));
+    std::bind(&DockSaver::saveDockCallback, this, _1, _2, _3));
 
   // Setup TF buffer and perception
   tf2_buffer_ = std::make_shared<tf2_ros::Buffer>(get_clock());
   perception_ = std::make_unique<Perception>(shared_from_this(), "dock_saver", tf2_buffer_);
 
-  return nav2_util::CallbackReturn::SUCCESS;
+  return nav2::CallbackReturn::SUCCESS;
 }
 
-nav2_util::CallbackReturn
+nav2::CallbackReturn
 DockSaver::on_activate(const rclcpp_lifecycle::State & /*state*/)
 {
   RCLCPP_INFO(get_logger(), "Activating");
@@ -65,10 +68,10 @@ DockSaver::on_activate(const rclcpp_lifecycle::State & /*state*/)
   // create bond connection
   createBond();
 
-  return nav2_util::CallbackReturn::SUCCESS;
+  return nav2::CallbackReturn::SUCCESS;
 }
 
-nav2_util::CallbackReturn
+nav2::CallbackReturn
 DockSaver::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
 {
   RCLCPP_INFO(get_logger(), "Deactivating");
@@ -76,27 +79,28 @@ DockSaver::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
   // destroy bond connection
   destroyBond();
 
-  return nav2_util::CallbackReturn::SUCCESS;
+  return nav2::CallbackReturn::SUCCESS;
 }
 
-nav2_util::CallbackReturn
+nav2::CallbackReturn
 DockSaver::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
 {
   RCLCPP_INFO(get_logger(), "Cleaning up");
 
   save_dock_service_.reset();
 
-  return nav2_util::CallbackReturn::SUCCESS;
+  return nav2::CallbackReturn::SUCCESS;
 }
 
-nav2_util::CallbackReturn
+nav2::CallbackReturn
 DockSaver::on_shutdown(const rclcpp_lifecycle::State & /*state*/)
 {
   RCLCPP_INFO(get_logger(), "Shutting down");
-  return nav2_util::CallbackReturn::SUCCESS;
+  return nav2::CallbackReturn::SUCCESS;
 }
 
 bool DockSaver::saveDockCallback(
+  const std::shared_ptr<rmw_request_id_t>/*request_header*/,
   const std::shared_ptr<scitos2_msgs::srv::SaveDock::Request> request,
   std::shared_ptr<scitos2_msgs::srv::SaveDock::Response> response)
 {
@@ -130,11 +134,9 @@ bool DockSaver::saveDockCallback(
 
   // Create new CallbackGroup for scan subscription
   auto callback_group = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive, false);
-  auto option = rclcpp::SubscriptionOptions();
-  option.callback_group = callback_group;
 
   auto scan_sub = create_subscription<sensor_msgs::msg::LaserScan>(
-    scan_topic, rclcpp::SensorDataQoS(), scanCallback, option);
+    scan_topic, scanCallback, rclcpp::SensorDataQoS(), callback_group);
 
   // Create SingleThreadedExecutor to spin scan_sub in callback_group
   rclcpp::executors::SingleThreadedExecutor executor;

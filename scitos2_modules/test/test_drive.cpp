@@ -15,7 +15,7 @@
 
 #include "gtest/gtest.h"
 #include "rclcpp/rclcpp.hpp"
-#include "nav2_util/node_utils.hpp"
+#include "nav2_ros_common/node_utils.hpp"
 #include "scitos2_modules/drive.hpp"
 
 class DriveFixture : public scitos2_modules::Drive
@@ -128,8 +128,7 @@ TEST(ScitosDriveTest, configure) {
   // Create the module
   auto module = std::make_shared<DriveFixture>();
   // Set the parameter publish_tf to false
-  nav2_util::declare_parameter_if_not_declared(
-    node, "test.publish_tf", rclcpp::ParameterValue(false));
+  nav2::declare_parameter_if_not_declared(node, "test.publish_tf", rclcpp::ParameterValue(false));
   module->configure(node, "test");
   module->activate();
 
@@ -478,7 +477,7 @@ TEST(ScitosDriveTest, createBumperMarkers) {
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testDrive");
 
   // Set the footprint
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "test.footprint",
     rclcpp::ParameterValue("[[1, 2.2], [.3, -4e4], [-.3, -4e4], [-1, 2.2]]"));
 

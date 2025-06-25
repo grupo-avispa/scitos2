@@ -19,7 +19,8 @@
 #include <memory>
 #include <string>
 
-#include "nav2_util/lifecycle_node.hpp"
+#include "nav2_ros_common/lifecycle_node.hpp"
+#include "nav2_ros_common/service_server.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "scitos2_msgs/srv/save_dock.hpp"
 #include "scitos2_charging_dock/perception.hpp"
@@ -32,7 +33,7 @@ namespace scitos2_charging_dock
  * @class scitos2_charging_dock::DockSaver
  * @brief A class that provides dock saving methods and services
  */
-class DockSaver : public nav2_util::LifecycleNode
+class DockSaver : public nav2::LifecycleNode
 {
 public:
   /**
@@ -51,44 +52,46 @@ public:
    * @param state Lifecycle Node's state
    * @return Success or Failure
    */
-  nav2_util::CallbackReturn on_configure(const rclcpp_lifecycle::State & state) override;
+  nav2::CallbackReturn on_configure(const rclcpp_lifecycle::State & state) override;
 
   /**
    * @brief Called when node switched to active state
    * @param state Lifecycle Node's state
    * @return Success or Failure
    */
-  nav2_util::CallbackReturn on_activate(const rclcpp_lifecycle::State & state) override;
+  nav2::CallbackReturn on_activate(const rclcpp_lifecycle::State & state) override;
 
   /**
    * @brief Called when node switched to inactive state
    * @param state Lifecycle Node's state
    * @return Success or Failure
    */
-  nav2_util::CallbackReturn on_deactivate(const rclcpp_lifecycle::State & state) override;
+  nav2::CallbackReturn on_deactivate(const rclcpp_lifecycle::State & state) override;
 
   /**
    * @brief Called when it is required node clean-up
    * @param state Lifecycle Node's state
    * @return Success or Failure
    */
-  nav2_util::CallbackReturn on_cleanup(const rclcpp_lifecycle::State & state) override;
+  nav2::CallbackReturn on_cleanup(const rclcpp_lifecycle::State & state) override;
 
   /**
    * @brief Called when in Shutdown state
    * @param state Lifecycle Node's state
    * @return Success or Failure
    */
-  nav2_util::CallbackReturn on_shutdown(const rclcpp_lifecycle::State & state) override;
+  nav2::CallbackReturn on_shutdown(const rclcpp_lifecycle::State & state) override;
 
   /**
    * @brief Callback for saving the dock to a PCD file.
    *
+   * @param request_header Request header containing the request ID
    * @param request SaveDock service request
    * @param response SaveDock service response
    * @return bool True if the dock was saved successfully
    */
   bool saveDockCallback(
+    const std::shared_ptr<rmw_request_id_t> request_header,
     const std::shared_ptr<scitos2_msgs::srv::SaveDock::Request> request,
     std::shared_ptr<scitos2_msgs::srv::SaveDock::Response> response);
 
@@ -105,7 +108,7 @@ protected:
   // The name of the service for saving a dock from topic
   const std::string save_dock_service_name_{"save_dock"};
   // A service to save the dock to a file at run time (SaveDock)
-  rclcpp::Service<scitos2_msgs::srv::SaveDock>::SharedPtr save_dock_service_;
+  nav2::ServiceServer<scitos2_msgs::srv::SaveDock>::SharedPtr save_dock_service_;
 };
 
 }  // namespace scitos2_charging_dock

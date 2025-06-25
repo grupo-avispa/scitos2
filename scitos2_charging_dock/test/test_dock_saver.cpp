@@ -14,7 +14,7 @@
 // limitations under the License.
 
 #include "gtest/gtest.h"
-#include "nav2_util/node_utils.hpp"
+#include "nav2_ros_common/node_utils.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "scitos2_charging_dock/dock_saver.hpp"
@@ -53,13 +53,13 @@ TEST(ScitosDockingSaver, saveDockEmpty) {
   auto node = std::make_shared<scitos2_charging_dock::DockSaver>();
 
   // Declare parameters for segmentation
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "dock_saver.segmentation.min_points", rclcpp::ParameterValue(10));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "dock_saver.segmentation.distance_threshold", rclcpp::ParameterValue(0.01));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "dock_saver.segmentation.min_width", rclcpp::ParameterValue(0.0));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "dock_saver.segmentation.min_distance", rclcpp::ParameterValue(0.0));
 
   node->configure();
@@ -77,7 +77,7 @@ TEST(ScitosDockingSaver, saveDockEmpty) {
   ASSERT_TRUE(client->wait_for_service());
 
   // Call the service
-  auto result = client->async_send_request(req);
+  auto result = client->async_call(req);
   // Wait for the result
   auto resp = std::make_shared<scitos2_msgs::srv::SaveDock::Response>();
   if (rclcpp::spin_until_future_complete(node, result) == rclcpp::FutureReturnCode::SUCCESS) {
@@ -104,13 +104,13 @@ TEST(ScitosDockingSaver, saveDock) {
   auto node = std::make_shared<scitos2_charging_dock::DockSaver>();
 
   // Declare parameters for segmentation
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "dock_saver.segmentation.min_points", rclcpp::ParameterValue(0));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "dock_saver.segmentation.distance_threshold", rclcpp::ParameterValue(0.01));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "dock_saver.segmentation.min_width", rclcpp::ParameterValue(0.0));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "dock_saver.segmentation.min_distance", rclcpp::ParameterValue(0.0));
 
   node->configure();
@@ -128,7 +128,7 @@ TEST(ScitosDockingSaver, saveDock) {
   ASSERT_TRUE(client->wait_for_service());
 
   // Call the service
-  auto result = client->async_send_request(req);
+  auto result = client->async_call(req);
   // Wait for the result
   auto resp = std::make_shared<scitos2_msgs::srv::SaveDock::Response>();
   if (rclcpp::spin_until_future_complete(node, result) == rclcpp::FutureReturnCode::SUCCESS) {

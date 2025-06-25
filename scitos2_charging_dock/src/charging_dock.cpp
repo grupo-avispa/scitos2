@@ -16,7 +16,7 @@
 
 #include <cmath>
 
-#include "nav2_util/node_utils.hpp"
+#include "nav2_ros_common/node_utils.hpp"
 #include "opennav_docking/utils.hpp"
 #include "scitos2_charging_dock/charging_dock.hpp"
 #include "scitos2_charging_dock/segmentation.hpp"
@@ -27,7 +27,7 @@ namespace scitos2_charging_dock
 {
 
 void ChargingDock::configure(
-  const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
+  const nav2::LifecycleNode::WeakPtr & parent,
   const std::string & name, std::shared_ptr<tf2_ros::Buffer> tf)
 {
   name_ = name;
@@ -39,29 +39,29 @@ void ChargingDock::configure(
   }
 
   // Parameters for optional external detection of dock pose
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node_, name + ".external_detection_timeout", rclcpp::ParameterValue(1.0));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node_, name + ".external_detection_translation_x", rclcpp::ParameterValue(-0.20));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node_, name + ".external_detection_translation_y", rclcpp::ParameterValue(0.0));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node_, name + ".external_detection_rotation_yaw", rclcpp::ParameterValue(0.0));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node_, name + ".external_detection_rotation_pitch", rclcpp::ParameterValue(1.57));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node_, name + ".external_detection_rotation_roll", rclcpp::ParameterValue(-1.57));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node_, name + ".filter_coef", rclcpp::ParameterValue(0.1));
 
   // This is how close robot should get to pose
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node_, name + ".docking_threshold", rclcpp::ParameterValue(0.05));
 
   // Staging pose configuration
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node_, name + ".staging_x_offset", rclcpp::ParameterValue(-0.7));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node_, name + ".staging_yaw_offset", rclcpp::ParameterValue(0.0));
 
   node_->get_parameter(name + ".external_detection_timeout", external_detection_timeout_);

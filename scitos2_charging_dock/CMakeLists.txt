@@ -52,6 +52,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(angles REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(nav2_ros_common REQUIRED)
 find_package(nav2_util REQUIRED)
 find_package(opennav_docking_core REQUIRED)
 find_package(opennav_docking REQUIRED)
@@ -86,7 +87,7 @@ target_link_libraries(segmentation
   rclcpp_lifecycle::rclcpp_lifecycle
   ${sensor_msgs_TARGETS}
   PRIVATE
-  nav2_util::nav2_util_core
+  nav2_ros_common::nav2_ros_common
   pcl_ros::pcl_ros_tf
 )
 
@@ -105,7 +106,7 @@ target_link_libraries(perception
   ${sensor_msgs_TARGETS}
   tf2_ros::tf2_ros
   PRIVATE
-  nav2_util::nav2_util_core
+  nav2_ros_common::nav2_ros_common
   pcl_ros::pcl_ros_tf
   pcl_conversions::pcl_conversions
   ${tf2_geometry_msgs_TARGETS}
@@ -129,6 +130,7 @@ target_link_libraries(${library_name}
   tf2_ros::tf2_ros
   PRIVATE
   angles::angles
+  nav2_ros_common::nav2_ros_common
   nav2_util::nav2_util_core
   pluginlib::pluginlib
   ${tf2_geometry_msgs_TARGETS}
@@ -144,7 +146,7 @@ target_include_directories(dock_saver_core PUBLIC
 )
 target_link_libraries(dock_saver_core
   PUBLIC
-  nav2_util::nav2_util_core
+  nav2_ros_common::nav2_ros_common
   perception
   rclcpp::rclcpp
   ${scitos2_msgs_TARGETS}
@@ -218,7 +220,7 @@ ament_export_libraries(
 ament_export_dependencies(
   angles
   geometry_msgs
-  nav2_util
+  nav2_ros_common
   opennav_docking_core
   opennav_docking
   pcl_ros
