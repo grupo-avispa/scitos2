@@ -51,7 +51,6 @@ endif()
 # ###############################################
 # # Find ament macros and libraries
 find_package(ament_cmake REQUIRED)
-find_package(bondcpp REQUIRED)
 find_package(diagnostic_msgs REQUIRED)
 find_package(nav2_ros_common REQUIRED)
 find_package(pluginlib REQUIRED)
@@ -84,7 +83,6 @@ target_link_libraries(${library_name}
   rclcpp::rclcpp
   scitos2_core::scitos2_core
   PRIVATE
-  bondcpp::bondcpp
   rclcpp_components::component
 )
 target_link_mira_libraries(${library_name})
@@ -143,7 +141,6 @@ endif()
 ament_export_include_directories(include/${PROJECT_NAME})
 ament_export_libraries(${library_name})
 ament_export_dependencies(
-  bondcpp
   diagnostic_msgs
   nav2_ros_common
   pluginlib
