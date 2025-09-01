@@ -24,7 +24,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "scitos2_msgs/srv/save_dock.hpp"
 #include "scitos2_charging_dock/perception.hpp"
-#include "tf2_ros/buffer.h"
+#include "tf2_ros/buffer.hpp"
 
 namespace scitos2_charging_dock
 {
