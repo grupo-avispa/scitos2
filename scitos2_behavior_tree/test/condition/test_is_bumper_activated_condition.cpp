@@ -30,6 +30,8 @@ public:
   static void SetUpTestCase()
   {
     node_ = std::make_shared<rclcpp::Node>("test_is_bumper_activated");
+    executor_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+    executor_->add_node(node_->get_node_base_interface());
     factory_ = std::make_shared<BT::BehaviorTreeFactory>();
 
     config_ = new BT::NodeConfiguration();
@@ -37,16 +39,13 @@ public:
     // Create the blackboard that will be shared by all of the nodes in the tree
     config_->blackboard = BT::Blackboard::create();
     // Put items on the blackboard
-    config_->blackboard->set(
-      "node",
-      node_);
+    config_->blackboard->set("node", node_);
 
     factory_->registerNodeType<scitos2_behavior_tree::IsBumperActivatedCondition>(
       "IsBumperActivated");
 
     bumper_pub_ = node_->create_publisher<scitos2_msgs::msg::BumperStatus>(
-      "/bumper_status",
-      rclcpp::SystemDefaultsQoS());
+      "/bumper_status", rclcpp::SystemDefaultsQoS());
   }
 
   static void TearDownTestCase()
@@ -56,16 +55,20 @@ public:
     bumper_pub_.reset();
     node_.reset();
     factory_.reset();
+    executor_.reset();
   }
 
 protected:
   static rclcpp::Node::SharedPtr node_;
+  static rclcpp::executors::SingleThreadedExecutor::SharedPtr executor_;
   static BT::NodeConfiguration * config_;
   static std::shared_ptr<BT::BehaviorTreeFactory> factory_;
   static rclcpp::Publisher<scitos2_msgs::msg::BumperStatus>::SharedPtr bumper_pub_;
 };
 
 rclcpp::Node::SharedPtr IsBumperActivatedConditionTestFixture::node_ = nullptr;
+rclcpp::executors::SingleThreadedExecutor::SharedPtr IsBumperActivatedConditionTestFixture::
+executor_ = nullptr;
 BT::NodeConfiguration * IsBumperActivatedConditionTestFixture::config_ = nullptr;
 std::shared_ptr<BT::BehaviorTreeFactory> IsBumperActivatedConditionTestFixture::factory_ = nullptr;
 rclcpp::Publisher<scitos2_msgs::msg::BumperStatus>::SharedPtr
@@ -87,13 +90,13 @@ TEST_F(IsBumperActivatedConditionTestFixture, test_behavior_power_supply_status)
   bumper_msg.bumper_activated = false;
   bumper_pub_->publish(bumper_msg);
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
-  rclcpp::spin_some(node_);
+  executor_->spin_some();
   EXPECT_EQ(tree.tickOnce(), BT::NodeStatus::FAILURE);
 
   bumper_msg.bumper_activated = true;
   bumper_pub_->publish(bumper_msg);
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
-  rclcpp::spin_some(node_);
+  executor_->spin_some();
   EXPECT_EQ(tree.tickOnce(), BT::NodeStatus::SUCCESS);
 }
 

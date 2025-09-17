@@ -46,18 +46,13 @@ public:
     // Create the blackboard that will be shared by all of the nodes in the tree
     config_->blackboard = BT::Blackboard::create();
     // Put items on the blackboard
-    config_->blackboard->set(
-      "node",
-      node_);
+    config_->blackboard->set("node", node_);
     config_->blackboard->set<std::chrono::milliseconds>(
-      "server_timeout",
-      std::chrono::milliseconds(20));
+      "server_timeout", std::chrono::milliseconds(20));
     config_->blackboard->set<std::chrono::milliseconds>(
-      "bt_loop_duration",
-      std::chrono::milliseconds(10));
+      "bt_loop_duration", std::chrono::milliseconds(10));
     config_->blackboard->set<std::chrono::milliseconds>(
-      "wait_for_service_timeout",
-      std::chrono::milliseconds(1000));
+      "wait_for_service_timeout", std::chrono::milliseconds(1000));
 
     factory_->registerNodeType<scitos2_behavior_tree::ResetMotorStopService>("ResetMotorStop");
   }
