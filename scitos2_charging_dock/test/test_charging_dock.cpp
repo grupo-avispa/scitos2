@@ -47,6 +47,8 @@ TEST(ScitosChargingDock, objectLifecycle)
 TEST(ScitosChargingDock, batteryState)
 {
   auto node = std::make_shared<nav2::LifecycleNode>("test");
+  auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+  executor->add_node(node->get_node_base_interface());
   auto pub = node->create_publisher<sensor_msgs::msg::BatteryState>(
     "battery", rclcpp::QoS(1));
   pub->on_activate();
@@ -62,7 +64,7 @@ TEST(ScitosChargingDock, batteryState)
   pub->publish(msg);
   rclcpp::Rate r(2);
   r.sleep();
-  rclcpp::spin_some(node->get_node_base_interface());
+  executor->spin_some();
 
   EXPECT_FALSE(dock->isCharging());
   EXPECT_TRUE(dock->hasStoppedCharging());
@@ -73,7 +75,7 @@ TEST(ScitosChargingDock, batteryState)
   pub->publish(msg2);
   rclcpp::Rate r1(2);
   r1.sleep();
-  rclcpp::spin_some(node->get_node_base_interface());
+  executor->spin_some();
 
   EXPECT_TRUE(dock->isCharging());
   EXPECT_FALSE(dock->hasStoppedCharging());
@@ -137,6 +139,8 @@ TEST(ScitosChargingDock, stagingPoseWithYawOffset)
 TEST(ScitosChargingDock, refinedPoseTest)
 {
   auto node = std::make_shared<nav2::LifecycleNode>("test");
+  auto executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+  executor->add_node(node->get_node_base_interface());
   auto pub = node->create_publisher<sensor_msgs::msg::LaserScan>("scan", 1);
   pub->on_activate();
   auto dock = std::make_unique<scitos2_charging_dock::ChargingDock>();
@@ -185,7 +189,7 @@ TEST(ScitosChargingDock, refinedPoseTest)
   scan.range_min = 0.9055;
   scan.range_max = 1.0;
   pub->publish(std::move(scan));
-  rclcpp::spin_some(node->get_node_base_interface());
+  executor->spin_some();
 
   // Just expect that the pose is refined
   // The actual values are not important for this test
