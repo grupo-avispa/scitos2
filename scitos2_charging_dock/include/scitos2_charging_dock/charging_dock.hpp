@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "geometry_msgs/msg/pose_stamped.hpp"
+#include "nav2_ros_common/lifecycle_node.hpp"
 #include "opennav_docking_core/charging_dock.hpp"
 #include "opennav_docking/pose_filter.hpp"
 #include "scitos2_charging_dock/perception.hpp"
@@ -105,19 +106,29 @@ public:
    */
   bool hasStoppedCharging() override;
 
+  /**
+   * @brief Start external detection process (service call + subscribe).
+   */
+  bool startDetectionProcess() override;
+
+  /**
+   * @brief Stop external detection process.
+   */
+  bool stopDetectionProcess() override;
+
 protected:
   // Subscribe to a scan topic
-  rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;
-  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr dock_pose_pub_;
-  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr filtered_dock_pose_pub_;
-  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr staging_pose_pub_;
+  nav2::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;
+  nav2::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr dock_pose_pub_;
+  nav2::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr filtered_dock_pose_pub_;
+  nav2::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr staging_pose_pub_;
   // It will contain latest message
   sensor_msgs::msg::LaserScan scan_;
   // This is the actual dock pose once it has the specified translation/rotation applied
   geometry_msgs::msg::PoseStamped dock_pose_;
 
   // Subscribe to battery message, used to determine if charging
-  rclcpp::Subscription<sensor_msgs::msg::BatteryState>::SharedPtr battery_sub_;
+  nav2::Subscription<sensor_msgs::msg::BatteryState>::SharedPtr battery_sub_;
   bool is_charging_;
 
   // An external reference (sensor_msgs::LaserScan) is used to detect dock
@@ -138,7 +149,7 @@ protected:
   // Perception
   std::unique_ptr<Perception> perception_;
 
-  rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
+  nav2::LifecycleNode::SharedPtr node_;
   std::shared_ptr<tf2_ros::Buffer> tf2_buffer_;
 };
 

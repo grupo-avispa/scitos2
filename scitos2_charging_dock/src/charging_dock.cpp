@@ -89,24 +89,23 @@ void ChargingDock::configure(
   filter_ = std::make_unique<opennav_docking::PoseFilter>(filter_coef, external_detection_timeout_);
 
   battery_sub_ = node_->create_subscription<sensor_msgs::msg::BatteryState>(
-    "battery", 1,
-    [this](
-      const sensor_msgs::msg::BatteryState::SharedPtr state) {
+    "battery",
+    [this](const sensor_msgs::msg::BatteryState::SharedPtr state) {
       is_charging_ =
       (state->power_supply_status == sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_CHARGING);
     });
 
   dock_pose_.header.stamp = rclcpp::Time(0);
   scan_sub_ = node_->create_subscription<sensor_msgs::msg::LaserScan>(
-    "scan", rclcpp::SensorDataQoS(),
+    "scan",
     [this](const sensor_msgs::msg::LaserScan::SharedPtr scan) {
       scan_ = *scan;
-    });
+    }, nav2::qos::SensorDataQoS());
 
-  dock_pose_pub_ = node_->create_publisher<geometry_msgs::msg::PoseStamped>("dock_pose", 1);
+  dock_pose_pub_ = node_->create_publisher<geometry_msgs::msg::PoseStamped>("dock_pose");
   filtered_dock_pose_pub_ = node_->create_publisher<geometry_msgs::msg::PoseStamped>(
-    "filtered_dock_pose", 1);
-  staging_pose_pub_ = node_->create_publisher<geometry_msgs::msg::PoseStamped>("staging_pose", 1);
+    "filtered_dock_pose");
+  staging_pose_pub_ = node_->create_publisher<geometry_msgs::msg::PoseStamped>("staging_pose");
 }
 
 geometry_msgs::msg::PoseStamped ChargingDock::getStagingPose(
@@ -213,6 +212,17 @@ bool ChargingDock::hasStoppedCharging()
 {
   return !isCharging();
 }
+
+bool ChargingDock::startDetectionProcess()
+{
+  return true;
+}
+
+bool ChargingDock::stopDetectionProcess()
+{
+  return true;
+}
+
 
 }  // namespace scitos2_charging_dock
 
