@@ -142,15 +142,16 @@ TEST(ScitosDockingPerception, loadDockPointcloud) {
   EXPECT_EQ(dock.size(), 0);
 
   // Try to load another docking station
-  std::string pkg = ament_index_cpp::get_package_share_directory("scitos2_charging_dock");
-  std::string path = pkg + "/test/empty_dock_test.pcd";
+  std::filesystem::path pkg_path;
+  ament_index_cpp::get_package_share_directory("scitos2_charging_dock", pkg_path);
+  std::string path = pkg_path.string() + "/test/empty_dock_test.pcd";
   success = perception->loadDockPointcloud(path, dock);
   // Check if the docking station was loaded
   EXPECT_FALSE(success);
   EXPECT_EQ(dock.size(), 0);
 
   // Try to load a valid docking station
-  path = pkg + "/test/dock_test.pcd";
+  path = pkg_path.string() + "/test/dock_test.pcd";
   success = perception->loadDockPointcloud(path, dock);
   // Check if the docking station was loaded
   EXPECT_TRUE(success);
@@ -163,8 +164,9 @@ TEST(ScitosDockingPerception, storeDockPointcloud) {
   auto perception = std::make_shared<PerceptionFixture>(node, "test", nullptr);
 
   // Store a pointcloud
-  std::string pkg = ament_index_cpp::get_package_share_directory("scitos2_charging_dock");
-  std::string path = pkg + "/test/empty_dock_test2.pcd";
+  std::filesystem::path pkg_path;
+  ament_index_cpp::get_package_share_directory("scitos2_charging_dock", pkg_path);
+  std::string path = pkg_path.string() + "/test/empty_dock_test2.pcd";
   scitos2_charging_dock::Pcloud dock;
   dock.push_back(pcl::PointXYZ(0, 0, 0));
   bool success = perception->storeDockPointcloud(path, dock);
@@ -358,8 +360,9 @@ TEST(ScitosDockingPerception, getDockPose) {
   auto tf_buffer = std::make_shared<tf2_ros::Buffer>(node->get_clock());
 
   // Set the dock template
-  std::string pkg = ament_index_cpp::get_package_share_directory("scitos2_charging_dock");
-  std::string path = pkg + "/test/dock_test.pcd";
+  std::filesystem::path pkg_path;
+  ament_index_cpp::get_package_share_directory("scitos2_charging_dock", pkg_path);
+  std::string path = pkg_path.string() + "/test/dock_test.pcd";
   nav2::declare_parameter_if_not_declared(
     node, "test.perception.dock_template", rclcpp::ParameterValue(path));
   nav2::declare_parameter_if_not_declared(

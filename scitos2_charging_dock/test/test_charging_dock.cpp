@@ -149,8 +149,9 @@ TEST(ScitosChargingDock, refinedPoseTest)
   auto tf_buffer = std::make_shared<tf2_ros::Buffer>(node->get_clock());
 
   // Update parameters to read the test dock template
-  std::string pkg = ament_index_cpp::get_package_share_directory("scitos2_charging_dock");
-  std::string path = pkg + "/test/dock_test.pcd";
+  std::filesystem::path pkg_path;
+  ament_index_cpp::get_package_share_directory("scitos2_charging_dock", pkg_path);
+  std::string path = pkg_path.string() + "/test/dock_test.pcd";
   nav2::declare_parameter_if_not_declared(
     node, "my_dock.perception.dock_template", rclcpp::ParameterValue(path));
   nav2::declare_parameter_if_not_declared(
