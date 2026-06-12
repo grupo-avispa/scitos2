@@ -109,6 +109,11 @@ protected:
    */
   diagnostic_msgs::msg::DiagnosticArray createDiagnostics();
 
+  /**
+   * @brief Load a module plugin by type name. Virtual to allow overriding in tests.
+   */
+  virtual scitos2_core::Module::Ptr loadModule(const std::string & type);
+
   rclcpp_lifecycle::LifecyclePublisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diag_pub_;
   rclcpp::TimerBase::SharedPtr timer_;
 

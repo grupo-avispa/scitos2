@@ -33,6 +33,8 @@ public:
   {
     return scitos2_mira::MiraFramework::createDiagnostics();
   }
+
+  scitos2_core::Module::Ptr loadModule(const std::string & type) override;
 };
 
 class DummyModule : public scitos2_core::Module
@@ -52,37 +54,12 @@ public:
   virtual void deactivate() {}
 };
 
-// Mocked class loader
-void onPluginDeletion(scitos2_core::Module * obj)
+scitos2_core::Module::Ptr MiraFrameworkFixture::loadModule(const std::string & type)
 {
-  if (nullptr != obj) {
-    delete (obj);
+  if (type == "drive") {
+    return scitos2_core::Module::Ptr(new DummyModule());
   }
-}
-
-template<>
-pluginlib::UniquePtr<scitos2_core::Module> pluginlib::ClassLoader<scitos2_core::Module>::
-createUniqueInstance(const std::string & lookup_name)
-{
-  if (lookup_name != "drive") {
-    // original method body
-    if (!isClassLoaded(lookup_name)) {
-      loadLibraryForClass(lookup_name);
-    }
-    try {
-      std::string class_type = getClassType(lookup_name);
-      pluginlib::UniquePtr<scitos2_core::Module> obj =
-        lowlevel_class_loader_.createUniqueInstance<scitos2_core::Module>(class_type);
-      return obj;
-    } catch (const class_loader::CreateClassException & ex) {
-      throw pluginlib::CreateClassException(ex.what());
-    }
-  }
-
-  // mocked plugin creation
-  return std::unique_ptr<scitos2_core::Module,
-           class_loader::ClassLoader::DeleterType<scitos2_core::Module>>(
-    new DummyModule(), onPluginDeletion);
+  return scitos2_mira::MiraFramework::loadModule(type);
 }
 
 TEST(ScitosMiraFrameworkTest, configure) {

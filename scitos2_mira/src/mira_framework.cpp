@@ -112,8 +112,7 @@ nav2::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::State &
   for (size_t i = 0; i != module_ids_.size(); i++) {
     try {
       module_types_[i] = nav2::get_plugin_type_param(node, module_ids_[i]);
-      scitos2_core::Module::Ptr module =
-        module_loader_.createUniqueInstance(module_types_[i]);
+      scitos2_core::Module::Ptr module = loadModule(module_types_[i]);
       RCLCPP_INFO(
         get_logger(), "Created module : %s of type %s",
         module_ids_[i].c_str(), module_types_[i].c_str());
@@ -221,6 +220,11 @@ nav2::CallbackReturn MiraFramework::on_shutdown(const rclcpp_lifecycle::State &)
   RCLCPP_INFO(get_logger(), "Shutting down");
 
   return nav2::CallbackReturn::SUCCESS;
+}
+
+scitos2_core::Module::Ptr MiraFramework::loadModule(const std::string & type)
+{
+  return module_loader_.createUniqueInstance(type);
 }
 
 diagnostic_msgs::msg::DiagnosticArray MiraFramework::createDiagnostics()
