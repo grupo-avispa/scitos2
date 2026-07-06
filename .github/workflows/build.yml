@@ -22,7 +22,7 @@ jobs:
       - name: Cache APT Packages
         uses: awalsh128/cache-apt-pkgs-action@v1.6.3
         with:
-          packages: git g++ cmake subversion doxygen libxml2-dev libssl-dev
+          packages: wget git g++ cmake subversion doxygen libxml2-dev libssl-dev
             libsqlite3-dev libboost-all-dev libogre-1.9-dev libsvn-dev
             libopencv-dev binutils-dev libiberty-dev libcurl4-gnutls-dev
             libproc2-dev libqwt-qt5-dev libqt5webkit5-dev libqwtmathml-qt5-dev
