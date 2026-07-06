@@ -6,7 +6,7 @@ name: Build
 on:
   push:
     branches: [main, jazzy, humble]
-  pull_request:
+  workflow_dispatch:
 
 env:
   MIRA_PATH: ${{ github.workspace }}/mira
@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Cache APT Packages
-        uses: awalsh128/cache-apt-pkgs-action@v1.4.3
+        uses: awalsh128/cache-apt-pkgs-action@v1.6.3
         with:
           packages: git g++ cmake subversion doxygen libxml2-dev libssl-dev \
             libsqlite3-dev libboost-all-dev libogre-1.9-dev libsvn-dev \
@@ -27,13 +27,13 @@ jobs:
             libqt5opengl5-dev libqt5svg5-dev qt*5-dev qttools5-dev-tools
       - name: Cache MIRA
         id: cache-mira
-        uses: actions/cache@v4.2.0
+        uses: actions/cache@6.1.0
         with:
           path: ${{ env.MIRA_PATH }}
           key: mira-${{ runner.os }}-ubuntu-24.04
       - name: Install MIRA
         if: steps.cache-mira.outputs.cache-hit != 'true'
-        run: | 
+        run: |
           curl -o mira-installer-binary.sh ${{ env.MIRA_URL }}/mira-installer-binary.sh
           chmod +x mira-installer-binary.sh
           ./mira-installer-binary.sh -s ubuntu-2404lts-x64 -d ${{ env.MIRA_PATH }}
@@ -43,25 +43,25 @@ jobs:
     needs: install-mira
     steps:
       - name: Cache APT Packages
-        uses: awalsh128/cache-apt-pkgs-action@v1.4.3
+        uses: awalsh128/cache-apt-pkgs-action@v1.6.3
         with:
           packages: libproc2-dev
       - name: Checkout Repository
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v7
       - name: Setup ROS 2
-        uses: ros-tooling/setup-ros@0.7.5
+        uses: ros-tooling/setup-ros@0.7.19
         with:
           required-ros-distributions: jazzy
       - name: Restore MIRA cache
         id: restore-cache-mira
-        uses: actions/cache@v4.2.0
+        uses: actions/cache@6.1.0
         with:
           path: ${{ env.MIRA_PATH }}
           key: mira-${{ runner.os }}-ubuntu-24.04
       - name: Build packages
         env:
           MIRA_PATH: ${{ env.MIRA_PATH }}
-        uses: ros-tooling/action-ros-ci@0.3.13
+        uses: ros-tooling/action-ros-ci@0.4.8
         with:
           package-name: |
             scitos2
@@ -84,7 +84,7 @@ jobs:
             }
           skip-tests: false
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4.4.1
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ros_ws/lcov/total_coverage.info,ros_ws/coveragepy/.coverage
@@ -93,7 +93,8 @@ jobs:
           slug: grupo-avispa/scitos2
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
-        uses: codecov/test-results-action@v1
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests
+          report_type: test_results
