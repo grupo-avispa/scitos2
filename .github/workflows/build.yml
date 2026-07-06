@@ -16,11 +16,12 @@ env:
 jobs:
   install-mira:
     runs-on: ubuntu-24.04
+    container:
+      image: ros:jazzy
     steps:
       - name: Cache APT Packages
         uses: awalsh128/cache-apt-pkgs-action@v1.6.3
         with:
-          version: "2"
           packages: git g++ cmake subversion doxygen libxml2-dev libssl-dev
             libsqlite3-dev libboost-all-dev libogre-1.9-dev libsvn-dev
             libopencv-dev binutils-dev libiberty-dev libcurl4-gnutls-dev
@@ -43,6 +44,8 @@ jobs:
 
   install-scitos2:
     runs-on: ubuntu-24.04
+    container:
+      image: ros:jazzy
     needs: install-mira
     steps:
       - name: Cache APT Packages
@@ -51,10 +54,6 @@ jobs:
           packages: libproc2-dev
       - name: Checkout Repository
         uses: actions/checkout@v7
-      - name: Setup ROS 2
-        uses: ros-tooling/setup-ros@0.7.19
-        with:
-          required-ros-distributions: jazzy
       - name: Restore MIRA cache
         id: restore-cache-mira
         uses: actions/cache@v6.1.0
