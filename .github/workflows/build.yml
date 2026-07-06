@@ -5,7 +5,7 @@ name: Build
 
 on:
   push:
-    branches: [main, jazzy, humble]
+    branches: [jazzy, humble]
   workflow_dispatch:
 
 env:
@@ -27,7 +27,7 @@ jobs:
             libqt5opengl5-dev libqt5svg5-dev qt*5-dev qttools5-dev-tools
       - name: Cache MIRA
         id: cache-mira
-        uses: actions/cache@6.1.0
+        uses: actions/cache@v6.1.0
         with:
           path: ${{ env.MIRA_PATH }}
           key: mira-${{ runner.os }}-ubuntu-24.04
@@ -54,7 +54,7 @@ jobs:
           required-ros-distributions: jazzy
       - name: Restore MIRA cache
         id: restore-cache-mira
-        uses: actions/cache@6.1.0
+        uses: actions/cache@v6.1.0
         with:
           path: ${{ env.MIRA_PATH }}
           key: mira-${{ runner.os }}-ubuntu-24.04
