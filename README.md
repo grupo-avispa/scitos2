@@ -2,8 +2,8 @@
 
 ![ROS2](https://img.shields.io/badge/ros2-jazzy-blue?logo=ros&logoColor=white)
 ![License](https://img.shields.io/github/license/grupo-avispa/scitos2)
-[![Build](https://github.com/grupo-avispa/scitos2/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/grupo-avispa/scitos2/actions/workflows/build.yml)
-[![Docker image](https://github.com/grupo-avispa/scitos2/actions/workflows/docker_image.yml/badge.svg?branch=main)](https://github.com/grupo-avispa/scitos2/actions/workflows/docker_image.yml)
+[![Build](https://github.com/grupo-avispa/scitos2/actions/workflows/build.yml/badge.svg?branch=jazzy)](https://github.com/grupo-avispa/scitos2/actions/workflows/build.yml)
+[![Docker image](https://github.com/grupo-avispa/scitos2/actions/workflows/docker_image.yml/badge.svg?branch=jazzy)](https://github.com/grupo-avispa/scitos2/actions/workflows/docker_image.yml)
 [![codecov](https://codecov.io/gh/grupo-avispa/scitos2/graph/badge.svg?token=794XFYV0FK)](https://codecov.io/gh/grupo-avispa/scitos2)
 
 ## Overview
