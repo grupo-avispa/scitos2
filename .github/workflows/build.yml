@@ -19,6 +19,8 @@ jobs:
     container:
       image: ros:jazzy
     steps:
+      - name: Set MIRA_PATH
+        run: echo "MIRA_PATH=$GITHUB_WORKSPACE/mira" >> "$GITHUB_ENV"
       - name: Install wget
         run: |
           sudo apt-get update
@@ -52,6 +54,8 @@ jobs:
       image: ros:jazzy
     needs: install-mira
     steps:
+      - name: Set MIRA_PATH
+        run: echo "MIRA_PATH=$GITHUB_WORKSPACE/mira" >> "$GITHUB_ENV"
       - name: Install global dependencies
         run: |
           apt update && apt install --no-install-recommends -y \
