@@ -25,6 +25,9 @@ jobs:
             libopencv-dev binutils-dev libiberty-dev libcurl4-gnutls-dev \
             libproc2-dev libqwt-qt5-dev libqt5webkit5-dev libqwtmathml-qt5-dev \
             libqt5opengl5-dev libqt5svg5-dev qt*5-dev qttools5-dev-tools
+          execute_install_scripts: true
+      - name: Refresh shared library cache
+        run: sudo ldconfig
       - name: Cache MIRA
         id: cache-mira
         uses: actions/cache@v6.1.0
