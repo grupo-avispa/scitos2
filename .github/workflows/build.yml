@@ -30,7 +30,7 @@ jobs:
             libsqlite3-dev libboost-all-dev libogre-1.9-dev libsvn-dev
             libopencv-dev binutils-dev libiberty-dev libcurl4-gnutls-dev
             libproc2-dev libqwt-qt5-dev libqt5webkit5-dev libqwtmathml-qt5-dev
-            libqt5opengl5-dev libqt5svg5-dev qt*5-dev qttools5-dev-tools
+            libqt5opengl5-dev libqt5svg5-dev qt*5-dev qttools5-dev-tools unzip
       - name: Refresh shared library cache
         run: sudo ldconfig
       - name: Cache MIRA
