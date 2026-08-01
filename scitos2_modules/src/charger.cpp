@@ -38,6 +38,12 @@ void Charger::configure(
   authority_ = std::make_shared<mira::Authority>();
   authority_->checkin("/", plugin_name_);
 
+  declare_parameter_if_not_declared(
+    node, plugin_name_ + ".mira_robot_resource",
+    rclcpp::ParameterValue(mira_robot_resource_), rcl_interfaces::msg::ParameterDescriptor()
+    .set__description("The MIRA resource that exposes the robot's services and properties"));
+  node->get_parameter(plugin_name_ + ".mira_robot_resource", mira_robot_resource_);
+
   // Create ROS publishers
   battery_pub_ = node->create_publisher<sensor_msgs::msg::BatteryState>(
     "battery", rclcpp::SystemDefaultsQoS());
@@ -111,7 +117,7 @@ bool Charger::savePersistentErrors(
 
   // Call mira service
   response->success = call_mira_service(
-    authority_, "savePersistentErrors", std::optional<std::string>(request->filename));
+    authority_, "savePersistentErrors", std::optional<std::string>(request->filename), logger_);
   if (!response->success) {
     response->message = "MIRA service call failed";
   }

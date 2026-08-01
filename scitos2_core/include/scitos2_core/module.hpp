@@ -73,9 +73,13 @@ protected:
    *
    * @param authority The MIRA authority
    * @param service_name The name of the service
+   * @param logger Logger to attribute error/debug messages to. Defaults to a generic "MIRA"
+   * logger; pass the calling module's own logger_ to make failures traceable to their origin.
    * @return bool If the service was called successfully
    */
-  bool call_mira_service(const std::weak_ptr<mira::Authority> & authority, std::string service_name)
+  bool call_mira_service(
+    const std::weak_ptr<mira::Authority> & authority, std::string service_name,
+    const rclcpp::Logger & logger = rclcpp::get_logger("MIRA"))
   {
     // Convert weak_ptr to shared_ptr
     auto sharedAuthority = authority.lock();
@@ -84,20 +88,23 @@ protected:
     }
 
     // Check if the authority is valid or if the service exists
-    if (!sharedAuthority->isValid() || !sharedAuthority->existsService("/robot/Robot")) {
+    if (!sharedAuthority->isValid() || !sharedAuthority->existsService(mira_robot_resource_)) {
       RCLCPP_ERROR_ONCE(
-        rclcpp::get_logger("MIRA"), "MIRA authority is not valid or service does not exist");
+        logger, "MIRA authority is not valid or resource '%s' does not exist",
+        mira_robot_resource_.c_str());
       return false;
     }
 
     try {
-      mira::RPCFuture<void> rpc = sharedAuthority->callService<void>("/robot/Robot", service_name);
+      mira::RPCFuture<void> rpc =
+        sharedAuthority->callService<void>(mira_robot_resource_, service_name);
       rpc.timedWait(mira::Duration::seconds(1));
       rpc.get();
-      RCLCPP_DEBUG(rclcpp::get_logger("MIRA"), "service_name: %i", true);
+      RCLCPP_DEBUG(logger, "MIRA service '%s' called successfully", service_name.c_str());
     } catch (mira::XRPC & e) {
       RCLCPP_WARN(
-        rclcpp::get_logger("MIRA"), "MIRA RPC error caught when calling the service: %s", e.what());
+        logger, "MIRA RPC error caught when calling the service '%s': %s",
+        service_name.c_str(), e.what());
       return false;
     }
     return true;
@@ -109,12 +116,15 @@ protected:
    * @param authority The MIRA authority
    * @param service_name The name of the service
    * @param request The request to send. Empty by default
+   * @param logger Logger to attribute error/debug messages to. Defaults to a generic "MIRA"
+   * logger; pass the calling module's own logger_ to make failures traceable to their origin.
    * @return bool If the service was called successfully
    */
   template<typename T>
   bool call_mira_service(
     const std::weak_ptr<mira::Authority> & authority, std::string service_name,
-    std::optional<T> request = std::nullopt)
+    std::optional<T> request = std::nullopt,
+    const rclcpp::Logger & logger = rclcpp::get_logger("MIRA"))
   {
     // Convert weak_ptr to shared_ptr
     auto sharedAuthority = authority.lock();
@@ -123,25 +133,28 @@ protected:
     }
 
     // Check if the authority is valid or if the service exists
-    if (!sharedAuthority->isValid() || !sharedAuthority->existsService("/robot/Robot")) {
+    if (!sharedAuthority->isValid() || !sharedAuthority->existsService(mira_robot_resource_)) {
       RCLCPP_ERROR_ONCE(
-        rclcpp::get_logger("MIRA"), "MIRA authority is not valid or service does not exist");
+        logger, "MIRA authority is not valid or resource '%s' does not exist",
+        mira_robot_resource_.c_str());
       return false;
     }
 
     try {
       mira::RPCFuture<void> rpc;
       if (request.has_value()) {
-        rpc = sharedAuthority->callService<void>("/robot/Robot", service_name, request.value());
+        rpc = sharedAuthority->callService<void>(
+          mira_robot_resource_, service_name, request.value());
       } else {
-        rpc = sharedAuthority->callService<void>("/robot/Robot", service_name);
+        rpc = sharedAuthority->callService<void>(mira_robot_resource_, service_name);
       }
       rpc.timedWait(mira::Duration::seconds(1));
       rpc.get();
-      RCLCPP_DEBUG(rclcpp::get_logger("MIRA"), "service_name: %i", true);
+      RCLCPP_DEBUG(logger, "MIRA service '%s' called successfully", service_name.c_str());
     } catch (mira::XRPC & e) {
       RCLCPP_WARN(
-        rclcpp::get_logger("MIRA"), "MIRA RPC error caught when calling the service: %s", e.what());
+        logger, "MIRA RPC error caught when calling the service '%s': %s",
+        service_name.c_str(), e.what());
       return false;
     }
     return true;
@@ -153,11 +166,13 @@ protected:
    * @param authority The MIRA authority
    * @param param_name The name of the parameter
    * @param value The value to set
+   * @param logger Logger to attribute error/debug messages to. Defaults to a generic "MIRA"
+   * logger; pass the calling module's own logger_ to make failures traceable to their origin.
    * @return bool If the parameter was set successfully
    */
   bool set_mira_param(
     const std::weak_ptr<mira::Authority> & authority, std::string param_name,
-    std::string value)
+    std::string value, const rclcpp::Logger & logger = rclcpp::get_logger("MIRA"))
   {
     // Convert weak_ptr to shared_ptr
     auto sharedAuthority = authority.lock();
@@ -166,20 +181,22 @@ protected:
     }
 
     // Check if the authority is valid or if the service exists
-    if (!sharedAuthority->isValid() || !sharedAuthority->existsService("/robot/Robot")) {
+    if (!sharedAuthority->isValid() || !sharedAuthority->existsService(mira_robot_resource_)) {
       RCLCPP_ERROR_ONCE(
-        rclcpp::get_logger("MIRA"), "MIRA authority is not valid or service does not exist");
+        logger, "MIRA authority is not valid or resource '%s' does not exist",
+        mira_robot_resource_.c_str());
       return false;
     }
 
     try {
       mira::RPCFuture<void> rpc = sharedAuthority->callService<void>(
-        "/robot/Robot#builtin", std::string("setProperty"), param_name, value);
+        mira_robot_resource_ + "#builtin", std::string("setProperty"), param_name, value);
       rpc.timedWait(mira::Duration::seconds(1));
       rpc.get();
     } catch (mira::XRPC & e) {
       RCLCPP_WARN(
-        rclcpp::get_logger("MIRA"), "MIRA RPC error caught when setting parameter: %s", e.what());
+        logger, "MIRA RPC error caught when setting parameter '%s': %s",
+        param_name.c_str(), e.what());
       return false;
     }
     return true;
@@ -190,10 +207,13 @@ protected:
    *
    * @param authority The MIRA authority
    * @param param_name The name of the parameter
+   * @param logger Logger to attribute error/debug messages to. Defaults to a generic "MIRA"
+   * logger; pass the calling module's own logger_ to make failures traceable to their origin.
    * @return std::string The value of the parameter
    */
   std::string get_mira_param(
-    const std::weak_ptr<mira::Authority> & authority, std::string param_name)
+    const std::weak_ptr<mira::Authority> & authority, std::string param_name,
+    const rclcpp::Logger & logger = rclcpp::get_logger("MIRA"))
   {
     // Convert weak_ptr to shared_ptr
     auto sharedAuthority = authority.lock();
@@ -202,24 +222,30 @@ protected:
     }
 
     // Check if the authority is valid or if the service exists
-    if (!sharedAuthority->isValid() || !sharedAuthority->existsService("/robot/Robot")) {
+    if (!sharedAuthority->isValid() || !sharedAuthority->existsService(mira_robot_resource_)) {
       RCLCPP_ERROR_ONCE(
-        rclcpp::get_logger("MIRA"), "MIRA authority is not valid or service does not exist");
+        logger, "MIRA authority is not valid or resource '%s' does not exist",
+        mira_robot_resource_.c_str());
       return "";
     }
 
     try {
       mira::RPCFuture<std::string> rpc = sharedAuthority->callService<std::string>(
-        "/robot/Robot#builtin", std::string("getProperty"), param_name);
+        mira_robot_resource_ + "#builtin", std::string("getProperty"), param_name);
       rpc.timedWait(mira::Duration::seconds(1));
       return rpc.get();
     } catch (mira::XRPC & e) {
       RCLCPP_WARN(
-        rclcpp::get_logger("MIRA"), "MIRA RPC error caught when getting parameter: %s", e.what());
+        logger, "MIRA RPC error caught when getting parameter '%s': %s",
+        param_name.c_str(), e.what());
       return "";
     }
   }
   // LCOV_EXCL_STOP
+
+  // MIRA resource that exposes the robot's services and properties. Configurable per module
+  // in case the robot's MIRA XML configuration names it differently than the default.
+  std::string mira_robot_resource_{"/robot/Robot"};
 
 /**
  * @brief Declares static ROS2 parameter and sets it to a given value if it was not already declared.

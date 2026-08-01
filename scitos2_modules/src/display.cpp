@@ -34,6 +34,12 @@ void Display::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
   authority_ = std::make_shared<mira::Authority>();
   authority_->checkin("/", plugin_name_);
 
+  declare_parameter_if_not_declared(
+    node, plugin_name_ + ".mira_robot_resource",
+    rclcpp::ParameterValue(mira_robot_resource_), rcl_interfaces::msg::ParameterDescriptor()
+    .set__description("The MIRA resource that exposes the robot's services and properties"));
+  node->get_parameter(plugin_name_ + ".mira_robot_resource", mira_robot_resource_);
+
   // Create publisher
   display_data_pub_ = node->create_publisher<scitos2_msgs::msg::MenuEntry>(
     "user_menu_selected", rclcpp::SystemDefaultsQoS());

@@ -74,6 +74,12 @@ void EBC::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std
   authority_ = std::make_shared<mira::Authority>();
   authority_->checkin("/", plugin_name_);
 
+  declare_parameter_if_not_declared(
+    node, plugin_name_ + ".mira_robot_resource",
+    rclcpp::ParameterValue(mira_robot_resource_), rcl_interfaces::msg::ParameterDescriptor()
+    .set__description("The MIRA resource that exposes the robot's services and properties"));
+  node->get_parameter(plugin_name_ + ".mira_robot_resource", mira_robot_resource_);
+
   for (const auto & port : kBoolPorts) {
     declare_parameter_if_not_declared(
       node, plugin_name_ + "." + port.param,
@@ -132,13 +138,15 @@ void EBC::activate()
 
   // MIRA parameters can only be written once the authority has started
   for (const auto & port : kBoolPorts) {
-    if (!set_mira_param(authority_, port.mira_key, port_enabled_[port.param] ? "true" : "false")) {
+    if (!set_mira_param(
+        authority_, port.mira_key, port_enabled_[port.param] ? "true" : "false", logger_))
+    {
       RCLCPP_ERROR(logger_, "Failed to set the %s MIRA parameter", port.param.c_str());
     }
   }
   for (const auto & port : kCurrentPorts) {
     if (!set_mira_param(
-        authority_, port.mira_key, std::to_string(port_max_current_[port.param])))
+        authority_, port.mira_key, std::to_string(port_max_current_[port.param]), logger_))
     {
       RCLCPP_ERROR(logger_, "Failed to set the %s MIRA parameter", port.param.c_str());
     }
@@ -169,7 +177,7 @@ rcl_interfaces::msg::SetParametersResult EBC::dynamicParametersCallback(
         });
       if (it != kBoolPorts.end()) {
         port_enabled_[it->param] = parameter.as_bool();
-        set_mira_param(authority_, it->mira_key, parameter.as_bool() ? "true" : "false");
+        set_mira_param(authority_, it->mira_key, parameter.as_bool() ? "true" : "false", logger_);
         RCLCPP_INFO(
           logger_, "The parameter %s is set to: [%s]", it->param.c_str(),
           parameter.as_bool() ? "true" : "false");
@@ -187,7 +195,8 @@ rcl_interfaces::msg::SetParametersResult EBC::dynamicParametersCallback(
           return result;
         }
         port_max_current_[it->param] = parameter.as_double();
-        set_mira_param(authority_, it->mira_key, std::to_string(parameter.as_double()));
+        set_mira_param(
+          authority_, it->mira_key, std::to_string(parameter.as_double()), logger_);
         RCLCPP_INFO(
           logger_, "The parameter %s is set to: [%f]", it->param.c_str(), parameter.as_double());
       }
