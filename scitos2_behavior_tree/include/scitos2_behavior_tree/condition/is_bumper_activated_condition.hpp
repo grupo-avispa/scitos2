@@ -57,7 +57,7 @@ public:
   static BT::PortsList providedPorts()
   {
     return {
-      BT::InputPort<std::string>("bumper_topic", std::string("/bumper"), "Bumper topic")
+      BT::InputPort<std::string>("bumper_topic", std::string("bumper"), "Bumper topic")
     };
   }
 

@@ -27,6 +27,17 @@ EmergencyStopService::EmergencyStopService(
 {
 }
 
+BT::NodeStatus EmergencyStopService::on_completion(
+  std::shared_ptr<scitos2_msgs::srv::EmergencyStop::Response> response)
+{
+  if (response->success) {
+    return BT::NodeStatus::SUCCESS;
+  }
+  RCLCPP_ERROR(
+    node_->get_logger(), "EmergencyStop service call failed: %s", response->message.c_str());
+  return BT::NodeStatus::FAILURE;
+}
+
 }  // namespace scitos2_behavior_tree
 
 #include "behaviortree_cpp/bt_factory.h"
