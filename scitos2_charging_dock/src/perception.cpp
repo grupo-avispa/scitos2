@@ -13,6 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// C++
+#include <algorithm>
+
 // PCL
 #include <pcl/common/eigen.h>
 #include <pcl/io/pcd_io.h>
@@ -294,9 +297,8 @@ bool Perception::refineAllClustersPoses(
 
   // Check if dock is found
   if (!potential_docks.empty()) {
-    // Sort the clusters by ICP score and select the best one
-    std::sort(potential_docks.begin(), potential_docks.end());
-    dock = potential_docks.front();
+    // Select the candidate with the best (lowest) ICP score
+    dock = *std::min_element(potential_docks.begin(), potential_docks.end());
     // Publish the dock cloud
     if (debug_) {
       dock_cloud_pub_->publish(createPointCloud2Msg(dock.cloud));
