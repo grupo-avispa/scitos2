@@ -73,13 +73,11 @@ Perception::Perception(
   node->get_parameter(name_ + ".perception.dock_template", dock_template);
   loadDockPointcloud(dock_template, dock_template_.cloud);
 
-  // Publishers
-  if (debug_) {
-    target_cloud_pub_ = node->create_publisher<sensor_msgs::msg::PointCloud2>("dock/target", 1);
-    dock_cloud_pub_ = node->create_publisher<sensor_msgs::msg::PointCloud2>("dock/cloud", 1);
-    dock_template_pub_ = node->create_publisher<sensor_msgs::msg::PointCloud2>(
-      "dock/template", 1);
-  }
+  // Publishers: always created so that toggling enable_debug at runtime cannot
+  // publish through a null pointer
+  target_cloud_pub_ = node->create_publisher<sensor_msgs::msg::PointCloud2>("dock/target", 1);
+  dock_cloud_pub_ = node->create_publisher<sensor_msgs::msg::PointCloud2>("dock/cloud", 1);
+  dock_template_pub_ = node->create_publisher<sensor_msgs::msg::PointCloud2>("dock/template", 1);
 
   dyn_params_handler_ = node->add_on_set_parameters_callback(
     std::bind(&Perception::dynamicParametersCallback, this, std::placeholders::_1));
