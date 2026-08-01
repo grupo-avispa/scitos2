@@ -54,7 +54,7 @@
 namespace scitos2_modules
 {
 
-uint64 MAGNETIC_BARRIER_RFID_CODE = 0xabababab;
+constexpr uint64 MAGNETIC_BARRIER_RFID_CODE = 0xabababab;
 
 /**
  * @class scitos2_modules::Drive
