@@ -110,8 +110,12 @@ bool Charger::savePersistentErrors(
   RCLCPP_INFO_STREAM(logger_, "Saving persistent error log to '" << request->filename << "'");
 
   // Call mira service
-  return call_mira_service(
+  response->success = call_mira_service(
     authority_, "savePersistentErrors", std::optional<std::string>(request->filename));
+  if (!response->success) {
+    response->message = "MIRA service call failed";
+  }
+  return response->success;
 }
 
 sensor_msgs::msg::BatteryState Charger::miraToRosBatteryState(

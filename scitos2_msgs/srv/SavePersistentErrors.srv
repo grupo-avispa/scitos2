@@ -2,3 +2,5 @@
 
 string filename         # Name of the file
 ---
+bool success         # True if the errors were successfully saved.
+string message       # Error message, if any.

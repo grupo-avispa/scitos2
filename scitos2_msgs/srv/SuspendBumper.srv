@@ -1,3 +1,5 @@
 # This service requests temporarily disable the bumper.
 
 ---
+bool success         # True if the bumper was successfully suspended.
+string message       # Error message, if any.

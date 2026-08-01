@@ -3,3 +3,5 @@
 # and make sure that no other velocity can be set until ResetMotorStop.srv is called.
 
 ---
+bool success         # True if the emergency stop was performed successfully.
+string message       # Error message, if any.

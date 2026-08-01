@@ -1,3 +1,5 @@
 # This service requests reset the magnetic barrier
 
 ---
+bool success         # True if the magnetic barrier was successfully reset.
+string message       # Error message, if any.

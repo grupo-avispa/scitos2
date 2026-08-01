@@ -1,3 +1,5 @@
 # This service requests reset the odometry to zero.
 
 ---
+bool success         # True if the odometry was successfully reset.
+string message       # Error message, if any.
