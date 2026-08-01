@@ -53,6 +53,7 @@ DockSaver::on_configure(const rclcpp_lifecycle::State & /*state*/)
 
   // Setup TF buffer and perception
   tf2_buffer_ = std::make_shared<tf2_ros::Buffer>(get_clock());
+  tf2_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf2_buffer_);
   perception_ = std::make_unique<Perception>(shared_from_this(), "dock_saver", tf2_buffer_);
 
   return nav2_util::CallbackReturn::SUCCESS;

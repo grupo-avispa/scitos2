@@ -24,6 +24,7 @@
 #include "scitos2_msgs/srv/save_dock.hpp"
 #include "scitos2_charging_dock/perception.hpp"
 #include "tf2_ros/buffer.h"
+#include "tf2_ros/transform_listener.h"
 
 namespace scitos2_charging_dock
 {
@@ -101,6 +102,8 @@ protected:
 
   // The TF buffer
   std::shared_ptr<tf2_ros::Buffer> tf2_buffer_;
+  // The TF listener that feeds tf2_buffer_
+  std::shared_ptr<tf2_ros::TransformListener> tf2_listener_;
 
   // The name of the service for saving a dock from topic
   const std::string save_dock_service_name_{"save_dock"};
