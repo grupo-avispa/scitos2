@@ -26,15 +26,27 @@ A **save_dock** service is provided to save the current pointcloud of the chargi
 
 * **`dock/cloud`** ([sensor_msgs/PointCloud2])
 
-	Pointcloud of the charging station extracted from the laser scan data. This can be enable using *debug* parameter.
+	Pointcloud of the charging station extracted from the laser scan data. This can be enable using *enable_debug* parameter.
 
 * **`dock/template`** ([sensor_msgs/PointCloud2])
 
-	Pointcloud of the recorded charging station used for matching. This can be enable using *debug* parameter.
+	Pointcloud of the recorded charging station used for matching. This can be enable using *enable_debug* parameter.
 
 * **`dock/target`** ([sensor_msgs/PointCloud2])
 
-	Pointcloud of the current cluster used in the current matching. This can be enable using *debug* parameter.
+	Pointcloud of the current cluster used in the current matching. This can be enable using *enable_debug* parameter.
+
+* **`dock_pose`** ([geometry_msgs/PoseStamped])
+
+	Raw detected pose of the dock.
+
+* **`filtered_dock_pose`** ([geometry_msgs/PoseStamped])
+
+	Detected pose of the dock after the pose filter.
+
+* **`staging_pose`** ([geometry_msgs/PoseStamped])
+
+	Staging pose computed from the detected dock pose.
 
 ### Parameters
 
@@ -78,7 +90,7 @@ A **save_dock** service is provided to save the current pointcloud of the chargi
 
 	Dock external detection method filtering algorithm coefficient.
 
-* **`perception.debug`** (bool, default: false)
+* **`perception.enable_debug`** (bool, default: false)
 
 	Option to visualize the current point clouds used in ICP matching. 
 
@@ -86,11 +98,11 @@ A **save_dock** service is provided to save the current pointcloud of the chargi
 
 	ICP Fitness Score Threshold.
 
-* **`perception.icp_max_iter`** (int, default: 200)
+* **`perception.icp_max_iter`** (int, default: 300)
 
 	Max number of iterations to fit template cloud to the target cloud.
 
-* **`perception.icp_max_corr_dis`** (double, default: 1.0)
+* **`perception.icp_max_corr_dis`** (double, default: 0.25)
 
 	Max allowable distance for matches in meters.
 
@@ -104,33 +116,37 @@ A **save_dock** service is provided to save the current pointcloud of the chargi
 
 * **`perception.dock_template`** (string, default: "")
 
-	Path to the pointcloud file of the charging station used for matching.
+	Path to the pointcloud file of the charging station used for matching. Mandatory: generate it for your dock with the `save_dock` service.
 
-* **`perception.segmentation.distance_threshold`** (double, default: 0.04)
+* **`perception.use_first_detection`** (bool, default: false)
+
+	Freeze the first successful detection instead of refining the dock pose on every scan.
+
+* **`segmentation.distance_threshold`** (double, default: 0.04)
 
 	The maximum distance between points in a cluster.
 
-* **`perception.segmentation.min_points`** (int, default: 25)
+* **`segmentation.min_points`** (int, default: 25)
 
 	The minimum number of points required for a cluster to be considered valid.
 
-* **`perception.segmentation.max_points`** (int, default: 400)
+* **`segmentation.max_points`** (int, default: 400)
 
 	The maximum number of points allowed in a cluster.
 
-* **`perception.segmentation.min_distance`** (double, default: 0.0)
+* **`segmentation.min_distance`** (double, default: 0.0)
 
 	The minimum distance from the sensor to a point in a cluster.
 
-* **`perception.segmentation.max_distance`** (double, default: 2.0)
+* **`segmentation.max_distance`** (double, default: 2.0)
 
 	The maximum distance from the sensor to a point in a cluster.
 
-* **`perception.segmentation.min_width`** (double, default: 0.3)
+* **`segmentation.min_width`** (double, default: 0.3)
 
 	The minimum width of a cluster.
 
-* **`perception.segmentation.max_width`** (double, default: 1.0)
+* **`segmentation.max_width`** (double, default: 1.0)
 
 	The maximum width of a cluster.
 
@@ -139,3 +155,4 @@ A **save_dock** service is provided to save the current pointcloud of the chargi
 [sensor_msgs/LaserScan]: https://docs.ros2.org/jazzy/api/sensor_msgs/msg/LaserScan.html
 [sensor_msgs/BatteryState]: https://docs.ros2.org/jazzy/api/sensor_msgs/msg/BatteryState.html
 [sensor_msgs/PointCloud2]: https://docs.ros2.org/jazzy/api/sensor_msgs/msg/PointCloud2.html
+[geometry_msgs/PoseStamped]: https://docs.ros2.org/jazzy/api/geometry_msgs/msg/PoseStamped.html

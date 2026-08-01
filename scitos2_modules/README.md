@@ -20,7 +20,7 @@ The Charger module monitors the state of the battery and the charging station.
 
 #### Published Topics
 
-* **`battery_state`** ([sensor_msgs/BatteryState])
+* **`battery`** ([sensor_msgs/BatteryState])
 
 	Publishes the current state of the battery.
 
@@ -38,11 +38,11 @@ The Charger module monitors the state of the battery and the charging station.
 
 The Display module manages the status display on the robot's base.
 
-#### Subscribed Topics
+#### Published Topics
 
 * **`user_menu_selected`** ([scitos2_msgs/MenuEntry])
 
-	This topic is published when a user selects one of the sub-menus.
+	Published when a user selects one of the sub-menus.
 
 #### Parameters
 
@@ -54,15 +54,15 @@ The Display module manages the status display on the robot's base.
 
 	Specifies the name of the user menu entry in the main menu of the status display.
 
-* **`menu_entry_name_1`** (string, default: "Menu Entry 1")
+* **`menu_entry_name_1`** (string, default: "Entry 1")
 
 	Specifies the name of the first sub-menu entry in the user menu of the status display.
 
-* **`menu_entry_name_2`** (string, default: "Menu Entry 2")
+* **`menu_entry_name_2`** (string, default: "Entry 2")
 
 	Specifies the name of the second sub-menu entry in the user menu of the status display.
 
-* **`menu_entry_name_3`** (string, default: "Menu Entry 3")
+* **`menu_entry_name_3`** (string, default: "Entry 3")
 
 	Specifies the name of the third sub-menu entry in the user menu of the status display.
 
