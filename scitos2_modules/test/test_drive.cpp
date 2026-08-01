@@ -70,6 +70,11 @@ public:
     emergency_stop_activated_ = false;
   }
 
+  bool isEmergencyStopActivated()
+  {
+    return emergency_stop_activated_;
+  }
+
   visualization_msgs::msg::MarkerArray createBumperMarkers(std_msgs::msg::Header header)
   {
     return scitos2_modules::Drive::createBumperMarkers(header);
@@ -220,6 +225,10 @@ TEST(ScitosDriveTest, changeForce) {
     RCLCPP_ERROR(node->get_logger(), "Service call failed");
   }
 
+  // Without a real MIRA '/robot/Robot' resource, the call must be reported as failed
+  EXPECT_FALSE(resp->success);
+  EXPECT_EQ(resp->message, "MIRA service call failed");
+
   // Cleaning up
   module->deactivate();
   module->cleanup();
@@ -254,6 +263,11 @@ TEST(ScitosDriveTest, emergencyStop) {
   } else {
     RCLCPP_ERROR(node->get_logger(), "Service call failed");
   }
+
+  // Without a real MIRA '/robot/Robot' resource, the call must be reported as failed:
+  // a client must be able to tell a rejected e-stop apart from a successful one
+  EXPECT_FALSE(resp->success);
+  EXPECT_EQ(resp->message, "MIRA service call failed");
 
   // Cleaning up
   module->deactivate();
@@ -291,6 +305,10 @@ TEST(ScitosDriveTest, enableMotors) {
     RCLCPP_ERROR(node->get_logger(), "Service call failed");
   }
 
+  // Without a real MIRA '/robot/Robot' resource, the call must be reported as failed
+  EXPECT_FALSE(resp->success);
+  EXPECT_EQ(resp->message, "MIRA service call failed");
+
   // Cleaning up
   module->deactivate();
   module->cleanup();
@@ -327,6 +345,10 @@ TEST(ScitosDriveTest, enableRfid) {
     RCLCPP_ERROR(node->get_logger(), "Service call failed");
   }
 
+  // Without a real MIRA '/robot/Robot' resource, the call must be reported as failed
+  EXPECT_FALSE(resp->success);
+  EXPECT_EQ(resp->message, "MIRA service call failed");
+
   // Cleaning up
   module->deactivate();
   module->cleanup();
@@ -361,6 +383,9 @@ TEST(ScitosDriveTest, resetBarrierStop) {
   } else {
     RCLCPP_ERROR(node->get_logger(), "Service call failed");
   }
+
+  // Unlike the other Drive services, this one never calls MIRA: it always succeeds
+  EXPECT_TRUE(resp->success);
 
   // Cleaning up
   module->deactivate();
@@ -397,6 +422,10 @@ TEST(ScitosDriveTest, resetMotorStop) {
     RCLCPP_ERROR(node->get_logger(), "Service call failed");
   }
 
+  // Without a real MIRA '/robot/Robot' resource, the call must be reported as failed
+  EXPECT_FALSE(resp->success);
+  EXPECT_EQ(resp->message, "MIRA service call failed");
+
   // Cleaning up
   module->deactivate();
   module->cleanup();
@@ -432,6 +461,10 @@ TEST(ScitosDriveTest, resetOdometry) {
     RCLCPP_ERROR(node->get_logger(), "Service call failed");
   }
 
+  // Without a real MIRA '/robot/Robot' resource, the call must be reported as failed
+  EXPECT_FALSE(resp->success);
+  EXPECT_EQ(resp->message, "MIRA service call failed");
+
   // Cleaning up
   module->deactivate();
   module->cleanup();
@@ -466,6 +499,10 @@ TEST(ScitosDriveTest, suspendBumper) {
   } else {
     RCLCPP_ERROR(node->get_logger(), "Service call failed");
   }
+
+  // Without a real MIRA '/robot/Robot' resource, the call must be reported as failed
+  EXPECT_FALSE(resp->success);
+  EXPECT_EQ(resp->message, "MIRA service call failed");
 
   // Cleaning up
   module->deactivate();
@@ -948,6 +985,44 @@ TEST(ScitosDriveTest, driveStatusPublisher) {
   sub_thread.join();
 }
 
+TEST(ScitosDriveTest, driveStatusUpdatesEmergencyStopFlag) {
+  rclcpp::init(0, nullptr);
+  // Create the MIRA authority
+  mira::Authority authority("/", "test_drive_status_estop");
+  authority.start();
+  // Create the MIRA publisher
+  auto publisher = authority.publish<uint32>("/robot/DriveStatusPlain");
+
+  // Create and configure the module
+  auto drive_node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testDrive");
+  auto module = std::make_shared<DriveFixture>();
+  module->configure(drive_node, "test");
+  module->activate();
+  auto drive_thread = std::thread([&]() {rclcpp::spin(drive_node->get_node_base_interface());});
+
+  // Sanity check: the flag starts cleared
+  EXPECT_FALSE(module->isEmergencyStopActivated());
+
+  // Publish a status with bit 7 (emergency_stop_activated) set
+  auto writer = publisher.write();
+  writer->value() = static_cast<uint32>(1 << 7);
+  writer.finish();
+
+  // Wait for the message to be processed
+  std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+  // driveStatusCallback() must have updated the member from the real status, not left it
+  // at whatever it was initialized to in configure()
+  EXPECT_TRUE(module->isEmergencyStopActivated());
+
+  // Cleaning up
+  module->deactivate();
+  module->cleanup();
+  rclcpp::shutdown();
+  // Have to join thread after rclcpp is shut down otherwise test hangs
+  drive_thread.join();
+}
+
 TEST(ScitosDriveTest, rfidPublisher) {
   rclcpp::init(0, nullptr);
   // Create the MIRA authority
@@ -992,6 +1067,62 @@ TEST(ScitosDriveTest, rfidPublisher) {
   // Check the received message
   EXPECT_EQ(sub->get_publisher_count(), 1);
   EXPECT_TRUE(received_msg);
+
+  // Cleaning up
+  module->deactivate();
+  sub_node->deactivate();
+  module->cleanup();
+  sub_node->cleanup();
+  sub_node->shutdown();
+  rclcpp::shutdown();
+  // Have to join thread after rclcpp is shut down otherwise test hangs
+  drive_thread.join();
+  sub_thread.join();
+}
+
+TEST(ScitosDriveTest, barrierCodeSetsBarrierStopped) {
+  rclcpp::init(0, nullptr);
+  // Create the MIRA authority
+  mira::Authority authority("/", "test_drive_barrier");
+  authority.start();
+  // Create the MIRA publisher
+  auto publisher = authority.publish<uint64>("/robot/RFIDUserTag");
+
+  // Create and configure the module
+  auto drive_node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testDrive");
+  auto module = std::make_shared<DriveFixture>();
+  module->configure(drive_node, "test");
+  module->activate();
+  auto drive_thread = std::thread([&]() {rclcpp::spin(drive_node->get_node_base_interface());});
+
+  // Create the susbcriber node
+  auto sub_node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testDriveSubscriber");
+  sub_node->configure();
+  sub_node->activate();
+
+  // Create the subscriber
+  scitos2_msgs::msg::BarrierStatus received_status;
+  bool received_msg = false;
+  auto sub = sub_node->create_subscription<scitos2_msgs::msg::BarrierStatus>(
+    "barrier_status", rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable(),
+    [&](const scitos2_msgs::msg::BarrierStatus & msg) {
+      received_status = msg;
+      received_msg = true;
+    });
+  auto sub_thread = std::thread([&]() {rclcpp::spin(sub_node->get_node_base_interface());});
+
+  // Publish the magnetic barrier RFID code
+  auto writer = publisher.write();
+  writer->value() = scitos2_modules::MAGNETIC_BARRIER_RFID_CODE;
+  writer.finish();
+
+  // Wait for the message to be received
+  std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+  // rfidStatusCallback() must publish the freshly computed status (barrier_stopped = true),
+  // not the stale member that only resetBarrierStop() ever touches
+  ASSERT_TRUE(received_msg);
+  EXPECT_TRUE(received_status.barrier_stopped);
 
   // Cleaning up
   module->deactivate();

@@ -148,6 +148,92 @@ TEST(ScitosIMUTest, acceSubPub) {
   sub_thread.join();
 }
 
+TEST(ScitosIMUTest, timerRecreatedAfterReactivation) {
+  rclcpp::init(0, nullptr);
+  // Create and configure the module, then cycle active -> inactive -> active
+  auto imu_node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testIMU");
+  auto module = std::make_shared<IMUFixture>();
+  module->configure(imu_node, "test");
+  module->activate();
+  module->deactivate();
+  module->activate();
+  auto imu_thread = std::thread([&]() {rclcpp::spin(imu_node->get_node_base_interface());});
+
+  // Create the susbcriber node
+  auto sub_node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testIMUSubscriberReactivate");
+  sub_node->configure();
+  sub_node->activate();
+
+  // Create the subscriber
+  bool received_msg = false;
+  auto sub = sub_node->create_subscription<sensor_msgs::msg::Imu>(
+    "imu", 1,
+    [&](const sensor_msgs::msg::Imu & /*msg*/) {
+      received_msg = true;
+    });
+  auto sub_thread = std::thread([&]() {rclcpp::spin(sub_node->get_node_base_interface());});
+
+  // The publishing timer fires every 10 ms; if it wasn't recreated on the second
+  // activate(), no message will ever arrive here
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+  EXPECT_TRUE(received_msg);
+
+  // Cleaning up
+  module->deactivate();
+  sub_node->deactivate();
+  module->cleanup();
+  sub_node->cleanup();
+  sub_node->shutdown();
+  rclcpp::shutdown();
+  // Have to join thread after rclcpp is shut down otherwise test hangs
+  imu_thread.join();
+  sub_thread.join();
+}
+
+TEST(ScitosIMUTest, imuTopicParameterIsHonored) {
+  rclcpp::init(0, nullptr);
+  auto imu_node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testIMU");
+  // Declare the topic override before configure() so declare_parameter_if_not_declared()
+  // keeps it instead of overwriting it with the default
+  imu_node->declare_parameter("test.imu_topic", std::string("custom_imu_topic"));
+
+  auto module = std::make_shared<IMUFixture>();
+  module->configure(imu_node, "test");
+  module->activate();
+  auto imu_thread = std::thread([&]() {rclcpp::spin(imu_node->get_node_base_interface());});
+
+  // Create the susbcriber node
+  auto sub_node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testIMUSubscriberTopic");
+  sub_node->configure();
+  sub_node->activate();
+
+  // The publisher must have been created on the configured topic, not the literal "imu"
+  bool received_msg = false;
+  auto sub = sub_node->create_subscription<sensor_msgs::msg::Imu>(
+    "custom_imu_topic", 1,
+    [&](const sensor_msgs::msg::Imu & /*msg*/) {
+      received_msg = true;
+    });
+  auto sub_thread = std::thread([&]() {rclcpp::spin(sub_node->get_node_base_interface());});
+
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+  EXPECT_EQ(sub->get_publisher_count(), 1);
+  EXPECT_TRUE(received_msg);
+
+  // Cleaning up
+  module->deactivate();
+  sub_node->deactivate();
+  module->cleanup();
+  sub_node->cleanup();
+  sub_node->shutdown();
+  rclcpp::shutdown();
+  // Have to join thread after rclcpp is shut down otherwise test hangs
+  imu_thread.join();
+  sub_thread.join();
+}
+
 TEST(ScitosIMUTest, accelerationTest) {
   // Create the module
   auto module = std::make_shared<IMUFixture>();

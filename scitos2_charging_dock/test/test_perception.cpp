@@ -426,6 +426,85 @@ TEST(ScitosDockingPerception, getDockPose) {
   EXPECT_TRUE(perception->getDockFound());
 }
 
+TEST(ScitosDockingPerception, emptyDockTemplateIsRejected) {
+  // Create a node with no dock_template configured (defaults to "")
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("perception_test");
+  auto tf_buffer = std::make_shared<tf2_ros::Buffer>(node->get_clock());
+  node->configure();
+
+  auto perception = std::make_shared<PerceptionFixture>(node, "test", tf_buffer);
+
+  sensor_msgs::msg::LaserScan scan;
+  scan.header.stamp = node->now();
+  scan.header.frame_id = "test_link";
+  scan.angle_min = -0.1;
+  scan.angle_max = 0.1;
+  scan.angle_increment = 0.1;
+  scan.ranges = {1.0, 1.0, 1.0};
+  scan.range_min = 0.5;
+  scan.range_max = 2.0;
+
+  // With no valid template loaded, getDockPose() must bail out early instead of running
+  // segmentation/ICP against an empty template that would reject every cluster anyway
+  perception->getDockPose(scan);
+  EXPECT_FALSE(perception->getDockFound());
+}
+
+TEST(ScitosDockingPerception, enableDebugAtRuntimeDoesNotCrash) {
+  // Create a node with enable_debug left at its default (false), so the constructor takes
+  // the path that used to skip creating the debug publishers
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("perception_test");
+  auto tf_buffer = std::make_shared<tf2_ros::Buffer>(node->get_clock());
+
+  std::string pkg = ament_index_cpp::get_package_share_directory("scitos2_charging_dock");
+  std::string path = pkg + "/test/dock_test.pcd";
+  nav2_util::declare_parameter_if_not_declared(
+    node, "test.perception.dock_template", rclcpp::ParameterValue(path));
+  nav2_util::declare_parameter_if_not_declared(
+    node, "test.segmentation.distance_threshold", rclcpp::ParameterValue(0.5));
+  nav2_util::declare_parameter_if_not_declared(
+    node, "test.segmentation.min_points", rclcpp::ParameterValue(0));
+  nav2_util::declare_parameter_if_not_declared(
+    node, "test.segmentation.min_width", rclcpp::ParameterValue(0.0));
+  nav2_util::declare_parameter_if_not_declared(
+    node, "test.segmentation.min_distance", rclcpp::ParameterValue(0.0));
+  node->configure();
+  node->activate();
+
+  auto perception = std::make_shared<PerceptionFixture>(node, "test", tf_buffer);
+
+  // Toggle enable_debug on at runtime, as an operator would via 'ros2 param set'
+  auto params = std::make_shared<rclcpp::AsyncParametersClient>(
+    node->get_node_base_interface(), node->get_node_topics_interface(),
+    node->get_node_graph_interface(),
+    node->get_node_services_interface());
+  auto results = params->set_parameters_atomically(
+    {rclcpp::Parameter("test.perception.enable_debug", true)});
+  rclcpp::spin_until_future_complete(node->get_node_base_interface(), results);
+
+  sensor_msgs::msg::LaserScan scan;
+  scan.header.stamp = node->now();
+  scan.header.frame_id = "test_link";
+  scan.angle_min = -std::atan2(0.1, 0.9);
+  scan.angle_max = std::atan2(0.1, 0.9);
+  scan.angle_increment = std::atan2(0.1, 0.9);
+  scan.ranges = {0.9055, 1.0, 0.9055};
+  scan.range_min = 0.9055;
+  scan.range_max = 1.0;
+  geometry_msgs::msg::Pose initial_pose;
+  perception->setInitialEstimate(initial_pose, "test_link");
+
+  // This would previously dereference a null publisher and crash the process, since
+  // target_cloud_pub_/dock_cloud_pub_/dock_template_pub_ were only created if debug_ started
+  // true. Reaching the assertion below at all is the real regression check.
+  perception->getDockPose(scan);
+  SUCCEED();
+
+  node->deactivate();
+  node->cleanup();
+  node->shutdown();
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
