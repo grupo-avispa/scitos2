@@ -90,6 +90,21 @@ target_link_libraries(segmentation
 )
 ament_target_dependencies(segmentation PUBLIC nav2_util) # TODO(ajtudela): Fix this in kilted
 
+# Add dock selector library: pure decision logic (which candidate is the dock), with no
+# ROS node, TF or PCL/ICP dependency, so it can be unit tested on its own
+add_library(dock_selector SHARED src/dock_selector.cpp)
+target_include_directories(dock_selector PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+)
+target_link_libraries(dock_selector
+  PUBLIC
+  ${geometry_msgs_TARGETS}
+  PRIVATE
+  angles::angles
+  ${tf2_geometry_msgs_TARGETS}
+)
+
 # Add perception library
 add_library(perception SHARED src/perception.cpp)
 target_include_directories(perception PUBLIC
@@ -98,13 +113,13 @@ target_include_directories(perception PUBLIC
 )
 target_link_libraries(perception
   PUBLIC
+  dock_selector
   ${geometry_msgs_TARGETS}
   rclcpp::rclcpp
   segmentation
   ${sensor_msgs_TARGETS}
   tf2_ros::tf2_ros
   PRIVATE
-  angles::angles
   pcl_ros::pcl_ros_tf
   ${tf2_geometry_msgs_TARGETS}
 )
@@ -174,6 +189,7 @@ rclcpp_components_register_nodes(dock_saver_core "scitos2_charging_dock::DockSav
 # ############
 install(TARGETS ${library_name}
   segmentation
+  dock_selector
   perception
   dock_saver_core
   EXPORT ${PROJECT_NAME}
@@ -217,6 +233,7 @@ ament_export_include_directories(include/${PROJECT_NAME})
 ament_export_libraries(
   ${library_name}
   segmentation
+  dock_selector
   perception
   dock_saver_core
 )

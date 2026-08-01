@@ -10,6 +10,13 @@ target_link_libraries(test_scitos2_cluster
   pcl_ros::pcl_ros_tf
 )
 
+# Test dock selector
+ament_add_gtest(test_scitos2_dock_selector test_dock_selector.cpp)
+target_link_libraries(test_scitos2_dock_selector
+  dock_selector
+  ${tf2_geometry_msgs_TARGETS}
+)
+
 # Test segmentation
 ament_add_gtest(test_scitos2_segmentation test_segmentation.cpp)
 target_link_libraries(test_scitos2_segmentation
