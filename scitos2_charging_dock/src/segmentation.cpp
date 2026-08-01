@@ -169,20 +169,55 @@ Segmentation::dynamicParametersCallback(std::vector<rclcpp::Parameter> parameter
     const auto & name = parameter.get_name();
     if (type == rcl_interfaces::msg::ParameterType::PARAMETER_INTEGER) {
       if (name == name_ + ".segmentation.min_points") {
+        if (parameter.as_int() <= 0 || parameter.as_int() >= max_points_cluster_) {
+          result.successful = false;
+          result.reason = "min_points must be positive and lower than max_points";
+          return result;
+        }
         min_points_cluster_ = parameter.as_int();
       } else if (name == name_ + ".segmentation.max_points") {
+        if (parameter.as_int() <= min_points_cluster_) {
+          result.successful = false;
+          result.reason = "max_points must be greater than min_points";
+          return result;
+        }
         max_points_cluster_ = parameter.as_int();
       }
     } else if (type == rcl_interfaces::msg::ParameterType::PARAMETER_DOUBLE) {
       if (name == name_ + ".segmentation.distance_threshold") {
+        if (parameter.as_double() <= 0.0) {
+          result.successful = false;
+          result.reason = "distance_threshold must be positive";
+          return result;
+        }
         distance_threshold_ = parameter.as_double();
       } else if (name == name_ + ".segmentation.min_distance") {
+        if (parameter.as_double() < 0.0 || parameter.as_double() >= max_avg_distance_from_sensor_) {
+          result.successful = false;
+          result.reason = "min_distance must not be negative and lower than max_distance";
+          return result;
+        }
         min_avg_distance_from_sensor_ = parameter.as_double();
       } else if (name == name_ + ".segmentation.max_distance") {
+        if (parameter.as_double() <= min_avg_distance_from_sensor_) {
+          result.successful = false;
+          result.reason = "max_distance must be greater than min_distance";
+          return result;
+        }
         max_avg_distance_from_sensor_ = parameter.as_double();
       } else if (name == name_ + ".segmentation.min_width") {
+        if (parameter.as_double() <= 0.0 || parameter.as_double() >= max_cluster_width_) {
+          result.successful = false;
+          result.reason = "min_width must be positive and lower than max_width";
+          return result;
+        }
         min_cluster_width_ = parameter.as_double();
       } else if (name == name_ + ".segmentation.max_width") {
+        if (parameter.as_double() <= min_cluster_width_) {
+          result.successful = false;
+          result.reason = "max_width must be greater than min_width";
+          return result;
+        }
         max_cluster_width_ = parameter.as_double();
       }
     }

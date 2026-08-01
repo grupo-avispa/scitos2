@@ -130,10 +130,10 @@ TEST(SegmentationTest, dynamicParameters) {
     {rclcpp::Parameter("test.segmentation.min_points", 1),
       rclcpp::Parameter("test.segmentation.max_points", 3),
       rclcpp::Parameter("test.segmentation.distance_threshold", 1.0),
-      rclcpp::Parameter("test.segmentation.min_distance", 10.0),
-      rclcpp::Parameter("test.segmentation.max_distance", 0.1),
-      rclcpp::Parameter("test.segmentation.min_width", 10.0),
-      rclcpp::Parameter("test.segmentation.max_width", 0.1)});
+      rclcpp::Parameter("test.segmentation.min_distance", 0.1),
+      rclcpp::Parameter("test.segmentation.max_distance", 10.0),
+      rclcpp::Parameter("test.segmentation.min_width", 0.1),
+      rclcpp::Parameter("test.segmentation.max_width", 10.0)});
 
   // Spin
   rclcpp::spin_until_future_complete(node->get_node_base_interface(), results);
@@ -142,10 +142,18 @@ TEST(SegmentationTest, dynamicParameters) {
   EXPECT_EQ(node->get_parameter("test.segmentation.min_points").as_int(), 1);
   EXPECT_EQ(node->get_parameter("test.segmentation.max_points").as_int(), 3);
   EXPECT_EQ(node->get_parameter("test.segmentation.distance_threshold").as_double(), 1.0);
-  EXPECT_EQ(node->get_parameter("test.segmentation.min_distance").as_double(), 10.0);
-  EXPECT_EQ(node->get_parameter("test.segmentation.max_distance").as_double(), 0.1);
-  EXPECT_EQ(node->get_parameter("test.segmentation.min_width").as_double(), 10.0);
-  EXPECT_EQ(node->get_parameter("test.segmentation.max_width").as_double(), 0.1);
+  EXPECT_EQ(node->get_parameter("test.segmentation.min_distance").as_double(), 0.1);
+  EXPECT_EQ(node->get_parameter("test.segmentation.max_distance").as_double(), 10.0);
+  EXPECT_EQ(node->get_parameter("test.segmentation.min_width").as_double(), 0.1);
+  EXPECT_EQ(node->get_parameter("test.segmentation.max_width").as_double(), 10.0);
+
+  // An invalid combination (min greater than the current max) must be rejected outright,
+  // leaving the previously set valid values untouched
+  auto invalid_results = params->set_parameters_atomically(
+    {rclcpp::Parameter("test.segmentation.min_distance", 20.0)});
+  rclcpp::spin_until_future_complete(node->get_node_base_interface(), invalid_results);
+  EXPECT_FALSE(invalid_results.get().successful);
+  EXPECT_EQ(node->get_parameter("test.segmentation.min_distance").as_double(), 0.1);
 
   // Cleaning up
   node->deactivate();

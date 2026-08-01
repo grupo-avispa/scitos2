@@ -358,18 +358,48 @@ rcl_interfaces::msg::SetParametersResult Perception::dynamicParametersCallback(
 
     if (type == rclcpp::ParameterType::PARAMETER_INTEGER) {
       if (name == name_ + ".perception.icp_max_iter") {
+        if (parameter.as_int() <= 0) {
+          result.successful = false;
+          result.reason = "icp_max_iter must be positive";
+          return result;
+        }
         icp_max_iter_ = parameter.as_int();
       }
     } else if (type == rclcpp::ParameterType::PARAMETER_DOUBLE) {
       if (name == name_ + ".perception.icp_min_score") {
+        if (parameter.as_double() < 0.0) {
+          result.successful = false;
+          result.reason = "icp_min_score must not be negative";
+          return result;
+        }
         icp_min_score_ = parameter.as_double();
       } else if (name == name_ + ".perception.icp_max_corr_dis") {
+        if (parameter.as_double() <= 0.0) {
+          result.successful = false;
+          result.reason = "icp_max_corr_dis must be positive";
+          return result;
+        }
         icp_max_corr_dis_ = parameter.as_double();
       } else if (name == name_ + ".perception.icp_max_trans_eps") {
+        if (parameter.as_double() <= 0.0) {
+          result.successful = false;
+          result.reason = "icp_max_trans_eps must be positive";
+          return result;
+        }
         icp_max_trans_eps_ = parameter.as_double();
       } else if (name == name_ + ".perception.icp_max_eucl_fit_eps") {
+        if (parameter.as_double() <= 0.0) {
+          result.successful = false;
+          result.reason = "icp_max_eucl_fit_eps must be positive";
+          return result;
+        }
         icp_max_eucl_fit_eps_ = parameter.as_double();
       } else if (name == name_ + ".perception.max_yaw_error") {
+        if (parameter.as_double() < 0.0) {
+          result.successful = false;
+          result.reason = "max_yaw_error must not be negative";
+          return result;
+        }
         max_yaw_error_ = parameter.as_double();
       }
     } else if (type == rclcpp::ParameterType::PARAMETER_BOOL) {
