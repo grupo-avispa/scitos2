@@ -97,6 +97,7 @@ void ChargingDock::configure(
   scan_sub_ = node_->create_subscription<sensor_msgs::msg::LaserScan>(
     "scan", rclcpp::SensorDataQoS(),
     [this](const sensor_msgs::msg::LaserScan::SharedPtr scan) {
+      std::lock_guard<std::mutex> lock(scan_mutex_);
       scan_ = *scan;
     });
 
@@ -132,7 +133,12 @@ geometry_msgs::msg::PoseStamped ChargingDock::getStagingPose(
 bool ChargingDock::getRefinedPose(geometry_msgs::msg::PoseStamped & pose, std::string /*id*/)
 {
   // Get current detections, transform to frame, and apply offsets
-  geometry_msgs::msg::PoseStamped detected = perception_->getDockPose(scan_);
+  sensor_msgs::msg::LaserScan scan_copy;
+  {
+    std::lock_guard<std::mutex> lock(scan_mutex_);
+    scan_copy = scan_;
+  }
+  geometry_msgs::msg::PoseStamped detected = perception_->getDockPose(scan_copy);
 
   // Validate that external pose is new enough
   auto timeout = rclcpp::Duration::from_seconds(external_detection_timeout_);
