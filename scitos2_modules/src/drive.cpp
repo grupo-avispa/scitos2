@@ -300,12 +300,27 @@ rcl_interfaces::msg::SetParametersResult Drive::dynamicParametersCallback(
       }
     } else if (type == ParameterType::PARAMETER_STRING) {
       if (name == plugin_name_ + ".robot_base_frame") {
+        if (parameter.as_string().empty()) {
+          result.successful = false;
+          result.reason = "robot_base_frame must not be empty";
+          return result;
+        }
         robot_base_frame_ = parameter.as_string();
         RCLCPP_INFO(logger_, "The parameter base_frame is set to: [%s]", robot_base_frame_.c_str());
       } else if (name == plugin_name_ + ".odom_frame") {
+        if (parameter.as_string().empty()) {
+          result.successful = false;
+          result.reason = "odom_frame must not be empty";
+          return result;
+        }
         odom_frame_ = parameter.as_string();
         RCLCPP_INFO(logger_, "The parameter odom_frame is set to: [%s]", odom_frame_.c_str());
       } else if (name == plugin_name_ + ".odom_topic") {
+        if (parameter.as_string().empty()) {
+          result.successful = false;
+          result.reason = "odom_topic must not be empty";
+          return result;
+        }
         odom_topic_ = parameter.as_string();
         RCLCPP_INFO(logger_, "The parameter odom_topic is set to: [%s]", odom_topic_.c_str());
       }

@@ -144,17 +144,37 @@ rcl_interfaces::msg::SetParametersResult Display::dynamicParametersCallback(
       }
     } else if (type == ParameterType::PARAMETER_STRING) {
       if (name == plugin_name_ + ".menu_name") {
+        if (parameter.as_string().empty()) {
+          result.successful = false;
+          result.reason = "menu_name must not be empty";
+          return result;
+        }
         menu_name_ = parameter.as_string();
         RCLCPP_INFO(logger_, "The parameter menu_name is set to: [%s]", menu_name_.c_str());
       } else if (name == plugin_name_ + ".menu_entry_name_1") {
+        if (parameter.as_string().empty()) {
+          result.successful = false;
+          result.reason = "menu_entry_name_1 must not be empty";
+          return result;
+        }
         menu_entry_name_1_ = parameter.as_string();
         RCLCPP_INFO(
           logger_, "The parameter menu_entry_name_1 is set to: [%s]", menu_entry_name_1_.c_str());
       } else if (name == plugin_name_ + ".menu_entry_name_2") {
+        if (parameter.as_string().empty()) {
+          result.successful = false;
+          result.reason = "menu_entry_name_2 must not be empty";
+          return result;
+        }
         menu_entry_name_2_ = parameter.as_string();
         RCLCPP_INFO(
           logger_, "The parameter menu_entry_name_2 is set to: [%s]", menu_entry_name_2_.c_str());
       } else if (name == plugin_name_ + ".menu_entry_name_3") {
+        if (parameter.as_string().empty()) {
+          result.successful = false;
+          result.reason = "menu_entry_name_3 must not be empty";
+          return result;
+        }
         menu_entry_name_3_ = parameter.as_string();
         RCLCPP_INFO(
           logger_, "The parameter menu_entry_name_3 is set to: [%s]", menu_entry_name_3_.c_str());
