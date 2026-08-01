@@ -120,20 +120,16 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
   node->get_parameter(plugin_name_ + ".robot_radius", robot_radius_);
   RCLCPP_INFO(logger_, "The parameter robot_radius is set to: [%f]", robot_radius_);
 
-  // If the footprint has been specified, it must be in the correct format
-  use_radius_ = true;
-  if (footprint_ != "" && footprint_ != "[]") {
-    // Footprint parameter has been specified, try to convert it
-    if (nav2_costmap_2d::makeFootprintFromString(footprint_, unpadded_footprint_)) {
-      // The specified footprint is valid, so we'll use that instead of the radius
-      use_radius_ = false;
-    } else {
-      // Footprint provided but invalid, so stay with the radius
-      unpadded_footprint_ = nav2_costmap_2d::makeFootprintFromRadius(robot_radius_);
+  // If the footprint has been specified and is valid, use it; otherwise fall back to the radius
+  if (footprint_ == "" || footprint_ == "[]" ||
+    !nav2_costmap_2d::makeFootprintFromString(footprint_, unpadded_footprint_))
+  {
+    if (footprint_ != "" && footprint_ != "[]") {
       RCLCPP_ERROR(
         logger_, "The footprint parameter is invalid: \"%s\", using radius (%lf) instead",
         footprint_.c_str(), robot_radius_);
     }
+    unpadded_footprint_ = nav2_costmap_2d::makeFootprintFromRadius(robot_radius_);
   }
 
   // Create ROS publishers

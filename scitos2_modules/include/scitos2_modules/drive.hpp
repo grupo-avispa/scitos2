@@ -366,7 +366,6 @@ protected:
   bool bumper_activated_;
   rclcpp::Time last_bumper_reset_;
   rclcpp::Duration reset_bumper_interval_{0, 0};
-  bool use_radius_{false};
   std::string footprint_;
   double robot_radius_;
   std::vector<geometry_msgs::msg::Point> unpadded_footprint_;
