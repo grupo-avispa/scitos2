@@ -34,8 +34,10 @@ def generate_launch_description():
 
     # Read the YAML parameters file.
     default_params_file = os.path.join(scitos_dir, 'params', 'example.yaml')
-    # This must be changed to the correct path of your docking template file
-    default_template_file = os.path.join(scitos_dir, 'station', 'station.pcd')
+    # This is only a working example (the fixture used by the perception tests).
+    # Generate the real template for your dock with the save_dock service and point
+    # dock_template to it.
+    default_template_file = os.path.join(scitos_dir, 'test', 'dock_test.pcd')
     default_dock_database = os.path.join(scitos_dir, 'params', 'docks.yaml')
 
     # Create the launch configuration variables.
