@@ -112,6 +112,9 @@ protected:
   // MIRA Authority
   std::shared_ptr<mira::Authority> authority_;
 
+  // Parent node, kept to (re)create the publishing timer on activate()
+  rclcpp_lifecycle::LifecycleNode::WeakPtr node_;
+
   std::string plugin_name_;
   rclcpp::Logger logger_{rclcpp::get_logger("IMU")};
 

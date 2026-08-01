@@ -35,6 +35,7 @@ void IMU::configure(
 
   plugin_name_ = name;
   logger_ = node->get_logger();
+  node_ = node;
   authority_ = std::make_shared<mira::Authority>();
   authority_->checkin("/", plugin_name_);
 
@@ -68,12 +69,6 @@ void IMU::configure(
   imu_msg_.header.frame_id = robot_base_frame_;
   imu_msg_.orientation_covariance[0] = -1;
   imu_msg_.angular_velocity_covariance[0] = -1;
-
-  timer_ = node->create_wall_timer(
-    std::chrono::milliseconds(10), [this]() {
-      std::lock_guard<std::mutex> lock_data(mutex_);
-      imu_pub_->publish(imu_msg_);
-    });
 }
 
 void IMU::cleanup()
@@ -90,6 +85,16 @@ void IMU::activate()
   RCLCPP_INFO(
     logger_, "Activating module : %s of type scitos2_module::IMU", plugin_name_.c_str());
   imu_pub_->on_activate();
+
+  auto node = node_.lock();
+  if (!node) {
+    throw std::runtime_error("Unable to lock node!");
+  }
+  timer_ = node->create_wall_timer(
+    std::chrono::milliseconds(10), [this]() {
+      std::lock_guard<std::mutex> lock_data(mutex_);
+      imu_pub_->publish(imu_msg_);
+    });
 
   try {
     authority_->start();
