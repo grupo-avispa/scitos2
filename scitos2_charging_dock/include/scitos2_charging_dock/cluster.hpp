@@ -40,11 +40,11 @@ using Pcloud = pcl::PointCloud<pcl::PointXYZ>;
 struct Cluster
 {
   // Identifier of the cluster
-  int id;
+  int id{0};
   // Original pointcloud of the cluster.
   pcl::PointCloud<pcl::PointXYZ> cloud;
   // Score of the ICP.
-  double score;
+  double score{0.0};
   // Pose of the dock.
   geometry_msgs::msg::PoseStamped pose;
 

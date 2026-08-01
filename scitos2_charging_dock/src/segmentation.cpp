@@ -67,6 +67,7 @@ bool Segmentation::performSegmentation(
 
   // Create the first cluster
   Cluster current_cluster;
+  current_cluster.id = 0;
   current_cluster.cloud.header.frame_id = scan.header.frame_id;
   current_cluster.push_back(points.front());
 
@@ -75,6 +76,7 @@ bool Segmentation::performSegmentation(
     if (isJumpBetweenPoints(points[p - 1], points[p], distance_threshold_)) {
       clusters.push_back(current_cluster);
       current_cluster.clear();
+      current_cluster.id = static_cast<int>(clusters.size());
     }
     current_cluster.push_back(points[p]);
   }
