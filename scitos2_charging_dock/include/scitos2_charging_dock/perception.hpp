@@ -64,15 +64,6 @@ public:
   ~Perception() = default;
 
   /**
-   * @brief Store the dock pointcloud to a PCD file.
-   *
-   * @param filepath The path to the file
-   * @param dock The dock to store
-   * @return bool If the file was stored
-   */
-  bool storeDockPointcloud(const std::string & filepath, const Pcloud & dock);
-
-  /**
    * @brief Get the dock pose from the scan.
    *
    * @param scan The scan to process
@@ -87,14 +78,6 @@ public:
    * @param frame The frame of the pose
    */
   void setInitialEstimate(const geometry_msgs::msg::Pose & pose, const std::string & frame);
-
-  /**
-   * @brief Extract clusters from a scan.
-   *
-   * @param scan The scan to process
-   * @return Clusters The clusters
-   */
-  Clusters extractClustersFromScan(const sensor_msgs::msg::LaserScan & scan);
 
 protected:
   /**
@@ -115,15 +98,6 @@ protected:
    * @return bool If the dock is found
    */
   bool refineAllClustersPoses(Clusters & clusters, const Cluster & dock_template, Cluster & dock);
-
-  /**
-   * @brief Load the dock template from a PCD file.
-   *
-   * @param filepath The path to the file
-   * @param dock The loaded dock
-   * @return bool If the file was loaded
-   */
-  bool loadDockPointcloud(const std::string & filepath, Pcloud & dock);
 
   /**
    * @brief Create a PointCloud2 message from a PCL pointcloud.

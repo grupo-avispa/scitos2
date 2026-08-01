@@ -15,6 +15,7 @@
 
 #include <cmath>
 
+#include "pcl/io/pcd_io.h"
 #include "pcl_conversions/pcl_conversions.h"
 #include "rclcpp/rclcpp.hpp"
 #include "nav2_ros_common/node_utils.hpp"
@@ -127,6 +128,46 @@ Clusters Segmentation::filterClusters(const Clusters & clusters)
     filtered_clusters.push_back(cluster);
   }
   return filtered_clusters;
+}
+
+Clusters Segmentation::extractClustersFromScan(const sensor_msgs::msg::LaserScan & scan)
+{
+  Clusters clusters;
+  if (performSegmentation(scan, clusters)) {
+    clusters = filterClusters(clusters);
+  }
+  return clusters;
+}
+
+bool Segmentation::loadDockPointcloud(const std::string & filepath, Pcloud & dock)
+{
+  bool success = false;
+  if (filepath.empty()) {
+    RCLCPP_ERROR(
+      rclcpp::get_logger("Segmentation"), "Couldn't load the dock from an empty file path");
+  } else {
+    if (pcl::io::loadPCDFile<pcl::PointXYZ>(filepath, dock) == -1 || dock.empty()) {
+      RCLCPP_ERROR(rclcpp::get_logger("Segmentation"), "Failed to load the dock from PCD file");
+    } else {
+      RCLCPP_INFO(
+        rclcpp::get_logger("Segmentation"), "Dock loaded from PCD file with %lu points",
+        dock.size());
+      success = true;
+    }
+  }
+  return success;
+}
+
+bool Segmentation::storeDockPointcloud(const std::string & filepath, const Pcloud & dock)
+{
+  bool success = false;
+  if (pcl::io::savePCDFile<pcl::PointXYZ>(filepath, dock) < 0) {
+    RCLCPP_ERROR(rclcpp::get_logger("Segmentation"), "Failed to save the dock to PCD file");
+  } else {
+    RCLCPP_INFO(rclcpp::get_logger("Segmentation"), "Dock saved to PCD file");
+    success = true;
+  }
+  return success;
 }
 
 geometry_msgs::msg::Point Segmentation::fromPolarToCartesian(double range, double angle)

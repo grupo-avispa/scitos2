@@ -20,6 +20,7 @@ target_link_libraries(test_scitos2_dock_selector
 # Test segmentation
 ament_add_gtest(test_scitos2_segmentation test_segmentation.cpp)
 target_link_libraries(test_scitos2_segmentation
+  ament_index_cpp::ament_index_cpp
   pcl_ros::pcl_ros_tf
   rclcpp_lifecycle::rclcpp_lifecycle
   segmentation

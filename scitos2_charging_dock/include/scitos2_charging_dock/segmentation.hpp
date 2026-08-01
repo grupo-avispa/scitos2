@@ -74,6 +74,33 @@ public:
   Clusters filterClusters(const Clusters & clusters);
 
   /**
+   * @brief Segment a scan and filter the resulting clusters in one step.
+   *
+   * @param scan The scan to process
+   * @return Clusters The clusters
+   */
+  Clusters extractClustersFromScan(const sensor_msgs::msg::LaserScan & scan);
+
+  /**
+   * @brief Load a pointcloud from a PCD file. Used both for the ICP dock template and by
+   * DockSaver, which has no need for the rest of Perception (ICP, TF) just to read a PCD file.
+   *
+   * @param filepath The path to the file
+   * @param dock The loaded pointcloud
+   * @return bool If the file was loaded
+   */
+  static bool loadDockPointcloud(const std::string & filepath, Pcloud & dock);
+
+  /**
+   * @brief Store a pointcloud to a PCD file.
+   *
+   * @param filepath The path to the file
+   * @param dock The pointcloud to store
+   * @return bool If the file was stored
+   */
+  static bool storeDockPointcloud(const std::string & filepath, const Pcloud & dock);
+
+  /**
    * @brief Callback executed when a parameter change is detected
    * @param event ParameterEvent message
    */

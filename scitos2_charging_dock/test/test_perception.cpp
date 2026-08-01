@@ -30,11 +30,6 @@ public:
   {
   }
 
-  bool loadDockPointcloud(std::string filepath, scitos2_charging_dock::Pcloud & dock)
-  {
-    return scitos2_charging_dock::Perception::loadDockPointcloud(filepath, dock);
-  }
-
   sensor_msgs::msg::PointCloud2 createPointCloud2Msg(const scitos2_charging_dock::Pcloud & cloud)
   {
     return scitos2_charging_dock::Perception::createPointCloud2Msg(cloud);
@@ -126,51 +121,6 @@ TEST(ScitosDockingPerception, dynamicParameters) {
   node->deactivate();
   node->cleanup();
   node->shutdown();
-}
-
-TEST(ScitosDockingPerception, loadDockPointcloud) {
-  // Create a node
-  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("perception_test");
-  auto perception = std::make_shared<PerceptionFixture>(node, "test", nullptr);
-
-  // Try to load an empty file
-  std::string filename = "";
-  scitos2_charging_dock::Pcloud dock;
-  bool success = perception->loadDockPointcloud(filename, dock);
-  // Check if the docking station was loaded
-  EXPECT_FALSE(success);
-  EXPECT_EQ(dock.size(), 0);
-
-  // Try to load another docking station
-  std::string pkg_path = ament_index_cpp::get_package_share_path("scitos2_charging_dock").string();
-  std::string path = pkg_path + "/test/empty_dock_test.pcd";
-  success = perception->loadDockPointcloud(path, dock);
-  // Check if the docking station was loaded
-  EXPECT_FALSE(success);
-  EXPECT_EQ(dock.size(), 0);
-
-  // Try to load a valid docking station
-  path = pkg_path + "/test/dock_test.pcd";
-  success = perception->loadDockPointcloud(path, dock);
-  // Check if the docking station was loaded
-  EXPECT_TRUE(success);
-  EXPECT_EQ(dock.size(), 3);
-}
-
-TEST(ScitosDockingPerception, storeDockPointcloud) {
-  // Create a node
-  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("perception_test");
-  auto perception = std::make_shared<PerceptionFixture>(node, "test", nullptr);
-
-  // Store a pointcloud
-  std::string pkg_path = ament_index_cpp::get_package_share_path("scitos2_charging_dock").string();
-  std::string path = pkg_path + "/test/empty_dock_test2.pcd";
-  scitos2_charging_dock::Pcloud dock;
-  dock.push_back(pcl::PointXYZ(0, 0, 0));
-  bool success = perception->storeDockPointcloud(path, dock);
-
-  // Check if the docking station was stored
-  EXPECT_TRUE(success);
 }
 
 TEST(ScitosDockingPerception, createPointcloudMsg) {

@@ -18,7 +18,6 @@
 
 // PCL
 #include <pcl/common/eigen.h>
-#include <pcl/io/pcd_io.h>
 #include <pcl/registration/icp.h>
 
 // TF
@@ -83,7 +82,7 @@ Perception::Perception(
   // Load the dock template
   std::string dock_template;
   node->get_parameter(name_ + ".perception.dock_template", dock_template);
-  dock_template_loaded_ = loadDockPointcloud(dock_template, dock_template_.cloud);
+  dock_template_loaded_ = Segmentation::loadDockPointcloud(dock_template, dock_template_.cloud);
   if (!dock_template_loaded_) {
     RCLCPP_ERROR(
       logger_,
@@ -117,7 +116,7 @@ geometry_msgs::msg::PoseStamped Perception::getDockPose(const sensor_msgs::msg::
   }
 
   // Extract clusters from the scan
-  auto clusters = extractClustersFromScan(scan);
+  auto clusters = segmentation_->extractClustersFromScan(scan);
 
   // Refine the pose of each cluster to get the dock pose
   // If we only wants the first detection, just update the timestamp
@@ -140,45 +139,6 @@ void Perception::setInitialEstimate(
   initial_estimate_pose_.header.stamp = clock_->now();
   dock_found_ = false;
 }
-
-bool Perception::loadDockPointcloud(const std::string & filepath, Pcloud & dock)
-{
-  bool success = false;
-  if (filepath.empty()) {
-    RCLCPP_ERROR(logger_, "Couldn't load the dock from an empty file path");
-  } else {
-    if (pcl::io::loadPCDFile<pcl::PointXYZ>(filepath, dock) == -1 || dock.empty()) {
-      RCLCPP_ERROR(logger_, "Failed to load the dock from PCD file");
-    } else {
-      RCLCPP_INFO(logger_, "Dock loaded from PCD file with %lu points", dock.size());
-      success = true;
-    }
-  }
-  return success;
-}
-
-bool Perception::storeDockPointcloud(const std::string & filepath, const Pcloud & dock)
-{
-  bool success = false;
-  if (pcl::io::savePCDFile<pcl::PointXYZ>(filepath, dock) < 0) {
-    RCLCPP_ERROR(logger_, "Failed to save the dock to PCD file");
-  } else {
-    RCLCPP_INFO(logger_, "Dock saved to PCD file");
-    success = true;
-  }
-  return success;
-}
-
-Clusters Perception::extractClustersFromScan(const sensor_msgs::msg::LaserScan & scan)
-{
-  // Perform segmentation on the scan and filter the clusters
-  Clusters clusters;
-  if (segmentation_->performSegmentation(scan, clusters)) {
-    clusters = segmentation_->filterClusters(clusters);
-  }
-  return clusters;
-}
-
 
 bool Perception::refineClusterPose(Cluster & cluster, const Pcloud & cloud_template)
 {
