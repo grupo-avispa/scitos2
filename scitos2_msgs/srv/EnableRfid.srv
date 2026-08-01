@@ -2,3 +2,5 @@
 
 bool enable         # True to enable the RFID reader, false to disable it.
 ---
+bool success         # True if the RFID reader was successfully enabled/disabled.
+string message       # Error message, if any.

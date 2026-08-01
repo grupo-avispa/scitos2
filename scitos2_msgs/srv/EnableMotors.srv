@@ -4,3 +4,5 @@
 
 bool enable         # True to enable the motors, false to disable them.
 ---
+bool success         # True if the motors were successfully enabled/disabled.
+string message       # Error message, if any.

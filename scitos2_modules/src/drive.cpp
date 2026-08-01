@@ -382,61 +382,92 @@ bool Drive::changeForce(
   const std::shared_ptr<scitos2_msgs::srv::ChangeForce::Request> request,
   std::shared_ptr<scitos2_msgs::srv::ChangeForce::Response> response)
 {
-  return set_mira_param(authority_, "MotorController.Force", mira::toString(request->force));
+  response->success = set_mira_param(
+    authority_, "MotorController.Force", mira::toString(request->force));
+  if (!response->success) {
+    response->message = "MIRA service call failed";
+  }
+  return response->success;
 }
 
 bool Drive::emergencyStop(
-  const std::shared_ptr<scitos2_msgs::srv::EmergencyStop::Request> request,
+  const std::shared_ptr<scitos2_msgs::srv::EmergencyStop::Request>/*request*/,
   std::shared_ptr<scitos2_msgs::srv::EmergencyStop::Response> response)
 {
-  return call_mira_service(authority_, "emergencyStop");
+  response->success = call_mira_service(authority_, "emergencyStop");
+  if (!response->success) {
+    response->message = "MIRA service call failed";
+  }
+  return response->success;
 }
 
 bool Drive::enableMotors(
   const std::shared_ptr<scitos2_msgs::srv::EnableMotors::Request> request,
   std::shared_ptr<scitos2_msgs::srv::EnableMotors::Response> response)
 {
-  return call_mira_service(authority_, "enableMotors", std::optional<bool>(request->enable));
+  response->success = call_mira_service(
+    authority_, "enableMotors", std::optional<bool>(request->enable));
+  if (!response->success) {
+    response->message = "MIRA service call failed";
+  }
+  return response->success;
 }
 
 bool Drive::enableRfid(
   const std::shared_ptr<scitos2_msgs::srv::EnableRfid::Request> request,
   std::shared_ptr<scitos2_msgs::srv::EnableRfid::Response> response)
 {
-  return set_mira_param(
+  response->success = set_mira_param(
     authority_, "MainControlUnit.RearLaser.Enabled", request->enable ? "true" : "false");
+  if (!response->success) {
+    response->message = "MIRA service call failed";
+  }
+  return response->success;
 }
 
 bool Drive::resetBarrierStop(
-  const std::shared_ptr<scitos2_msgs::srv::ResetBarrierStop::Request> request,
+  const std::shared_ptr<scitos2_msgs::srv::ResetBarrierStop::Request>/*request*/,
   std::shared_ptr<scitos2_msgs::srv::ResetBarrierStop::Response> response)
 {
   barrier_status_.header.frame_id = robot_base_frame_;
   barrier_status_.header.stamp = clock_->now();
   barrier_status_.barrier_stopped = false;
   magnetic_barrier_pub_->publish(barrier_status_);
-  return true;
+  response->success = true;
+  return response->success;
 }
 
 bool Drive::resetMotorStop(
-  const std::shared_ptr<scitos2_msgs::srv::ResetMotorStop::Request> request,
+  const std::shared_ptr<scitos2_msgs::srv::ResetMotorStop::Request>/*request*/,
   std::shared_ptr<scitos2_msgs::srv::ResetMotorStop::Response> response)
 {
-  return call_mira_service(authority_, "resetMotorStop");
+  response->success = call_mira_service(authority_, "resetMotorStop");
+  if (!response->success) {
+    response->message = "MIRA service call failed";
+  }
+  return response->success;
 }
 
 bool Drive::resetOdometry(
-  const std::shared_ptr<scitos2_msgs::srv::ResetOdometry::Request> request,
+  const std::shared_ptr<scitos2_msgs::srv::ResetOdometry::Request>/*request*/,
   std::shared_ptr<scitos2_msgs::srv::ResetOdometry::Response> response)
 {
-  return call_mira_service(authority_, "resetOdometry");
+  response->success = call_mira_service(authority_, "resetOdometry");
+  if (!response->success) {
+    response->message = "MIRA service call failed";
+  }
+  return response->success;
 }
 
 bool Drive::suspendBumper(
-  const std::shared_ptr<scitos2_msgs::srv::SuspendBumper::Request> request,
+  const std::shared_ptr<scitos2_msgs::srv::SuspendBumper::Request>/*request*/,
   std::shared_ptr<scitos2_msgs::srv::SuspendBumper::Response> response)
 {
-  return call_mira_service(authority_, "suspendBumper");
+  response->success = call_mira_service(authority_, "suspendBumper");
+  if (!response->success) {
+    response->message = "MIRA service call failed";
+  }
+  return response->success;
 }
 
 visualization_msgs::msg::MarkerArray Drive::createBumperMarkers(std_msgs::msg::Header header)

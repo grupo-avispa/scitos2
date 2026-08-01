@@ -1,3 +1,5 @@
 # This service requests reset the motor stop flags (bumper, emergency stop flags, etc).
 
 ---
+bool success         # True if the motor stop flags were successfully reset.
+string message       # Error message, if any.

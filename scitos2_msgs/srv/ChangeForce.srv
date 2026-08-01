@@ -2,3 +2,5 @@
 
 uint16 force        # Force applied in percent.
 ---
+bool success         # True if the force was changed successfully.
+string message       # Error message, if any.
