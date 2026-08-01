@@ -156,6 +156,10 @@ protected:
   double icp_max_corr_dis_{0.0};
   double icp_max_trans_eps_{0.0};
   double icp_max_eucl_fit_eps_{0.0};
+  // Max yaw error (rad) between the refined pose and the initial estimate to accept a candidate.
+  // The dock is asymmetric, so a match far from the initial estimate is a mismatch, not a
+  // correction, and must be discarded rather than accepted.
+  double max_yaw_error_{0.0};
   // Initial estimate of the dock pose
   geometry_msgs::msg::PoseStamped initial_estimate_pose_;
   // Segmentation

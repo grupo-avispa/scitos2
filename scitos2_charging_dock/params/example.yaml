@@ -55,6 +55,7 @@ docking_server:
         icp_max_corr_dis: 0.25
         icp_max_trans_eps: 1.0e-8
         icp_max_eucl_fit_eps: 1.0e-8
+        max_yaw_error: 1.5708
         enable_debug: true
         # Mandatory: path to a PCD file with the dock pointcloud, generated with the
         # save_dock service. Perception cannot detect anything while this is empty.

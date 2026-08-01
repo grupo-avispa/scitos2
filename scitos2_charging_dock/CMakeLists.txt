@@ -106,6 +106,7 @@ target_link_libraries(perception
   ${sensor_msgs_TARGETS}
   tf2_ros::tf2_ros
   PRIVATE
+  angles::angles
   nav2_ros_common::nav2_ros_common
   pcl_ros::pcl_ros_tf
   pcl_conversions::pcl_conversions
