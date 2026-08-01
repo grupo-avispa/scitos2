@@ -23,10 +23,11 @@
 
 // TF
 #include "tf2/transform_datatypes.h"
+#include "tf2/utils.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 
 // ROS
-
+#include "angles/angles.h"
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "nav2_util/node_utils.hpp"
 #include "pcl_conversions/pcl_conversions.h"
@@ -62,6 +63,8 @@ Perception::Perception(
     node, name_ + ".perception.dock_template", rclcpp::ParameterValue(""));
   nav2_util::declare_parameter_if_not_declared(
     node, name_ + ".perception.use_first_detection", rclcpp::ParameterValue(false));
+  nav2_util::declare_parameter_if_not_declared(
+    node, name_ + ".perception.max_yaw_error", rclcpp::ParameterValue(M_PI_2));
 
   node->get_parameter(name_ + ".perception.icp_min_score", icp_min_score_);
   node->get_parameter(name_ + ".perception.icp_max_iter", icp_max_iter_);
@@ -70,6 +73,7 @@ Perception::Perception(
   node->get_parameter(name_ + ".perception.icp_max_eucl_fit_eps", icp_max_eucl_fit_eps_);
   node->get_parameter(name_ + ".perception.enable_debug", debug_);
   node->get_parameter(name_ + ".perception.use_first_detection", use_first_detection_);
+  node->get_parameter(name_ + ".perception.max_yaw_error", max_yaw_error_);
 
   // Load the dock template
   std::string dock_template;
@@ -285,6 +289,18 @@ bool Perception::refineAllClustersPoses(
 
     // Refine the cluster to get the dock pose
     if (refineClusterPose(cluster, cloud_template_initial)) {
+      // The dock is asymmetric: a refined pose whose orientation is far from the initial
+      // estimate is a mismatch (e.g. ICP settling ~180 deg flipped), not a valid correction
+      const double initial_yaw = tf2::getYaw(initial_estimate_pose_.pose.orientation);
+      const double refined_yaw = tf2::getYaw(cluster.pose.pose.orientation);
+      const double yaw_error = angles::shortest_angular_distance(initial_yaw, refined_yaw);
+      if (std::abs(yaw_error) > max_yaw_error_) {
+        RCLCPP_DEBUG(
+          logger_, "Discarding cluster %i: yaw error %f exceeds max_yaw_error %f",
+          cluster.id, yaw_error, max_yaw_error_);
+        continue;
+      }
+
       // Check if potential dock is found
       if (cluster.score < icp_min_score_) {
         RCLCPP_DEBUG(
@@ -353,6 +369,8 @@ rcl_interfaces::msg::SetParametersResult Perception::dynamicParametersCallback(
         icp_max_trans_eps_ = parameter.as_double();
       } else if (name == name_ + ".perception.icp_max_eucl_fit_eps") {
         icp_max_eucl_fit_eps_ = parameter.as_double();
+      } else if (name == name_ + ".perception.max_yaw_error") {
+        max_yaw_error_ = parameter.as_double();
       }
     } else if (type == rclcpp::ParameterType::PARAMETER_BOOL) {
       if (name == name_ + ".perception.enable_debug") {

@@ -122,6 +122,10 @@ A **save_dock** service is provided to save the current pointcloud of the chargi
 
 	Freeze the first successful detection instead of refining the dock pose on every scan.
 
+* **`perception.max_yaw_error`** (double, default: 1.5707963267948966)
+
+	Maximum yaw error (rad) between a refined candidate and the initial estimate to accept it. The dock is asymmetric, so a candidate refined far from the initial estimate (e.g. ~180 deg flipped) is discarded instead of accepted.
+
 * **`segmentation.distance_threshold`** (double, default: 0.04)
 
 	The maximum distance between points in a cluster.
