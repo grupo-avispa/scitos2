@@ -55,7 +55,8 @@ void IMU::configure(
   RCLCPP_INFO(logger_, "The parameter imu_topic is set to: [%s]", imu_topic_.c_str());
 
   // Create ROS publishers
-  imu_pub_ = node->create_publisher<sensor_msgs::msg::Imu>("imu", rclcpp::SystemDefaultsQoS());
+  imu_pub_ = node->create_publisher<sensor_msgs::msg::Imu>(
+    imu_topic_, rclcpp::SystemDefaultsQoS());
 
   // Create MIRA subscribers
   authority_->subscribe<mira::Point3f>(
