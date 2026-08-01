@@ -22,9 +22,7 @@
 #include "nav2_util/lifecycle_node.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "scitos2_msgs/srv/save_dock.hpp"
-#include "scitos2_charging_dock/perception.hpp"
-#include "tf2_ros/buffer.h"
-#include "tf2_ros/transform_listener.h"
+#include "scitos2_charging_dock/segmentation.hpp"
 
 namespace scitos2_charging_dock
 {
@@ -97,13 +95,9 @@ protected:
   // The timeout for saving the dock in service
   std::shared_ptr<rclcpp::Duration> save_dock_timeout_;
 
-  // Perception module to interact with scans and point clouds
-  std::shared_ptr<Perception> perception_;
-
-  // The TF buffer
-  std::shared_ptr<tf2_ros::Buffer> tf2_buffer_;
-  // The TF listener that feeds tf2_buffer_
-  std::shared_ptr<tf2_ros::TransformListener> tf2_listener_;
+  // Segmentation module to turn scans into clusters. DockSaver only needs to segment and
+  // save a pointcloud, not the ICP matching, TF or debug publishers that Perception carries.
+  std::shared_ptr<Segmentation> segmentation_;
 
   // The name of the service for saving a dock from topic
   const std::string save_dock_service_name_{"save_dock"};

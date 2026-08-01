@@ -100,6 +100,7 @@ target_include_directories(dock_selector PUBLIC
 target_link_libraries(dock_selector
   PUBLIC
   ${geometry_msgs_TARGETS}
+  pcl_ros::pcl_ros_tf
   PRIVATE
   angles::angles
   ${tf2_geometry_msgs_TARGETS}
@@ -164,10 +165,9 @@ target_include_directories(dock_saver_core PUBLIC
 )
 target_link_libraries(dock_saver_core
   PUBLIC
-  perception
+  segmentation
   rclcpp::rclcpp
   ${scitos2_msgs_TARGETS}
-  tf2_ros::tf2_ros
   PRIVATE
   angles::angles
   ${sensor_msgs_TARGETS}

@@ -51,10 +51,8 @@ DockSaver::on_configure(const rclcpp_lifecycle::State & /*state*/)
     service_prefix + save_dock_service_name_,
     std::bind(&DockSaver::saveDockCallback, this, std::placeholders::_1, std::placeholders::_2));
 
-  // Setup TF buffer and perception
-  tf2_buffer_ = std::make_shared<tf2_ros::Buffer>(get_clock());
-  tf2_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf2_buffer_);
-  perception_ = std::make_unique<Perception>(shared_from_this(), "dock_saver", tf2_buffer_);
+  // Setup segmentation, the only thing needed to turn a scan into dock clusters
+  segmentation_ = std::make_shared<Segmentation>(shared_from_this(), "dock_saver");
 
   return nav2_util::CallbackReturn::SUCCESS;
 }
@@ -155,7 +153,7 @@ bool DockSaver::saveDockCallback(
   sensor_msgs::msg::LaserScan::SharedPtr scan_msg = future_result.get();
 
   // Extract clusters from the scan
-  auto clusters = perception_->extractClustersFromScan(*scan_msg);
+  auto clusters = segmentation_->extractClustersFromScan(*scan_msg);
 
   if (clusters.empty()) {
     RCLCPP_ERROR(get_logger(), "No clusters found in the scan");
@@ -177,7 +175,7 @@ bool DockSaver::saveDockCallback(
   }
 
   // Store the dock pointcloud to a file
-  response->result = perception_->storeDockPointcloud(filename, clusters[idx].cloud);
+  response->result = Segmentation::storeDockPointcloud(filename, clusters[idx].cloud);
 
   return true;
 }

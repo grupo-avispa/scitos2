@@ -14,6 +14,7 @@
 // limitations under the License.
 
 #include "gtest/gtest.h"
+#include "ament_index_cpp/get_package_share_directory.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "scitos2_charging_dock/segmentation.hpp"
 
@@ -408,6 +409,37 @@ TEST(SegmentationTest, filteringClusters) {
   EXPECT_EQ(filtered_clusters.size(), 1);
   EXPECT_EQ(filtered_clusters[0].centroid().x, 3.0);
   EXPECT_EQ(filtered_clusters[0].centroid().y, 3.0);
+}
+
+TEST(SegmentationTest, loadDockPointcloud) {
+  // Try to load an empty file
+  std::string filename = "";
+  scitos2_charging_dock::Pcloud dock;
+  bool success = scitos2_charging_dock::Segmentation::loadDockPointcloud(filename, dock);
+  EXPECT_FALSE(success);
+  EXPECT_EQ(dock.size(), 0);
+
+  // Try to load an empty pointcloud
+  std::string pkg = ament_index_cpp::get_package_share_directory("scitos2_charging_dock");
+  std::string path = pkg + "/test/empty_dock_test.pcd";
+  success = scitos2_charging_dock::Segmentation::loadDockPointcloud(path, dock);
+  EXPECT_FALSE(success);
+  EXPECT_EQ(dock.size(), 0);
+
+  // Try to load a valid docking station
+  path = pkg + "/test/dock_test.pcd";
+  success = scitos2_charging_dock::Segmentation::loadDockPointcloud(path, dock);
+  EXPECT_TRUE(success);
+  EXPECT_EQ(dock.size(), 3);
+}
+
+TEST(SegmentationTest, storeDockPointcloud) {
+  std::string pkg = ament_index_cpp::get_package_share_directory("scitos2_charging_dock");
+  std::string path = pkg + "/test/empty_dock_test2.pcd";
+  scitos2_charging_dock::Pcloud dock;
+  dock.push_back(pcl::PointXYZ(0, 0, 0));
+  bool success = scitos2_charging_dock::Segmentation::storeDockPointcloud(path, dock);
+  EXPECT_TRUE(success);
 }
 
 int main(int argc, char ** argv)
