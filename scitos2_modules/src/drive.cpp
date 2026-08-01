@@ -98,7 +98,9 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
   declare_parameter_if_not_declared(
     node, plugin_name_ + ".reset_bumper_interval",
     rclcpp::ParameterValue(0), rcl_interfaces::msg::ParameterDescriptor()
-    .set__description("The interval in milliseconds to reset the bumper"));
+    .set__description(
+      "The interval in milliseconds to reset the bumper. A value <= 0 disables the "
+      "automatic reset"));
   node->get_parameter(plugin_name_ + ".reset_bumper_interval", rbi);
   RCLCPP_INFO(logger_, "The parameter reset_bumper_interval is set to: [%i]", rbi);
   reset_bumper_interval_ = rclcpp::Duration::from_seconds(rbi / 1000.0);
@@ -513,6 +515,11 @@ bool Drive::isEmergencyStopReleased(scitos2_msgs::msg::EmergencyStopStatus msg)
 
 void Drive::resetMotorStopAfterTimeout(rclcpp::Time current_time)
 {
+  // A non-positive interval means the automatic reset is disabled
+  if (reset_bumper_interval_.seconds() <= 0.0) {
+    return;
+  }
+
   if (bumper_activated_ && (current_time - last_bumper_reset_) > reset_bumper_interval_) {
     call_mira_service(authority_, "resetMotorStop");
     last_bumper_reset_ = current_time;
