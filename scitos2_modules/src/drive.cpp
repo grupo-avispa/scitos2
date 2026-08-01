@@ -363,7 +363,7 @@ void Drive::driveStatusCallback(mira::ChannelRead<uint32> data)
 void Drive::rfidStatusCallback(mira::ChannelRead<uint64> data)
 {
   if (isBarrierCode(data->value())) {
-    auto barrier_status = miraToRosBarrierStatus(data->value(), data->timestamp);
+    barrier_status_ = miraToRosBarrierStatus(data->value(), data->timestamp);
     magnetic_barrier_pub_->publish(barrier_status_);
   }
 
