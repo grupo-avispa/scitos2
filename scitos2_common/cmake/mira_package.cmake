@@ -65,6 +65,11 @@ macro(include_mira_packages)
   # Require MIRAFramework package
   mira_require_package(MIRAFramework)
   mira_require_package(RobotDataTypes)
+
+  # MIRA's own build scripts add its headers via the legacy include_directories(), not as a
+  # CMake target, so snapshot them here (before any of our own target_include_directories
+  # calls) for target_link_mira_libraries() to mark as SYSTEM further down.
+  get_property(MIRA_SYSTEM_INCLUDE_DIRS DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
 endmacro()
 
 # #############################################################################
@@ -83,9 +88,8 @@ macro(target_link_mira_libraries target)
   # to our own code, not to a third-party dependency we don't control. PUBLIC so that anything
   # linking ${target} (e.g. its unit tests) inherits the SYSTEM treatment too, since MIRA
   # headers are reachable transitively through it.
-  get_target_property(MIRA_INCLUDE_DIRS MIRAFramework INTERFACE_INCLUDE_DIRECTORIES)
-  if(MIRA_INCLUDE_DIRS)
-    target_include_directories(${target} SYSTEM PUBLIC ${MIRA_INCLUDE_DIRS})
+  if(MIRA_SYSTEM_INCLUDE_DIRS)
+    target_include_directories(${target} SYSTEM PUBLIC ${MIRA_SYSTEM_INCLUDE_DIRS})
   endif()
 
   # use, i.e. don't skip the full RPATH for the build tree
