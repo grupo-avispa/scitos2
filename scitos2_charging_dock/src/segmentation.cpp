@@ -109,15 +109,17 @@ Clusters Segmentation::filterClusters(const Clusters & clusters)
     }
 
     // By distance to sensor
-    if (cluster.centroid_length() < min_avg_distance_from_sensor_ ||
-      cluster.centroid_length() > max_avg_distance_from_sensor_)
+    const double centroid_length = cluster.centroid_length();
+    if (centroid_length < min_avg_distance_from_sensor_ ||
+      centroid_length > max_avg_distance_from_sensor_)
     {
       continue;
     }
 
     // By width
-    if (cluster.width_squared() < squared_min_cluster_width ||
-      cluster.width_squared() > squared_max_cluster_width)
+    const double width_squared = cluster.width_squared();
+    if (width_squared < squared_min_cluster_width ||
+      width_squared > squared_max_cluster_width)
     {
       continue;
     }
