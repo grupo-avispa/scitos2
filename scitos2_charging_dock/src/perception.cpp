@@ -23,16 +23,15 @@
 
 // TF
 #include "tf2/transform_datatypes.hpp"
-#include "tf2/utils.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 
 // ROS
-#include "angles/angles.h"
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "nav2_ros_common/node_utils.hpp"
 #include "pcl_conversions/pcl_conversions.h"
 #include "pcl_ros/transforms.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "scitos2_charging_dock/dock_selector.hpp"
 #include "scitos2_charging_dock/perception.hpp"
 
 namespace scitos2_charging_dock
@@ -238,7 +237,7 @@ bool Perception::refineAllClustersPoses(
   Clusters & clusters, const Cluster & dock_template, Cluster & dock)
 {
   bool success = false;
-  Clusters potential_docks;
+  Clusters refined_candidates;
 
   for (auto & cluster : clusters) {
     // Discard clusters not valid (i.e. clusters not similar to dock by size, ...)
@@ -289,32 +288,17 @@ bool Perception::refineAllClustersPoses(
 
     // Refine the cluster to get the dock pose
     if (refineClusterPose(cluster, cloud_template_initial)) {
-      // The dock is asymmetric: a refined pose whose orientation is far from the initial
-      // estimate is a mismatch (e.g. ICP settling ~180 deg flipped), not a valid correction
-      const double initial_yaw = tf2::getYaw(initial_estimate_pose_.pose.orientation);
-      const double refined_yaw = tf2::getYaw(cluster.pose.pose.orientation);
-      const double yaw_error = angles::shortest_angular_distance(initial_yaw, refined_yaw);
-      if (std::abs(yaw_error) > max_yaw_error_) {
-        RCLCPP_DEBUG(
-          logger_, "Discarding cluster %i: yaw error %f exceeds max_yaw_error %f",
-          cluster.id, yaw_error, max_yaw_error_);
-        continue;
-      }
-
-      // Check if potential dock is found
-      if (cluster.score < icp_min_score_) {
-        RCLCPP_DEBUG(
-          logger_, "Dock potentially identified at cluster %i with score %f",
-          cluster.id, cluster.score);
-        potential_docks.push_back(cluster);
-      }
+      refined_candidates.push_back(cluster);
     }
   }
 
-  // Check if dock is found
-  if (!potential_docks.empty()) {
-    // Select the candidate with the best (lowest) ICP score
-    dock = *std::min_element(potential_docks.begin(), potential_docks.end());
+  // Decide which (if any) refined candidate is the dock. Pure decision logic, kept out of
+  // this method so it can be unit tested without a node, TF or PCL/ICP involved.
+  auto selected = selectDock(
+    refined_candidates, initial_estimate_pose_, {icp_min_score_, max_yaw_error_});
+
+  if (selected.has_value()) {
+    dock = *selected;
     // Publish the dock cloud
     if (debug_) {
       dock_cloud_pub_->publish(createPointCloud2Msg(dock.cloud));
