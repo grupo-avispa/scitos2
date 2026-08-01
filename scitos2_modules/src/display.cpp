@@ -90,9 +90,6 @@ void Display::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
   node->get_parameter(plugin_name_ + ".menu_entry_name_3", menu_entry_name_3_);
   RCLCPP_INFO(
     logger_, "The parameter menu_entry_name_3 is set to: [%s]", menu_entry_name_3_.c_str());
-
-  // Change the menu entries
-  changeMenuEntries();
 }
 
 void Display::cleanup()
@@ -115,6 +112,9 @@ void Display::activate()
     RCLCPP_ERROR(logger_, "Failed to start scitos2_module::Display. Exception: %s", ex.what());
     return;
   }
+
+  // MIRA parameters can only be written once the authority has started
+  changeMenuEntries();
 }
 
 void Display::deactivate()

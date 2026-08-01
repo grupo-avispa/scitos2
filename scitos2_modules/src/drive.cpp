@@ -74,17 +74,16 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
   node->get_parameter(plugin_name_ + ".enable_stamped_cmd_vel", is_stamped_);
   RCLCPP_INFO(
     logger_, "The parameter enable_stamped_cmd_vel is set to: [%s]",
-      is_stamped_ ? "true" : "false");
+    is_stamped_ ? "true" : "false");
 
-  bool magnetic_barrier_enabled;
   declare_parameter_if_not_declared(
     node, plugin_name_ + ".magnetic_barrier_enabled",
     rclcpp::ParameterValue(false), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Enable the magnetic strip detector to cut out the motors"));
-  node->get_parameter(plugin_name_ + ".magnetic_barrier_enabled", magnetic_barrier_enabled);
+  node->get_parameter(plugin_name_ + ".magnetic_barrier_enabled", magnetic_barrier_enabled_);
   RCLCPP_INFO(
     logger_, "The parameter magnetic_barrier_enabled is set to: [%s]",
-    magnetic_barrier_enabled ? "true" : "false");
+    magnetic_barrier_enabled_ ? "true" : "false");
 
   declare_parameter_if_not_declared(
     node, plugin_name_ + ".publish_tf",
@@ -104,9 +103,6 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
   node->get_parameter(plugin_name_ + ".reset_bumper_interval", rbi);
   RCLCPP_INFO(logger_, "The parameter reset_bumper_interval is set to: [%i]", rbi);
   reset_bumper_interval_ = rclcpp::Duration::from_seconds(rbi / 1000.0);
-
-  set_mira_param(
-    authority_, "MainControlUnit.RearLaser.Enabled", magnetic_barrier_enabled ? "true" : "false");
 
   declare_parameter_if_not_declared(
     node, plugin_name_ + ".footprint",
@@ -259,6 +255,14 @@ void Drive::activate()
   } catch (const mira::Exception & ex) {
     RCLCPP_ERROR(logger_, "Failed to start scitos2_module::Drive. Exception: %s", ex.what());
     return;
+  }
+
+  // MIRA parameters can only be written once the authority has started
+  if (!set_mira_param(
+      authority_, "MainControlUnit.RearLaser.Enabled",
+      magnetic_barrier_enabled_ ? "true" : "false"))
+  {
+    RCLCPP_ERROR(logger_, "Failed to set the magnetic_barrier_enabled MIRA parameter");
   }
 }
 
