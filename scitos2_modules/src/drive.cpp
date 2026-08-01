@@ -356,6 +356,8 @@ void Drive::driveStatusCallback(mira::ChannelRead<uint32> data)
 
   drive_status_pub_->publish(drive_status_msg);
   emergency_stop_pub_->publish(emergency_stop_msg);
+
+  emergency_stop_activated_ = emergency_stop_msg.emergency_stop_activated;
 }
 
 void Drive::rfidStatusCallback(mira::ChannelRead<uint64> data)
