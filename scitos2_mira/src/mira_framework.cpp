@@ -68,9 +68,17 @@ nav2_util::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::St
   this->get_parameter("scitos_config", config);
   if (!loaded_) {
     if (!config.empty()) {
-      RCLCPP_INFO(get_logger(), "Loaded scitos config: %s", config.c_str());
-      framework_->load(config);
-      loaded_ = true;
+      try {
+        framework_->load(config);
+        loaded_ = true;
+        RCLCPP_INFO(get_logger(), "Loaded scitos config: %s", config.c_str());
+      } catch (const mira::Exception & ex) {
+        RCLCPP_ERROR(
+          get_logger(), "Failed to load scitos config '%s'. Exception: %s",
+          config.c_str(), ex.what());
+        on_cleanup(state);
+        return nav2_util::CallbackReturn::FAILURE;
+      }
     } else {
       RCLCPP_ERROR(get_logger(), "Can't read parameter 'scitos_config'");
       on_cleanup(state);
