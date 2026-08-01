@@ -44,6 +44,18 @@ void Charger::configure(
     .set__description("The MIRA resource that exposes the robot's services and properties"));
   node->get_parameter(plugin_name_ + ".mira_robot_resource", mira_robot_resource_);
 
+  declare_parameter_if_not_declared(
+    node, plugin_name_ + ".robot_base_frame",
+    rclcpp::ParameterValue(robot_base_frame_), rcl_interfaces::msg::ParameterDescriptor()
+    .set__description("The name of the base frame of the robot"));
+  node->get_parameter(plugin_name_ + ".robot_base_frame", robot_base_frame_);
+
+  declare_parameter_if_not_declared(
+    node, plugin_name_ + ".design_capacity",
+    rclcpp::ParameterValue(design_capacity_), rcl_interfaces::msg::ParameterDescriptor()
+    .set__description("Design capacity of the battery in Ah, for the fitted battery model"));
+  node->get_parameter(plugin_name_ + ".design_capacity", design_capacity_);
+
   // Create ROS publishers
   battery_pub_ = node->create_publisher<sensor_msgs::msg::BatteryState>(
     "battery", rclcpp::SystemDefaultsQoS());
@@ -129,21 +141,24 @@ sensor_msgs::msg::BatteryState Charger::miraToRosBatteryState(
 {
   sensor_msgs::msg::BatteryState battery;
 
-  battery.header.frame_id = "base_link";
+  battery.header.frame_id = robot_base_frame_;
   battery.header.stamp = rclcpp::Time(timestamp.toUnixNS());
   battery.voltage = state.voltage;
   battery.temperature = std::numeric_limits<float>::quiet_NaN();
+  // ROS convention: negative current means discharging. battery.charge is a magnitude
+  // (remaining Ah estimated from time-to-empty), not a signed flow, so it intentionally
+  // uses the raw MIRA current rather than the ROS-signed one.
   battery.current = -state.current;
   battery.charge = (state.lifeTime == -1) ? std::numeric_limits<float>::quiet_NaN() :
     (static_cast<float>(state.lifeTime) / 60.0 * state.current);
   battery.capacity = std::numeric_limits<float>::quiet_NaN();
-  battery.design_capacity = 40.0;
+  battery.design_capacity = design_capacity_;
   battery.percentage = (state.lifePercent == 255) ? std::numeric_limits<float>::quiet_NaN() :
     static_cast<float>(state.lifePercent) / 100.0;
 
   if (state.charging) {
     battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_CHARGING;
-  } else if (battery.percentage == 1.0) {
+  } else if (state.lifePercent == 100) {
     battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_FULL;
   } else if (state.powerSupplyPresent) {
     battery.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_NOT_CHARGING;
@@ -171,7 +186,7 @@ scitos2_msgs::msg::ChargerStatus Charger::miraToRosChargerStatus(
 {
   scitos2_msgs::msg::ChargerStatus charger;
 
-  charger.header.frame_id = "base_link";
+  charger.header.frame_id = robot_base_frame_;
   charger.header.stamp = rclcpp::Time(timestamp.toUnixNS());
   charger.charging = static_cast<bool>(status & 1);
   charger.empty = static_cast<bool>(status & (1 << 1));
