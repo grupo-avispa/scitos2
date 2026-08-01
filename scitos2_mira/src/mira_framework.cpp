@@ -15,6 +15,7 @@
 
 // C++
 #include <chrono>
+#include <string>
 #include <thread>
 
 // ROS
@@ -174,7 +175,7 @@ nav2::CallbackReturn MiraFramework::on_activate(const rclcpp_lifecycle::State & 
 
   // Create a timer to publish diagnostics
   timer_ = this->create_wall_timer(
-    std::chrono::milliseconds(10), [this]() {
+    std::chrono::seconds(1), [this]() {
       diag_pub_->publish(createDiagnostics());
     });
 
@@ -240,8 +241,19 @@ diagnostic_msgs::msg::DiagnosticArray MiraFramework::createDiagnostics()
   diagnostic_msgs::msg::DiagnosticArray msg;
   diagnostic_msgs::msg::DiagnosticStatus status;
   status.name = "MIRA framework";
-  status.level = diagnostic_msgs::msg::DiagnosticStatus::OK;
-  status.message = "MIRA framework is running";
+
+  if (!loaded_) {
+    status.level = diagnostic_msgs::msg::DiagnosticStatus::ERROR;
+    status.message = "MIRA framework configuration is not loaded";
+  } else if (modules_.empty()) {
+    status.level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
+    status.message = "MIRA framework is loaded but has no modules";
+  } else {
+    status.level = diagnostic_msgs::msg::DiagnosticStatus::OK;
+    status.message = "MIRA framework is running with " + std::to_string(modules_.size()) +
+      " module(s): " + module_ids_concat_;
+  }
+
   msg.status.push_back(status);
   return msg;
 }
