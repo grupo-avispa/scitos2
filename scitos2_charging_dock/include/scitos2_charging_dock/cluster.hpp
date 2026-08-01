@@ -129,9 +129,11 @@ struct Cluster
    * @brief Check if the cluster is valid.
    *
    * @param ideal_size Size of the cluster.
+   * @param tolerance_min Lower bound factor of the accepted width, as a fraction of ideal_size.
+   * @param tolerance_max Upper bound factor of the accepted width, as a multiple of ideal_size.
    * @return bool If the cluster is valid.
    */
-  bool valid(double ideal_size) const
+  bool valid(double ideal_size, double tolerance_min = 0.5, double tolerance_max = 1.25) const
   {
     // If there are no points this cannot be valid.
     if (cloud.empty()) {
@@ -139,7 +141,7 @@ struct Cluster
     }
 
     // Check overall size.
-    if (width() > 1.25 * ideal_size || width() < ideal_size / 2.0) {
+    if (width() > tolerance_max * ideal_size || width() < tolerance_min * ideal_size) {
       return false;
     }
 

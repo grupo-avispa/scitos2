@@ -65,6 +65,10 @@ Perception::Perception(
     node, name_ + ".perception.use_first_detection", rclcpp::ParameterValue(false));
   nav2_util::declare_parameter_if_not_declared(
     node, name_ + ".perception.max_yaw_error", rclcpp::ParameterValue(M_PI_2));
+  nav2_util::declare_parameter_if_not_declared(
+    node, name_ + ".perception.width_tolerance_min", rclcpp::ParameterValue(0.5));
+  nav2_util::declare_parameter_if_not_declared(
+    node, name_ + ".perception.width_tolerance_max", rclcpp::ParameterValue(1.25));
 
   node->get_parameter(name_ + ".perception.icp_min_score", icp_min_score_);
   node->get_parameter(name_ + ".perception.icp_max_iter", icp_max_iter_);
@@ -74,6 +78,8 @@ Perception::Perception(
   node->get_parameter(name_ + ".perception.enable_debug", debug_);
   node->get_parameter(name_ + ".perception.use_first_detection", use_first_detection_);
   node->get_parameter(name_ + ".perception.max_yaw_error", max_yaw_error_);
+  node->get_parameter(name_ + ".perception.width_tolerance_min", width_tolerance_min_);
+  node->get_parameter(name_ + ".perception.width_tolerance_max", width_tolerance_max_);
 
   // Load the dock template
   std::string dock_template;
@@ -100,12 +106,6 @@ Perception::Perception(
 
   // Set the verbosity level of the PCL library to shutout the console output
   pcl::console::setVerbosityLevel(pcl::console::L_ALWAYS);
-}
-
-Perception::~Perception()
-{
-  segmentation_.reset();
-  tf_buffer_.reset();
 }
 
 geometry_msgs::msg::PoseStamped Perception::getDockPose(const sensor_msgs::msg::LaserScan & scan)
@@ -142,7 +142,7 @@ void Perception::setInitialEstimate(
   dock_found_ = false;
 }
 
-bool Perception::loadDockPointcloud(std::string filepath, Pcloud & dock)
+bool Perception::loadDockPointcloud(const std::string & filepath, Pcloud & dock)
 {
   bool success = false;
   if (filepath.empty()) {
@@ -158,7 +158,7 @@ bool Perception::loadDockPointcloud(std::string filepath, Pcloud & dock)
   return success;
 }
 
-bool Perception::storeDockPointcloud(std::string filepath, const Pcloud & dock)
+bool Perception::storeDockPointcloud(const std::string & filepath, const Pcloud & dock)
 {
   bool success = false;
   if (pcl::io::savePCDFile<pcl::PointXYZ>(filepath, dock) < 0) {
@@ -242,7 +242,7 @@ bool Perception::refineAllClustersPoses(
 
   for (auto & cluster : clusters) {
     // Discard clusters not valid (i.e. clusters not similar to dock by size, ...)
-    if (!cluster.valid(dock_template.width())) {
+    if (!cluster.valid(dock_template.width(), width_tolerance_min_, width_tolerance_max_)) {
       continue;
     }
 
@@ -401,6 +401,21 @@ rcl_interfaces::msg::SetParametersResult Perception::dynamicParametersCallback(
           return result;
         }
         max_yaw_error_ = parameter.as_double();
+      } else if (name == name_ + ".perception.width_tolerance_min") {
+        if (parameter.as_double() < 0.0 || parameter.as_double() >= width_tolerance_max_) {
+          result.successful = false;
+          result.reason = "width_tolerance_min must not be negative and lower than "
+            "width_tolerance_max";
+          return result;
+        }
+        width_tolerance_min_ = parameter.as_double();
+      } else if (name == name_ + ".perception.width_tolerance_max") {
+        if (parameter.as_double() <= width_tolerance_min_) {
+          result.successful = false;
+          result.reason = "width_tolerance_max must be greater than width_tolerance_min";
+          return result;
+        }
+        width_tolerance_max_ = parameter.as_double();
       }
     } else if (type == rclcpp::ParameterType::PARAMETER_BOOL) {
       if (name == name_ + ".perception.enable_debug") {

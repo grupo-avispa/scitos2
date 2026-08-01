@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16)
 project(scitos2_modules)
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -75,7 +75,7 @@ include_mira_packages()
 
 add_library(scitos2_charger SHARED src/charger.cpp)
 target_include_directories(scitos2_charger PUBLIC
-  "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 target_link_libraries(scitos2_charger
@@ -91,7 +91,7 @@ target_link_mira_libraries(scitos2_charger)
 
 add_library(scitos2_display SHARED src/display.cpp)
 target_include_directories(scitos2_display PUBLIC
-  "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 target_link_libraries(scitos2_display
@@ -106,7 +106,7 @@ target_link_mira_libraries(scitos2_display)
 
 add_library(scitos2_drive SHARED src/drive.cpp)
 target_include_directories(scitos2_drive PUBLIC
-  "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 target_link_libraries(scitos2_drive
@@ -129,7 +129,7 @@ target_link_mira_libraries(scitos2_drive)
 
 add_library(scitos2_ebc SHARED src/ebc.cpp)
 target_include_directories(scitos2_ebc PUBLIC
-  "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 target_link_libraries(scitos2_ebc
@@ -143,7 +143,7 @@ target_link_mira_libraries(scitos2_ebc)
 
 add_library(scitos2_imu SHARED src/imu.cpp)
 target_include_directories(scitos2_imu PUBLIC
-  "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 target_link_libraries(scitos2_imu

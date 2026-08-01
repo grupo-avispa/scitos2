@@ -18,7 +18,6 @@
 
 #include <string>
 #include <memory>
-#include <mutex>
 
 #include "rclcpp/rclcpp.hpp"
 #include "scitos2_msgs/msg/bumper_status.hpp"

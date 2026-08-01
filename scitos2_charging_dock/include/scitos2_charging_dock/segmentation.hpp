@@ -1,4 +1,5 @@
-// Copyright (c) 2017 Alberto J. Tudela Roldán
+// Copyright (c) 2024 Alberto J. Tudela Roldán
+// Copyright (c) 2024 Grupo Avispa, DTE, Universidad de Málaga
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,11 +17,13 @@
 #define SCITOS2_CHARGING_DOCK__SEGMENTATION_HPP_
 
 // C++
+#include <mutex>
 #include <vector>
 #include <string>
 
 // ROS
 #include "geometry_msgs/msg/point.hpp"
+#include "rcl_interfaces/msg/set_parameters_result.hpp"
 #include "scitos2_charging_dock/cluster.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "rclcpp/rclcpp.hpp"

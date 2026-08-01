@@ -126,6 +126,14 @@ A **save_dock** service is provided to save the current pointcloud of the chargi
 
 	Maximum yaw error (rad) between a refined candidate and the initial estimate to accept it. The dock is asymmetric, so a candidate refined far from the initial estimate (e.g. ~180 deg flipped) is discarded instead of accepted.
 
+* **`perception.width_tolerance_min`** (double, default: 0.5)
+
+	Lower bound of the accepted cluster width, as a fraction of the dock template's width.
+
+* **`perception.width_tolerance_max`** (double, default: 1.25)
+
+	Upper bound of the accepted cluster width, as a multiple of the dock template's width.
+
 * **`segmentation.distance_threshold`** (double, default: 0.04)
 
 	The maximum distance between points in a cluster.

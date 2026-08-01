@@ -73,6 +73,8 @@ void ChargingDock::configure(
   node_->get_parameter(name + ".external_detection_rotation_yaw", yaw);
   node_->get_parameter(name + ".external_detection_rotation_pitch", pitch);
   node_->get_parameter(name + ".external_detection_rotation_roll", roll);
+  // tf2::Quaternion::setEuler() takes (yaw, pitch, roll) in that order, despite the name;
+  // this matches nav2's own external-detection docks and is not a bug
   external_detection_rotation_.setEuler(pitch, roll, yaw);
   node_->get_parameter(name + ".docking_threshold", docking_threshold_);
   node_->get_parameter(name + ".staging_x_offset", staging_x_offset_);

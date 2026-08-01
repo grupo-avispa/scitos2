@@ -1,4 +1,5 @@
-// Copyright (c) 2017 Alberto J. Tudela Roldán
+// Copyright (c) 2024 Alberto J. Tudela Roldán
+// Copyright (c) 2024 Grupo Avispa, DTE, Universidad de Málaga
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,6 +12,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
+#include <cmath>
 
 #include "pcl_conversions/pcl_conversions.h"
 #include "rclcpp/rclcpp.hpp"
@@ -87,7 +90,8 @@ bool Segmentation::performSegmentation(
   }
   clusters.push_back(current_cluster);
 
-  return clusters.size() > 0;
+  // A cluster is always pushed above once points is non-empty, so this is always true
+  return true;
 }
 
 Clusters Segmentation::filterClusters(const Clusters & clusters)
@@ -149,7 +153,7 @@ std::vector<geometry_msgs::msg::Point> Segmentation::scanToPoints(
 double Segmentation::euclideanDistance(
   const geometry_msgs::msg::Point & p1, const geometry_msgs::msg::Point & p2)
 {
-  return sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2));
+  return std::hypot(p1.x - p2.x, p1.y - p2.y);
 }
 
 bool Segmentation::isJumpBetweenPoints(
