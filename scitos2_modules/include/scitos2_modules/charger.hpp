@@ -138,6 +138,11 @@ protected:
 
   std::shared_ptr<rclcpp::Service<scitos2_msgs::srv::SavePersistentErrors>>
   save_persistent_errors_service_;
+
+  std::string robot_base_frame_{"base_link"};
+  // Design capacity of the battery in Ah. Depends on the physical battery model fitted to
+  // the robot, there is no way to query it from MIRA.
+  double design_capacity_{40.0};
 };
 
 }  // namespace scitos2_modules

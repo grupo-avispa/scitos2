@@ -34,6 +34,20 @@ The Charger module monitors the state of the battery and the charging station.
 
 	This service takes a filename as a string and saves the persistent errors of the charger to the specified file.
 
+#### Parameters
+
+* **`robot_base_frame`** (string, default: "base_link")
+
+	The name of the base frame of the robot, used as the header frame_id of the published messages.
+
+* **`design_capacity`** (double, default: 40.0)
+
+	Design capacity of the battery in Ah, for the battery model physically fitted to the robot. MIRA does not expose this value.
+
+* **`mira_robot_resource`** (string, default: "/robot/Robot")
+
+	The MIRA resource that exposes the robot's services and properties.
+
 ### Display
 
 The Display module manages the status display on the robot's base.
@@ -65,6 +79,10 @@ The Display module manages the status display on the robot's base.
 * **`menu_entry_name_3`** (string, default: "Entry 3")
 
 	Specifies the name of the third sub-menu entry in the user menu of the status display.
+
+* **`mira_robot_resource`** (string, default: "/robot/Robot")
+
+	The MIRA resource that exposes the robot's services and properties.
 
 ### Drive
 
@@ -178,6 +196,10 @@ The Drive module controls the robot's motors, handling velocity commands, odomet
 
 	Specifies the radius of the robot in meters.
 
+* **`mira_robot_resource`** (string, default: "/robot/Robot")
+
+	The MIRA resource that exposes the robot's services and properties.
+
 ### EBC
 
 The EBC module controls the power for extra devices.
@@ -255,6 +277,10 @@ The EBC module controls the power for extra devices.
 * **`port1_24v_max_current`** (double, default: 4)
 
 	Sets the maximum current for port 1 24V in A. The value must be between 0-4A.
+
+* **`mira_robot_resource`** (string, default: "/robot/Robot")
+
+	The MIRA resource that exposes the robot's services and properties.
 
 
 [nav_msgs/Odometry]: http://docs.ros2.org/jazzy/api/nav_msgs/msg/Odometry.html
