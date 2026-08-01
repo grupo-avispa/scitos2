@@ -43,7 +43,7 @@ public:
   ~DummyModule() {}
 
   virtual void configure(
-    const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std::string name) {}
+    const rclcpp_lifecycle::LifecycleNode::WeakPtr &/*parent*/, std::string/*name*/) {}
 
   virtual void cleanup() {}
 

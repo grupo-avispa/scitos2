@@ -78,6 +78,16 @@ macro(target_link_mira_libraries target)
   # For transitive linking link against all auto liked libraries
   target_link_libraries(${target} PUBLIC ${MIRAAutoLinkLibraries} MIRAFramework)
 
+  # MIRA's own headers are not warning-clean (-Wpedantic, -Wunused-parameter, -Wshadow, ...).
+  # Re-declare them as SYSTEM includes on the consuming target so -Werror only ever applies
+  # to our own code, not to a third-party dependency we don't control. PUBLIC so that anything
+  # linking ${target} (e.g. its unit tests) inherits the SYSTEM treatment too, since MIRA
+  # headers are reachable transitively through it.
+  get_target_property(MIRA_INCLUDE_DIRS MIRAFramework INTERFACE_INCLUDE_DIRECTORIES)
+  if(MIRA_INCLUDE_DIRS)
+    target_include_directories(${target} SYSTEM PUBLIC ${MIRA_INCLUDE_DIRS})
+  endif()
+
   # use, i.e. don't skip the full RPATH for the build tree
   SET(CMAKE_SKIP_BUILD_RPATH FALSE)
 
