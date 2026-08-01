@@ -21,6 +21,7 @@
 #include <robot/Odometry.h>
 
 // C++
+#include <atomic>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -324,7 +325,9 @@ protected:
   rclcpp::Clock::SharedPtr clock_;
   rclcpp::Logger logger_{rclcpp::get_logger("Drive")};
 
-  // Dynamic parameters handler
+  // Guards robot_base_frame_, odom_frame_ and barrier_status_, which are written from
+  // dynamicParametersCallback()/MIRA data callbacks and read from other MIRA data callbacks
+  // running on different threads
   std::mutex mutex_;
   rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr dyn_params_handler_;
 
@@ -357,13 +360,13 @@ protected:
   std::shared_ptr<rclcpp::Service<scitos2_msgs::srv::SuspendBumper>> suspend_bumper_service_;
 
   std::string robot_base_frame_, odom_frame_, odom_topic_;
-  bool emergency_stop_activated_;
+  std::atomic<bool> emergency_stop_activated_{false};
   scitos2_msgs::msg::BarrierStatus barrier_status_;
   bool is_active_;
   bool is_stamped_;
 
   // Bumper
-  bool bumper_activated_;
+  std::atomic<bool> bumper_activated_{false};
   rclcpp::Time last_bumper_reset_;
   rclcpp::Duration reset_bumper_interval_{0, 0};
   std::string footprint_;

@@ -17,7 +17,9 @@
 #ifndef SCITOS2_CHARGING_DOCK__CHARGING_DOCK_HPP_
 #define SCITOS2_CHARGING_DOCK__CHARGING_DOCK_HPP_
 
+#include <atomic>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -122,14 +124,16 @@ protected:
   nav2::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr dock_pose_pub_;
   nav2::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr filtered_dock_pose_pub_;
   nav2::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr staging_pose_pub_;
-  // It will contain latest message
+  // It will contain latest message. Written from the scan subscription callback and read
+  // from getRefinedPose(), which may run on a different thread: guard with scan_mutex_.
   sensor_msgs::msg::LaserScan scan_;
+  std::mutex scan_mutex_;
   // This is the actual dock pose once it has the specified translation/rotation applied
   geometry_msgs::msg::PoseStamped dock_pose_;
 
   // Subscribe to battery message, used to determine if charging
   nav2::Subscription<sensor_msgs::msg::BatteryState>::SharedPtr battery_sub_;
-  bool is_charging_;
+  std::atomic<bool> is_charging_{false};
 
   // An external reference (sensor_msgs::LaserScan) is used to detect dock
   double external_detection_timeout_;

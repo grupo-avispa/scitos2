@@ -339,7 +339,10 @@ void Drive::bumperDataCallback(mira::ChannelRead<bool> data)
   rclcpp::Time stamp = rclcpp::Time(data->timestamp.toUnixNS());
 
   scitos2_msgs::msg::BumperStatus bumper_status;
-  bumper_status.header.frame_id = robot_base_frame_;
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    bumper_status.header.frame_id = robot_base_frame_;
+  }
   bumper_status.header.stamp = stamp;
   bumper_status.bumper_activated = data->value();
   bumper_status.bumper_status = data->value();
@@ -354,7 +357,10 @@ void Drive::bumperDataCallback(mira::ChannelRead<bool> data)
 void Drive::mileageDataCallback(mira::ChannelRead<float> data)
 {
   scitos2_msgs::msg::Mileage mileage_msg;
-  mileage_msg.header.frame_id = robot_base_frame_;
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    mileage_msg.header.frame_id = robot_base_frame_;
+  }
   mileage_msg.header.stamp = rclcpp::Time(data->timestamp.toUnixNS());
   mileage_msg.distance = data->value();
   mileage_pub_->publish(mileage_msg);
@@ -385,7 +391,9 @@ void Drive::driveStatusCallback(mira::ChannelRead<uint32> data)
 void Drive::rfidStatusCallback(mira::ChannelRead<uint64> data)
 {
   if (isBarrierCode(data->value())) {
-    barrier_status_ = miraToRosBarrierStatus(data->value(), data->timestamp);
+    auto barrier_status = miraToRosBarrierStatus(data->value(), data->timestamp);
+    std::lock_guard<std::mutex> lock(mutex_);
+    barrier_status_ = barrier_status;
     magnetic_barrier_pub_->publish(barrier_status_);
   }
 
@@ -453,10 +461,13 @@ bool Drive::resetBarrierStop(
   const std::shared_ptr<scitos2_msgs::srv::ResetBarrierStop::Request>/*request*/,
   std::shared_ptr<scitos2_msgs::srv::ResetBarrierStop::Response> response)
 {
-  barrier_status_.header.frame_id = robot_base_frame_;
-  barrier_status_.header.stamp = clock_->now();
-  barrier_status_.barrier_stopped = false;
-  magnetic_barrier_pub_->publish(barrier_status_);
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    barrier_status_.header.frame_id = robot_base_frame_;
+    barrier_status_.header.stamp = clock_->now();
+    barrier_status_.barrier_stopped = false;
+    magnetic_barrier_pub_->publish(barrier_status_);
+  }
   response->success = true;
   return response->success;
 }
@@ -561,9 +572,12 @@ nav_msgs::msg::Odometry Drive::miraToRosOdometry(
   const mira::robot::Odometry2 & odometry, const mira::Time & timestamp)
 {
   nav_msgs::msg::Odometry odom_msg;
-  odom_msg.header.frame_id = odom_frame_;
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    odom_msg.header.frame_id = odom_frame_;
+    odom_msg.child_frame_id = robot_base_frame_;
+  }
   odom_msg.header.stamp = rclcpp::Time(timestamp.toUnixNS());
-  odom_msg.child_frame_id = robot_base_frame_;
 
   // Set the position
   odom_msg.pose.pose.position.x = odometry.pose.x();
@@ -581,9 +595,12 @@ geometry_msgs::msg::TransformStamped Drive::miraToRosTf(
   const mira::robot::Odometry2 & odometry, const mira::Time & timestamp)
 {
   geometry_msgs::msg::TransformStamped tf_msg;
-  tf_msg.header.frame_id = odom_frame_;
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    tf_msg.header.frame_id = odom_frame_;
+    tf_msg.child_frame_id = robot_base_frame_;
+  }
   tf_msg.header.stamp = rclcpp::Time(timestamp.toUnixNS());
-  tf_msg.child_frame_id = robot_base_frame_;
   tf_msg.transform.translation.x = odometry.pose.x();
   tf_msg.transform.translation.y = odometry.pose.y();
   tf_msg.transform.translation.z = 0.0;
@@ -595,7 +612,10 @@ scitos2_msgs::msg::DriveStatus Drive::miraToRosDriveStatus(
   const uint32 & status, const mira::Time & timestamp)
 {
   scitos2_msgs::msg::DriveStatus drive_status;
-  drive_status.header.frame_id = robot_base_frame_;
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    drive_status.header.frame_id = robot_base_frame_;
+  }
   drive_status.header.stamp = rclcpp::Time(timestamp.toUnixNS());
   drive_status.mode_normal = static_cast<bool>(status & 1);
   drive_status.mode_forced_stopped = static_cast<bool>(status & (1 << 1));
@@ -618,7 +638,10 @@ scitos2_msgs::msg::EmergencyStopStatus Drive::miraToRosEmergencyStopStatus(
   const uint32 & status, const mira::Time & timestamp)
 {
   scitos2_msgs::msg::EmergencyStopStatus emergency_stop_status;
-  emergency_stop_status.header.frame_id = robot_base_frame_;
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    emergency_stop_status.header.frame_id = robot_base_frame_;
+  }
   emergency_stop_status.header.stamp = rclcpp::Time(timestamp.toUnixNS());
   emergency_stop_status.emergency_stop_activated = static_cast<bool>(status & (1 << 7));
   emergency_stop_status.emergency_stop_status = static_cast<bool>(status & (1 << 8));
@@ -629,7 +652,10 @@ scitos2_msgs::msg::BarrierStatus Drive::miraToRosBarrierStatus(
   const uint64 & status, const mira::Time & timestamp)
 {
   scitos2_msgs::msg::BarrierStatus barrier;
-  barrier.header.frame_id = robot_base_frame_;
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    barrier.header.frame_id = robot_base_frame_;
+  }
   barrier.header.stamp = rclcpp::Time(timestamp.toUnixNS());
   barrier.barrier_stopped = true;
   barrier.last_detection_stamp = rclcpp::Time(timestamp.toUnixNS());
