@@ -166,7 +166,7 @@ target_link_libraries(${dock_saver_executable}
   dock_saver_core
 )
 
-rclcpp_components_register_nodes(${library_name} "scitos2_charging_dock::DockSaver")
+rclcpp_components_register_nodes(dock_saver_core "scitos2_charging_dock::DockSaver")
 
 # ############
 # # Install ##
