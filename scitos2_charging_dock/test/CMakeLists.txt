@@ -3,7 +3,7 @@ find_package(ament_index_cpp REQUIRED)
 # Test cluster
 ament_add_gtest(test_scitos2_cluster test_cluster.cpp)
 target_include_directories(test_scitos2_cluster PUBLIC
-  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 target_link_libraries(test_scitos2_cluster
