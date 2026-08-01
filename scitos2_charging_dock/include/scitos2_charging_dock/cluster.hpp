@@ -122,7 +122,14 @@ struct Cluster
    */
   double width_squared() const
   {
-    return width() * width();
+    if (cloud.empty()) {
+      return 0.0;
+    }
+
+    // Avoid width()'s sqrt (via std::hypot) just to square the result back
+    double dx = cloud.back().x - cloud.front().x;
+    double dy = cloud.back().y - cloud.front().y;
+    return dx * dx + dy * dy;
   }
 
   /**
