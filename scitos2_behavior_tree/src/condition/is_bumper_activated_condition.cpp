@@ -22,7 +22,7 @@ namespace scitos2_behavior_tree
 
 IsBumperActivatedCondition::IsBumperActivatedCondition(
   const std::string & condition_name, const BT::NodeConfiguration & conf)
-: BT::ConditionNode(condition_name, conf), bumper_topic_("/bumper"), is_bumper_activated_(false)
+: BT::ConditionNode(condition_name, conf), bumper_topic_("bumper"), is_bumper_activated_(false)
 {
   getInput("bumper_topic", bumper_topic_);
   node_ = config().blackboard->get<rclcpp::Node::SharedPtr>("node");

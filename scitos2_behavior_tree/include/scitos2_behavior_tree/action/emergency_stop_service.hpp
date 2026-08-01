@@ -38,6 +38,16 @@ public:
    * @param conf BT node configuration
    */
   EmergencyStopService(const std::string & service_node_name, const BT::NodeConfiguration & conf);
+
+  /**
+   * @brief Map the service response to a BT node status, so a MIRA failure
+   * (response->success == false) is reported to the tree instead of always SUCCESS.
+   *
+   * @param response Service response
+   * @return BT::NodeStatus SUCCESS if the emergency stop was performed, FAILURE otherwise
+   */
+  BT::NodeStatus on_completion(
+    std::shared_ptr<scitos2_msgs::srv::EmergencyStop::Response> response) override;
 };
 
 }  // namespace scitos2_behavior_tree
