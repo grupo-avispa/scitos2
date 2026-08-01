@@ -244,7 +244,7 @@ bool Perception::refineAllClustersPoses(
           RCLCPP_WARN(
             logger_, "Could not transform %s to %s",
             cluster.cloud.header.frame_id.c_str(), initial_estimate_pose_.header.frame_id.c_str());
-          return false;
+          continue;
         }
         auto tf_stamped = tf_buffer_->lookupTransform(
           initial_estimate_pose_.header.frame_id, cluster.cloud.header.frame_id,
@@ -256,7 +256,7 @@ bool Perception::refineAllClustersPoses(
           logger_, "Could not transform %s to %s: %s",
           cluster.cloud.header.frame_id.c_str(),
           initial_estimate_pose_.header.frame_id.c_str(), ex.what());
-        return false;
+        continue;
       }
     }
 
