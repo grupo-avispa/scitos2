@@ -71,7 +71,13 @@ Perception::Perception(
   // Load the dock template
   std::string dock_template;
   node->get_parameter(name_ + ".perception.dock_template", dock_template);
-  loadDockPointcloud(dock_template, dock_template_.cloud);
+  dock_template_loaded_ = loadDockPointcloud(dock_template, dock_template_.cloud);
+  if (!dock_template_loaded_) {
+    RCLCPP_ERROR(
+      logger_,
+      "Perception will never detect a dock until 'perception.dock_template' points to a "
+      "valid PCD file. Generate one for your dock with the save_dock service.");
+  }
 
   // Publishers: always created so that toggling enable_debug at runtime cannot
   // publish through a null pointer
@@ -97,6 +103,13 @@ Perception::~Perception()
 
 geometry_msgs::msg::PoseStamped Perception::getDockPose(const sensor_msgs::msg::LaserScan & scan)
 {
+  if (!dock_template_loaded_) {
+    RCLCPP_ERROR_THROTTLE(
+      logger_, *clock_, 5000,
+      "Cannot detect the dock: no valid dock template has been loaded");
+    return detected_dock_.pose;
+  }
+
   // Extract clusters from the scan
   auto clusters = extractClustersFromScan(scan);
 

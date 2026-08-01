@@ -163,6 +163,8 @@ protected:
 
   // A cluster with the dock template pointcloud
   Cluster dock_template_;
+  // Whether the dock template was loaded successfully from a PCD file
+  bool dock_template_loaded_{false};
   // Last detected dock
   Cluster detected_dock_;
   // Dock found
