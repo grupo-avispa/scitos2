@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <limits>
 #include <mutex>
 
 #include "angles/angles.h"
@@ -162,14 +163,19 @@ bool DockSaver::saveDockCallback(
     return false;
   }
 
-  // Find the cluster in front of the robot
-  std::vector<double> angles;
-  for (auto cluster : clusters) {
-    double angle = std::atan2(cluster.centroid().y, cluster.centroid().x);
-    angles.push_back(angles::normalize_angle_positive(angle));
+  // Find the cluster in front of the robot: the one whose centroid angle,
+  // normalized to [-pi, pi), is closest to zero
+  double best_angle = std::numeric_limits<double>::max();
+  size_t idx = 0;
+  for (size_t i = 0; i < clusters.size(); ++i) {
+    const auto centroid = clusters[i].centroid();
+    const double angle = std::abs(
+      angles::normalize_angle(std::atan2(centroid.y, centroid.x)));
+    if (angle < best_angle) {
+      best_angle = angle;
+      idx = i;
+    }
   }
-  auto min_angle = std::min_element(angles.begin(), angles.end());
-  int idx = std::distance(angles.begin(), min_angle);
 
   // Store the dock pointcloud to a file
   response->result = perception_->storeDockPointcloud(filename, clusters[idx].cloud);
