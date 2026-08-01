@@ -146,8 +146,7 @@ struct Cluster
     return true;
   }
 
-  friend bool operator<(const Cluster c1, const Cluster c2) {return c1.score < c2.score;}
-  friend bool operator>(const Cluster c1, const Cluster c2) {return c1.score > c2.score;}
+  friend bool operator<(const Cluster & c1, const Cluster & c2) {return c1.score < c2.score;}
 };
 }  // namespace scitos2_charging_dock
 
