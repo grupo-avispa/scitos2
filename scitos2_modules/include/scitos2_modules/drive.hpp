@@ -359,6 +359,7 @@ protected:
   std::shared_ptr<rclcpp::Service<scitos2_msgs::srv::SuspendBumper>> suspend_bumper_service_;
 
   std::string robot_base_frame_, odom_frame_, odom_topic_;
+  bool magnetic_barrier_enabled_;
   std::atomic<bool> emergency_stop_activated_{false};
   scitos2_msgs::msg::BarrierStatus barrier_status_;
   bool is_active_;
