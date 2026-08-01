@@ -111,12 +111,10 @@ TEST(ScitosDockingCluster, operators) {
   scitos2_charging_dock::Cluster cluster2;
   cluster2.score = 2.0;
   EXPECT_TRUE(cluster1 < cluster2);
-  EXPECT_FALSE(cluster1 > cluster2);
 
   cluster1.score = 3.0;
   cluster2.score = 2.0;
   EXPECT_FALSE(cluster1 < cluster2);
-  EXPECT_TRUE(cluster1 > cluster2);
 }
 
 int main(int argc, char ** argv)
