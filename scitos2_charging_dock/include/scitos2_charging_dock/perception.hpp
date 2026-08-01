@@ -149,13 +149,13 @@ protected:
   dynamicParametersCallback(std::vector<rclcpp::Parameter> parameters);
 
   // Debug flag for visualization
-  bool debug_;
+  bool debug_{false};
   // ICP parameters
-  int icp_max_iter_;
-  double icp_min_score_;
-  double icp_max_corr_dis_;
-  double icp_max_trans_eps_;
-  double icp_max_eucl_fit_eps_;
+  int icp_max_iter_{0};
+  double icp_min_score_{0.0};
+  double icp_max_corr_dis_{0.0};
+  double icp_max_trans_eps_{0.0};
+  double icp_max_eucl_fit_eps_{0.0};
   // Initial estimate of the dock pose
   geometry_msgs::msg::PoseStamped initial_estimate_pose_;
   // Segmentation
@@ -166,7 +166,7 @@ protected:
   // Last detected dock
   Cluster detected_dock_;
   // Dock found
-  bool dock_found_;
+  bool dock_found_{false};
   // Only use the first detection
   bool use_first_detection_{false};
 
