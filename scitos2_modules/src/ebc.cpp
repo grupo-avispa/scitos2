@@ -13,12 +13,53 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// C++
+#include <algorithm>
+#include <string>
+
 #include "scitos2_modules/ebc.hpp"
 
 namespace scitos2_modules
 {
 
 using rcl_interfaces::msg::ParameterType;
+
+const std::vector<EbcBoolPort> EBC::kBoolPorts = {
+  {"mcu_5v_enabled", "MainControlUnit.EBC_5V.Enabled", "Enable / disable 5V enabled at MCU"},
+  {"mcu_12v_enabled", "MainControlUnit.EBC_12V.Enabled", "Enable / disable 12V enabled at MCU"},
+  {"mcu_24v_enabled", "MainControlUnit.EBC_24V.Enabled", "Enable / disable 24V enabled at MCU"},
+  {"port0_5v_enabled", "EBC7.Port0_5V.Enabled", "Enable / disable 5V enabled at port 0"},
+  {"port0_12v_enabled", "EBC7.Port0_12V.Enabled", "Enable / disable 12V enabled at port 0"},
+  {"port0_24v_enabled", "EBC7.Port0_24V.Enabled", "Enable / disable 24V enabled at port 0"},
+  {"port1_5v_enabled", "EBC7.Port1_5V.Enabled", "Enable / disable 5V enabled at port 1"},
+  {"port1_12v_enabled", "EBC7.Port1_12V.Enabled", "Enable / disable 12V enabled at port 1"},
+  {"port1_24v_enabled", "EBC7.Port1_24V.Enabled", "Enable / disable 24V enabled at port 1"},
+};
+
+const std::vector<EbcCurrentPort> EBC::kCurrentPorts = {
+  {"mcu_5v_max_current", "MainControlUnit.EBC_5V.MaxCurrent",
+    "Maximum current for MCU 5V in A", 2.5, 2.5},
+  {"mcu_12v_max_current", "MainControlUnit.EBC_12V.MaxCurrent",
+    "Maximum current for MCU 12V in A", 2.5, 2.5},
+  {"mcu_24v_max_current", "MainControlUnit.EBC_24V.MaxCurrent",
+    "Maximum current for MCU 24V in A", 2.5, 2.5},
+  {"port0_5v_max_current", "EBC7.Port0_5V.MaxCurrent",
+    "Maximum current for port 0 5V in A", 2.5, 2.5},
+  {"port0_12v_max_current", "EBC7.Port0_12V.MaxCurrent",
+    "Maximum current for port 0 12V in A", 2.5, 2.5},
+  {"port0_24v_max_current", "EBC7.Port0_24V.MaxCurrent",
+    "Maximum current for port 0 24V in A", 2.5, 2.5},
+  // Port 1 5V is limited to 2.5A like every other 5V port; a previous version declared it
+  // with a 2.5A range but validated it in the dynamic callback up to 4.0A, an unreachable
+  // and misleading divergence since rcl already rejects anything above 2.5A before the
+  // callback runs
+  {"port1_5v_max_current", "EBC7.Port1_5V.MaxCurrent",
+    "Maximum current for port 1 5V in A", 2.5, 2.5},
+  {"port1_12v_max_current", "EBC7.Port1_12V.MaxCurrent",
+    "Maximum current for port 1 12V in A", 2.5, 4.0},
+  {"port1_24v_max_current", "EBC7.Port1_24V.MaxCurrent",
+    "Maximum current for port 1 24V in A", 4.0, 4.0},
+};
 
 void EBC::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std::string name)
 {
@@ -33,228 +74,35 @@ void EBC::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std
   authority_ = std::make_shared<mira::Authority>();
   authority_->checkin("/", plugin_name_);
 
-  bool port_enabled;
-  declare_parameter_if_not_declared(
-    node, plugin_name_ + ".mcu_5v_enabled",
-    rclcpp::ParameterValue(true), rcl_interfaces::msg::ParameterDescriptor()
-    .set__description("Enable / disable 5V enabled at MCU"));
-  node->get_parameter(plugin_name_ + ".mcu_5v_enabled", port_enabled);
-  set_mira_param(authority_, "MainControlUnit.EBC_5V.Enabled", port_enabled ? "true" : "false");
-  RCLCPP_INFO(
-    logger_, "The parameter mcu_5v_enabled is set to: [%s]",
-    port_enabled ? "true" : "false");
+  for (const auto & port : kBoolPorts) {
+    declare_parameter_if_not_declared(
+      node, plugin_name_ + "." + port.param,
+      rclcpp::ParameterValue(true),
+      rcl_interfaces::msg::ParameterDescriptor().set__description(port.description));
+    bool enabled = true;
+    node->get_parameter(plugin_name_ + "." + port.param, enabled);
+    port_enabled_[port.param] = enabled;
+    RCLCPP_INFO(
+      logger_, "The parameter %s is set to: [%s]", port.param.c_str(),
+      enabled ? "true" : "false");
+  }
 
-  declare_parameter_if_not_declared(
-    node, plugin_name_ + ".mcu_12v_enabled",
-    rclcpp::ParameterValue(true), rcl_interfaces::msg::ParameterDescriptor()
-    .set__description("Enable / disable 12V enabled at MCU"));
-  node->get_parameter(plugin_name_ + ".mcu_12v_enabled", port_enabled);
-  set_mira_param(authority_, "MainControlUnit.EBC_12V.Enabled", port_enabled ? "true" : "false");
-  RCLCPP_INFO(
-    logger_, "The parameter mcu_12v_enabled is set to: [%s]",
-    port_enabled ? "true" : "false");
-
-  declare_parameter_if_not_declared(
-    node, plugin_name_ + ".mcu_24v_enabled",
-    rclcpp::ParameterValue(true), rcl_interfaces::msg::ParameterDescriptor()
-    .set__description("Enable / disable 24V enabled at MCU"));
-  node->get_parameter(plugin_name_ + ".mcu_24v_enabled", port_enabled);
-  set_mira_param(authority_, "MainControlUnit.EBC_24V.Enabled", port_enabled ? "true" : "false");
-  RCLCPP_INFO(
-    logger_, "The parameter mcu_24v_enabled is set to: [%s]",
-    port_enabled ? "true" : "false");
-
-  declare_parameter_if_not_declared(
-    node, plugin_name_ + ".port0_5v_enabled",
-    rclcpp::ParameterValue(true),
-    rcl_interfaces::msg::ParameterDescriptor()
-    .set__description("Enable / disable 5V enabled at port 0"));
-  node->get_parameter(plugin_name_ + ".port0_5v_enabled", port_enabled);
-  set_mira_param(authority_, "EBC7.Port0_5V.Enabled", port_enabled ? "true" : "false");
-  RCLCPP_INFO(
-    logger_, "The parameter port0_5v_enabled is set to: [%s]",
-    port_enabled ? "true" : "false");
-
-  declare_parameter_if_not_declared(
-    node, plugin_name_ + ".port0_12v_enabled",
-    rclcpp::ParameterValue(true), rcl_interfaces::msg::ParameterDescriptor()
-    .set__description("Enable / disable 12V enabled at port 0"));
-  node->get_parameter(plugin_name_ + ".port0_12v_enabled", port_enabled);
-  set_mira_param(authority_, "EBC7.Port0_12V.Enabled", port_enabled ? "true" : "false");
-  RCLCPP_INFO(
-    logger_, "The parameter port0_12v_enabled is set to: [%s]",
-    port_enabled ? "true" : "false");
-
-  declare_parameter_if_not_declared(
-    node, plugin_name_ + ".port0_24v_enabled",
-    rclcpp::ParameterValue(true), rcl_interfaces::msg::ParameterDescriptor()
-    .set__description("Enable / disable 24V enabled at port 0"));
-  node->get_parameter(plugin_name_ + ".port0_24v_enabled", port_enabled);
-  set_mira_param(authority_, "EBC7.Port0_24V.Enabled", port_enabled ? "true" : "false");
-  RCLCPP_INFO(
-    logger_, "The parameter port0_24v_enabled is set to: [%s]",
-    port_enabled ? "true" : "false");
-
-  declare_parameter_if_not_declared(
-    node, plugin_name_ + ".port1_5v_enabled",
-    rclcpp::ParameterValue(true), rcl_interfaces::msg::ParameterDescriptor()
-    .set__description("Enable / disable 5V enabled at port 1"));
-  node->get_parameter(plugin_name_ + ".port1_5v_enabled", port_enabled);
-  set_mira_param(authority_, "EBC7.Port1_5V.Enabled", port_enabled ? "true" : "false");
-  RCLCPP_INFO(
-    logger_, "The parameter port1_5v_enabled is set to: [%s]",
-    port_enabled ? "true" : "false");
-
-  declare_parameter_if_not_declared(
-    node, plugin_name_ + ".port1_12v_enabled",
-    rclcpp::ParameterValue(true), rcl_interfaces::msg::ParameterDescriptor()
-    .set__description("Enable / disable 12V enabled at port 1"));
-  node->get_parameter(plugin_name_ + ".port1_12v_enabled", port_enabled);
-  set_mira_param(authority_, "EBC7.Port1_12V.Enabled", port_enabled ? "true" : "false");
-  RCLCPP_INFO(
-    logger_, "The parameter port1_12v_enabled is set to: [%s]",
-    port_enabled ? "true" : "false");
-
-  declare_parameter_if_not_declared(
-    node, plugin_name_ + ".port1_24v_enabled",
-    rclcpp::ParameterValue(true), rcl_interfaces::msg::ParameterDescriptor()
-    .set__description("Enable / disable 24V enabled at port 1"));
-  node->get_parameter(plugin_name_ + ".port1_24v_enabled", port_enabled);
-  set_mira_param(authority_, "EBC7.Port1_24V.Enabled", port_enabled ? "true" : "false");
-  RCLCPP_INFO(
-    logger_, "The parameter port1_24v_enabled is set to: [%s]",
-    port_enabled ? "true" : "false");
-
-  float port_max_current;
-  declare_parameter_if_not_declared(
-    node, plugin_name_ + ".mcu_5v_max_current",
-    rclcpp::ParameterValue(2.5), rcl_interfaces::msg::ParameterDescriptor()
-    .set__description("Maximum current for MCU 5V in A")
-    .set__floating_point_range(
-      {rcl_interfaces::msg::FloatingPointRange()
-        .set__from_value(0.0)
-        .set__to_value(2.5)
-        .set__step(0.5)}
-  ));
-  node->get_parameter(plugin_name_ + ".mcu_5v_max_current", port_max_current);
-  set_mira_param(authority_, "MainControlUnit.EBC_5V.MaxCurrent", std::to_string(port_max_current));
-  RCLCPP_INFO(logger_, "The parameter mcu_5v_max_current is set to: [%f]", port_max_current);
-
-  declare_parameter_if_not_declared(
-    node, plugin_name_ + ".mcu_12v_max_current",
-    rclcpp::ParameterValue(2.5), rcl_interfaces::msg::ParameterDescriptor()
-    .set__description("Maximum current for MCU 12V in A")
-    .set__floating_point_range(
-      {rcl_interfaces::msg::FloatingPointRange()
-        .set__from_value(0.0)
-        .set__to_value(2.5)
-        .set__step(0.5)}
-  ));
-  node->get_parameter(plugin_name_ + ".mcu_12v_max_current", port_max_current);
-  set_mira_param(
-    authority_, "MainControlUnit.EBC_12V.MaxCurrent",
-    std::to_string(port_max_current));
-  RCLCPP_INFO(logger_, "The parameter mcu_12v_max_current is set to: [%f]", port_max_current);
-
-  declare_parameter_if_not_declared(
-    node, plugin_name_ + ".mcu_24v_max_current",
-    rclcpp::ParameterValue(2.5), rcl_interfaces::msg::ParameterDescriptor()
-    .set__description("Maximum current for MCU 24V in A")
-    .set__floating_point_range(
-      {rcl_interfaces::msg::FloatingPointRange()
-        .set__from_value(0.0)
-        .set__to_value(2.5)
-        .set__step(0.5)}
-  ));
-  node->get_parameter(plugin_name_ + ".mcu_24v_max_current", port_max_current);
-  set_mira_param(
-    authority_, "MainControlUnit.EBC_24V.MaxCurrent",
-    std::to_string(port_max_current));
-  RCLCPP_INFO(logger_, "The parameter mcu_24v_max_current is set to: [%f]", port_max_current);
-
-  declare_parameter_if_not_declared(
-    node, plugin_name_ + ".port0_5v_max_current",
-    rclcpp::ParameterValue(2.5), rcl_interfaces::msg::ParameterDescriptor()
-    .set__description("Maximum current for port 0 5V in A")
-    .set__floating_point_range(
-      {rcl_interfaces::msg::FloatingPointRange()
-        .set__from_value(0.0)
-        .set__to_value(2.5)
-        .set__step(0.5)}
-  ));
-  node->get_parameter(plugin_name_ + ".port0_5v_max_current", port_max_current);
-  set_mira_param(authority_, "EBC7.Port0_5V.MaxCurrent", std::to_string(port_max_current));
-  RCLCPP_INFO(logger_, "The parameter port0_5v_max_current is set to: [%f]", port_max_current);
-
-  declare_parameter_if_not_declared(
-    node, plugin_name_ + ".port0_12v_max_current",
-    rclcpp::ParameterValue(2.5), rcl_interfaces::msg::ParameterDescriptor()
-    .set__description("Maximum current for port 0 12V in A")
-    .set__floating_point_range(
-      {rcl_interfaces::msg::FloatingPointRange()
-        .set__from_value(0.0)
-        .set__to_value(2.5)
-        .set__step(0.5)}
-  ));
-  node->get_parameter(plugin_name_ + ".port0_12v_max_current", port_max_current);
-  set_mira_param(authority_, "EBC7.Port0_12V.MaxCurrent", std::to_string(port_max_current));
-  RCLCPP_INFO(logger_, "The parameter port0_12v_max_current is set to: [%f]", port_max_current);
-
-  declare_parameter_if_not_declared(
-    node, plugin_name_ + ".port0_24v_max_current",
-    rclcpp::ParameterValue(2.5), rcl_interfaces::msg::ParameterDescriptor()
-    .set__description("Maximum current for port 0 24V in A")
-    .set__floating_point_range(
-      {rcl_interfaces::msg::FloatingPointRange()
-        .set__from_value(0.0)
-        .set__to_value(2.5)
-        .set__step(0.5)}
-  ));
-  node->get_parameter(plugin_name_ + ".port0_24v_max_current", port_max_current);
-  set_mira_param(authority_, "EBC7.Port0_24V.MaxCurrent", std::to_string(port_max_current));
-  RCLCPP_INFO(logger_, "The parameter port0_24v_max_current is set to: [%f]", port_max_current);
-
-  declare_parameter_if_not_declared(
-    node, plugin_name_ + ".port1_5v_max_current",
-    rclcpp::ParameterValue(2.5), rcl_interfaces::msg::ParameterDescriptor()
-    .set__description("Maximum current for port 1 5V in A")
-    .set__floating_point_range(
-      {rcl_interfaces::msg::FloatingPointRange()
-        .set__from_value(0.0)
-        .set__to_value(2.5)
-        .set__step(0.5)}
-  ));
-  node->get_parameter(plugin_name_ + ".port1_5v_max_current", port_max_current);
-  set_mira_param(authority_, "EBC7.Port1_5V.MaxCurrent", std::to_string(port_max_current));
-  RCLCPP_INFO(logger_, "The parameter port1_5v_max_current is set to: [%f]", port_max_current);
-
-  declare_parameter_if_not_declared(
-    node, plugin_name_ + ".port1_12v_max_current",
-    rclcpp::ParameterValue(2.5), rcl_interfaces::msg::ParameterDescriptor()
-    .set__description("Maximum current for port 1 12V in A")
-    .set__floating_point_range(
-      {rcl_interfaces::msg::FloatingPointRange()
-        .set__from_value(0.0)
-        .set__to_value(4.0)
-        .set__step(0.5)}
-  ));
-  node->get_parameter(plugin_name_ + ".port1_12v_max_current", port_max_current);
-  set_mira_param(authority_, "EBC7.Port1_12V.MaxCurrent", std::to_string(port_max_current));
-  RCLCPP_INFO(logger_, "The parameter port1_12v_max_current is set to: [%f]", port_max_current);
-
-  declare_parameter_if_not_declared(
-    node, plugin_name_ + ".port1_24v_max_current",
-    rclcpp::ParameterValue(4.0), rcl_interfaces::msg::ParameterDescriptor()
-    .set__description("Maximum current for port 1 24V in A")
-    .set__floating_point_range(
-      {rcl_interfaces::msg::FloatingPointRange()
-        .set__from_value(0.0)
-        .set__to_value(4.0)
-        .set__step(0.5)}
-  ));
-  node->get_parameter(plugin_name_ + ".port1_24v_max_current", port_max_current);
-  set_mira_param(authority_, "EBC7.Port1_24V.MaxCurrent", std::to_string(port_max_current));
-  RCLCPP_INFO(logger_, "The parameter port1_24v_max_current is set to: [%f]", port_max_current);
+  for (const auto & port : kCurrentPorts) {
+    declare_parameter_if_not_declared(
+      node, plugin_name_ + "." + port.param,
+      rclcpp::ParameterValue(port.default_value), rcl_interfaces::msg::ParameterDescriptor()
+      .set__description(port.description)
+      .set__floating_point_range(
+        {rcl_interfaces::msg::FloatingPointRange()
+          .set__from_value(0.0)
+          .set__to_value(port.max_current)
+          .set__step(0.5)}
+    ));
+    double current = port.default_value;
+    node->get_parameter(plugin_name_ + "." + port.param, current);
+    port_max_current_[port.param] = current;
+    RCLCPP_INFO(logger_, "The parameter %s is set to: [%f]", port.param.c_str(), current);
+  }
 
   // Callback for monitor changes in parameters
   dyn_params_handler_ = node->add_on_set_parameters_callback(
@@ -281,6 +129,20 @@ void EBC::activate()
     RCLCPP_ERROR(logger_, "Failed to start scitos2_module::EBC. Exception: %s", ex.what());
     return;
   }
+
+  // MIRA parameters can only be written once the authority has started
+  for (const auto & port : kBoolPorts) {
+    if (!set_mira_param(authority_, port.mira_key, port_enabled_[port.param] ? "true" : "false")) {
+      RCLCPP_ERROR(logger_, "Failed to set the %s MIRA parameter", port.param.c_str());
+    }
+  }
+  for (const auto & port : kCurrentPorts) {
+    if (!set_mira_param(
+        authority_, port.mira_key, std::to_string(port_max_current_[port.param])))
+    {
+      RCLCPP_ERROR(logger_, "Failed to set the %s MIRA parameter", port.param.c_str());
+    }
+  }
 }
 
 void EBC::deactivate()
@@ -301,154 +163,33 @@ rcl_interfaces::msg::SetParametersResult EBC::dynamicParametersCallback(
     const auto & name = parameter.get_name();
 
     if (type == ParameterType::PARAMETER_BOOL) {
-      if (name == plugin_name_ + ".mcu_5v_enabled") {
-        set_mira_param(
-          authority_, "MainControlUnit.EBC_5V.Enabled", parameter.as_bool() ? "true" : "false");
+      auto it = std::find_if(
+        kBoolPorts.begin(), kBoolPorts.end(), [&](const EbcBoolPort & port) {
+          return name == plugin_name_ + "." + port.param;
+        });
+      if (it != kBoolPorts.end()) {
+        port_enabled_[it->param] = parameter.as_bool();
+        set_mira_param(authority_, it->mira_key, parameter.as_bool() ? "true" : "false");
         RCLCPP_INFO(
-          logger_, "The parameter mcu_5v_enabled is set to: [%s]",
-          parameter.as_bool() ? "true" : "false");
-      } else if (name == plugin_name_ + ".mcu_12v_enabled") {
-        set_mira_param(
-          authority_, "MainControlUnit.EBC_12V.Enabled", parameter.as_bool() ? "true" : "false");
-        RCLCPP_INFO(
-          logger_, "The parameter mcu_12v_enabled is set to: [%s]",
-          parameter.as_bool() ? "true" : "false");
-      } else if (name == plugin_name_ + ".mcu_24v_enabled") {
-        set_mira_param(
-          authority_, "MainControlUnit.EBC_24V.Enabled", parameter.as_bool() ? "true" : "false");
-        RCLCPP_INFO(
-          logger_, "The parameter mcu_24v_enabled is set to: [%s]",
-          parameter.as_bool() ? "true" : "false");
-      } else if (name == plugin_name_ + ".port0_5v_enabled") {
-        set_mira_param(
-          authority_, "EBC7.Port0_5V.Enabled", parameter.as_bool() ? "true" : "false");
-        RCLCPP_INFO(
-          logger_, "The parameter port0_5v_enabled is set to: [%s]",
-          parameter.as_bool() ? "true" : "false");
-      } else if (name == plugin_name_ + ".port0_12v_enabled") {
-        set_mira_param(
-          authority_, "EBC7.Port0_12V.Enabled", parameter.as_bool() ? "true" : "false");
-        RCLCPP_INFO(
-          logger_, "The parameter port0_12v_enabled is set to: [%s]",
-          parameter.as_bool() ? "true" : "false");
-      } else if (name == plugin_name_ + ".port0_24v_enabled") {
-        set_mira_param(
-          authority_, "EBC7.Port0_24V.Enabled", parameter.as_bool() ? "true" : "false");
-        RCLCPP_INFO(
-          logger_, "The parameter port0_24v_enabled is set to: [%s]",
-          parameter.as_bool() ? "true" : "false");
-      } else if (name == plugin_name_ + ".port1_5v_enabled") {
-        set_mira_param(
-          authority_, "EBC7.Port1_5V.Enabled", parameter.as_bool() ? "true" : "false");
-        RCLCPP_INFO(
-          logger_, "The parameter port1_5v_enabled is set to: [%s]",
-          parameter.as_bool() ? "true" : "false");
-      } else if (name == plugin_name_ + ".port1_12v_enabled") {
-        set_mira_param(
-          authority_, "EBC7.Port1_12V.Enabled", parameter.as_bool() ? "true" : "false");
-        RCLCPP_INFO(
-          logger_, "The parameter port1_12v_enabled is set to: [%s]",
-          parameter.as_bool() ? "true" : "false");
-      } else if (name == plugin_name_ + ".port1_24v_enabled") {
-        set_mira_param(
-          authority_, "EBC7.Port1_24V.Enabled", parameter.as_bool() ? "true" : "false");
-        RCLCPP_INFO(
-          logger_, "The parameter port1_24v_enabled is set to: [%s]",
+          logger_, "The parameter %s is set to: [%s]", it->param.c_str(),
           parameter.as_bool() ? "true" : "false");
       }
     } else if (type == ParameterType::PARAMETER_DOUBLE) {
-      if (name == plugin_name_ + ".mcu_5v_max_current") {
-        if (parameter.as_double() >= 0.0 && parameter.as_double() <= 2.5) {
-          set_mira_param(
-            authority_, "MainControlUnit.EBC_5V.MaxCurrent", std::to_string(parameter.as_double()));
-          RCLCPP_INFO(
-            logger_, "The parameter mcu_5v_max_current is set to: [%f]",
-            parameter.as_double());
-        } else {
-          RCLCPP_WARN(logger_, "The parameter mcu_5v_max_current is out of range");
+      auto it = std::find_if(
+        kCurrentPorts.begin(), kCurrentPorts.end(), [&](const EbcCurrentPort & port) {
+          return name == plugin_name_ + "." + port.param;
+        });
+      if (it != kCurrentPorts.end()) {
+        if (parameter.as_double() < 0.0 || parameter.as_double() > it->max_current) {
+          result.successful = false;
+          result.reason = it->param + " must be between 0.0 and " +
+            std::to_string(it->max_current);
+          return result;
         }
-      } else if (name == plugin_name_ + ".mcu_12v_max_current") {
-        if (parameter.as_double() >= 0.0 && parameter.as_double() <= 2.5) {
-          set_mira_param(
-            authority_, "MainControlUnit.EBC_12V.MaxCurrent",
-            std::to_string(parameter.as_double()));
-          RCLCPP_INFO(
-            logger_, "The parameter mcu_12v_max_current is set to: [%f]",
-            parameter.as_double());
-        } else {
-          RCLCPP_WARN(logger_, "The parameter mcu_12v_max_current is out of range");
-        }
-      } else if (name == plugin_name_ + ".mcu_24v_max_current") {
-        if (parameter.as_double() >= 0.0 && parameter.as_double() <= 2.5) {
-          set_mira_param(
-            authority_, "MainControlUnit.EBC_24V.MaxCurrent",
-            std::to_string(parameter.as_double()));
-          RCLCPP_INFO(
-            logger_, "The parameter mcu_24v_max_current is set to: [%f]",
-            parameter.as_double());
-        } else {
-          RCLCPP_WARN(logger_, "The parameter mcu_24v_max_current is out of range");
-        }
-      } else if (name == plugin_name_ + ".port0_5v_max_current") {
-        if (parameter.as_double() >= 0.0 && parameter.as_double() <= 2.5) {
-          set_mira_param(
-            authority_, "EBC7.Port0_5V.MaxCurrent", std::to_string(parameter.as_double()));
-          RCLCPP_INFO(
-            logger_, "The parameter port0_5v_max_current is set to: [%f]",
-            parameter.as_double());
-        } else {
-          RCLCPP_WARN(logger_, "The parameter port0_5v_max_current is out of range");
-        }
-      } else if (name == plugin_name_ + ".port0_12v_max_current") {
-        if (parameter.as_double() >= 0.0 && parameter.as_double() <= 2.5) {
-          set_mira_param(
-            authority_, "EBC7.Port0_12V.MaxCurrent", std::to_string(parameter.as_double()));
-          RCLCPP_INFO(
-            logger_, "The parameter port0_12v_max_current is set to: [%f]",
-            parameter.as_double());
-        } else {
-          RCLCPP_WARN(logger_, "The parameter port0_12v_max_current is out of range");
-        }
-      } else if (name == plugin_name_ + ".port0_24v_max_current") {
-        if (parameter.as_double() >= 0.0 && parameter.as_double() <= 2.5) {
-          set_mira_param(
-            authority_, "EBC7.Port0_24V.MaxCurrent", std::to_string(parameter.as_double()));
-          RCLCPP_INFO(
-            logger_, "The parameter port0_24v_max_current is set to: [%f]",
-            parameter.as_double());
-        } else {
-          RCLCPP_WARN(logger_, "The parameter port0_24v_max_current is out of range");
-        }
-      } else if (name == plugin_name_ + ".port1_5v_max_current") {
-        if (parameter.as_double() >= 0.0 && parameter.as_double() <= 4.0) {
-          set_mira_param(
-            authority_, "EBC7.Port1_5V.MaxCurrent", std::to_string(parameter.as_double()));
-          RCLCPP_INFO(
-            logger_, "The parameter port1_5v_max_current is set to: [%f]",
-            parameter.as_double());
-        } else {
-          RCLCPP_WARN(logger_, "The parameter port1_5v_max_current is out of range");
-        }
-      } else if (name == plugin_name_ + ".port1_12v_max_current") {
-        if (parameter.as_double() >= 0.0 && parameter.as_double() <= 4.0) {
-          set_mira_param(
-            authority_, "EBC7.Port1_12V.MaxCurrent", std::to_string(parameter.as_double()));
-          RCLCPP_INFO(
-            logger_, "The parameter port1_12v_max_current is set to: [%f]",
-            parameter.as_double());
-        } else {
-          RCLCPP_WARN(logger_, "The parameter port1_12v_max_current is out of range");
-        }
-      } else if (name == plugin_name_ + ".port1_24v_max_current") {
-        if (parameter.as_double() >= 0.0 && parameter.as_double() <= 4.0) {
-          set_mira_param(
-            authority_, "EBC7.Port1_24V.MaxCurrent", std::to_string(parameter.as_double()));
-          RCLCPP_INFO(
-            logger_, "The parameter port1_24v_max_current is set to: [%f]",
-            parameter.as_double());
-        } else {
-          RCLCPP_WARN(logger_, "The parameter port1_24v_max_current is out of range");
-        }
+        port_max_current_[it->param] = parameter.as_double();
+        set_mira_param(authority_, it->mira_key, std::to_string(parameter.as_double()));
+        RCLCPP_INFO(
+          logger_, "The parameter %s is set to: [%f]", it->param.c_str(), parameter.as_double());
       }
     }
   }

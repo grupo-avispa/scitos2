@@ -20,6 +20,7 @@
 #include <fw/Framework.h>
 
 // C++
+#include <map>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -33,6 +34,30 @@
 
 namespace scitos2_modules
 {
+
+/**
+ * @brief A MIRA boolean property exposed as a ROS parameter to enable/disable an EBC power port.
+ */
+struct EbcBoolPort
+{
+  std::string param;
+  std::string mira_key;
+  std::string description;
+};
+
+/**
+ * @brief A MIRA numeric property exposed as a ROS parameter for an EBC power port max current.
+ * The declared parameter range (0, max_current] is what rcl enforces before the dynamic
+ * parameters callback is even invoked, so it must match whatever the callback validates.
+ */
+struct EbcCurrentPort
+{
+  std::string param;
+  std::string mira_key;
+  std::string description;
+  double default_value;
+  double max_current;
+};
 
 /**
  * @class scitos2_modules::EBC
@@ -93,6 +118,17 @@ protected:
   // Dynamic parameters handler
   std::mutex mutex_;
   rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr dyn_params_handler_;
+
+  // Table of EBC power ports, single source of truth for both the declared parameter
+  // descriptor and the dynamic parameters callback validation
+  static const std::vector<EbcBoolPort> kBoolPorts;
+  static const std::vector<EbcCurrentPort> kCurrentPorts;
+
+  // Current value of each port parameter, keyed by EbcBoolPort::param / EbcCurrentPort::param.
+  // Written in activate(), after the authority has started, since MIRA parameters cannot be
+  // set before that.
+  std::map<std::string, bool> port_enabled_;
+  std::map<std::string, double> port_max_current_;
 };
 
 }  // namespace scitos2_modules
