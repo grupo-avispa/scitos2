@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "pcl_conversions/pcl_conversions.h"
 #include "rclcpp/rclcpp.hpp"
 #include "nav2_util/node_utils.hpp"
 #include "scitos2_charging_dock/segmentation.hpp"
@@ -69,14 +70,18 @@ bool Segmentation::performSegmentation(
   Cluster current_cluster;
   current_cluster.id = 0;
   current_cluster.cloud.header.frame_id = scan.header.frame_id;
+  pcl_conversions::toPCL(scan.header.stamp, current_cluster.cloud.header.stamp);
   current_cluster.push_back(points.front());
 
   // Create the segments
   for (uint64_t p = 1; p < points.size(); p++) {
     if (isJumpBetweenPoints(points[p - 1], points[p], distance_threshold_)) {
       clusters.push_back(current_cluster);
+      // clear() only empties the point storage, the header must be reset explicitly
       current_cluster.clear();
       current_cluster.id = static_cast<int>(clusters.size());
+      current_cluster.cloud.header.frame_id = scan.header.frame_id;
+      pcl_conversions::toPCL(scan.header.stamp, current_cluster.cloud.header.stamp);
     }
     current_cluster.push_back(points[p]);
   }
