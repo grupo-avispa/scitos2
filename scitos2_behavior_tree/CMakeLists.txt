@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16)
 project(scitos2_behavior_tree)
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -62,7 +62,7 @@ find_package(scitos2_msgs REQUIRED)
 # ##########
 add_library(scitos2_is_bumper_activated_condition_bt_node SHARED src/condition/is_bumper_activated_condition.cpp)
 target_include_directories(scitos2_is_bumper_activated_condition_bt_node PUBLIC
-  "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 target_link_libraries(scitos2_is_bumper_activated_condition_bt_node
@@ -75,7 +75,7 @@ target_compile_definitions(scitos2_is_bumper_activated_condition_bt_node PRIVATE
 
 add_library(scitos2_emergency_stop_service_bt_node SHARED src/action/emergency_stop_service.cpp)
 target_include_directories(scitos2_emergency_stop_service_bt_node PUBLIC
-  "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 target_link_libraries(scitos2_emergency_stop_service_bt_node
@@ -91,7 +91,7 @@ target_compile_definitions(scitos2_emergency_stop_service_bt_node PRIVATE BT_PLU
 
 add_library(scitos2_reset_motor_stop_service_bt_node SHARED src/action/reset_motor_stop_service.cpp)
 target_include_directories(scitos2_reset_motor_stop_service_bt_node PUBLIC
-  "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 target_link_libraries(scitos2_reset_motor_stop_service_bt_node

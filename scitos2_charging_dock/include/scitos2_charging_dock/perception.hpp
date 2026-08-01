@@ -61,7 +61,7 @@ public:
   /**
    * @brief Destroy the Perception object
    */
-  ~Perception();
+  ~Perception() = default;
 
   /**
    * @brief Store the dock pointcloud to a PCD file.
@@ -70,7 +70,7 @@ public:
    * @param dock The dock to store
    * @return bool If the file was stored
    */
-  bool storeDockPointcloud(std::string filepath, const Pcloud & dock);
+  bool storeDockPointcloud(const std::string & filepath, const Pcloud & dock);
 
   /**
    * @brief Get the dock pose from the scan.
@@ -123,7 +123,7 @@ protected:
    * @param dock The loaded dock
    * @return bool If the file was loaded
    */
-  bool loadDockPointcloud(std::string filepath, Pcloud & dock);
+  bool loadDockPointcloud(const std::string & filepath, Pcloud & dock);
 
   /**
    * @brief Create a PointCloud2 message from a PCL pointcloud.
@@ -160,6 +160,10 @@ protected:
   // The dock is asymmetric, so a match far from the initial estimate is a mismatch, not a
   // correction, and must be discarded rather than accepted.
   double max_yaw_error_{0.0};
+  // Accepted cluster width range as a [tolerance_min, tolerance_max] factor of the template
+  // width, see Cluster::valid()
+  double width_tolerance_min_{0.5};
+  double width_tolerance_max_{1.25};
   // Initial estimate of the dock pose
   geometry_msgs::msg::PoseStamped initial_estimate_pose_;
   // Segmentation

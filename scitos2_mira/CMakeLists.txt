@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16)
 project(scitos2_mira)
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -72,7 +72,7 @@ set(executable_name mira_framework)
 # Add library
 add_library(${library_name} SHARED src/mira_framework.cpp)
 target_include_directories(${library_name} PUBLIC
-  "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 target_link_libraries(${library_name}

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16)
 project(scitos2_charging_dock)
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -76,7 +76,7 @@ set(dock_saver_executable dock_saver)
 # Add segmentation library
 add_library(segmentation SHARED src/segmentation.cpp)
 target_include_directories(segmentation PUBLIC
-  "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 target_link_libraries(segmentation
@@ -93,7 +93,7 @@ ament_target_dependencies(segmentation PUBLIC nav2_util) # TODO(ajtudela): Fix t
 # Add perception library
 add_library(perception SHARED src/perception.cpp)
 target_include_directories(perception PUBLIC
-  "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 target_link_libraries(perception
@@ -117,7 +117,7 @@ ament_target_dependencies(perception
 # Add charging dock library
 add_library(${library_name} SHARED src/charging_dock.cpp)
 target_include_directories(${library_name} PUBLIC
-  "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 target_link_libraries(${library_name}
@@ -144,7 +144,7 @@ pluginlib_export_plugin_description_file(opennav_docking_core plugins.xml)
 # Add dock saver library
 add_library(dock_saver_core SHARED src/dock_saver.cpp)
 target_include_directories(dock_saver_core PUBLIC
-  "$<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 target_link_libraries(dock_saver_core
