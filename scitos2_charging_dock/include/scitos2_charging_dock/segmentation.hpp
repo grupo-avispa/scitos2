@@ -32,8 +32,6 @@
 namespace scitos2_charging_dock
 {
 
-using Clusters = std::vector<Cluster>;
-
 /**
  * @class scitos2_charging_dock::Segmentation
  * @brief Class to perform segmentation on the laserscan to get the clusters.

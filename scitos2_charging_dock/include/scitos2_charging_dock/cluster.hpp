@@ -157,6 +157,9 @@ struct Cluster
 
   friend bool operator<(const Cluster & c1, const Cluster & c2) {return c1.score < c2.score;}
 };
+
+using Clusters = std::vector<Cluster>;
+
 }  // namespace scitos2_charging_dock
 
 #endif  // SCITOS2_CHARGING_DOCK__CLUSTER_HPP_
