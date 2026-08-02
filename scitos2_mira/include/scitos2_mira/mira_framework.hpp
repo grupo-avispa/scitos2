@@ -33,7 +33,7 @@
 
 // Scitos2
 #include "scitos2_core/module.hpp"
-#include "scitos2_core/sink_logger.hpp"
+#include "scitos2_mira_utils/sink_logger.hpp"
 
 namespace scitos2_mira
 {

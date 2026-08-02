@@ -13,19 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SCITOS2_CORE__SINK_LOGGER_HPP_
-#define SCITOS2_CORE__SINK_LOGGER_HPP_
+#ifndef SCITOS2_MIRA_UTILS__SINK_LOGGER_HPP_
+#define SCITOS2_MIRA_UTILS__SINK_LOGGER_HPP_
 
 #include <error/LoggingCore.h>
 
 #include "rclcpp/logger.hpp"
 
 // LCOV_EXCL_START
-namespace scitos2_core
+namespace scitos2_mira_utils
 {
 
 /**
- * @class scitos2_core::SinkLogger
+ * @class scitos2_mira_utils::SinkLogger
  * @brief Class for MIRA log sinks. Redirect Mira logging to RCLCPP logging.
  */
 
@@ -70,7 +70,7 @@ private:
   rclcpp::Logger logger_;
 };
 
-}  // namespace scitos2_core
+}  // namespace scitos2_mira_utils
 // LCOV_EXCL_STOP
 
-#endif  // SCITOS2_CORE__SINK_LOGGER_HPP_
+#endif  // SCITOS2_MIRA_UTILS__SINK_LOGGER_HPP_
