@@ -42,14 +42,16 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
   plugin_name_ = name;
   logger_ = node->get_logger();
   clock_ = node->get_clock();
-  authority_ = std::make_shared<mira::Authority>();
-  authority_->checkin("/", plugin_name_);
+  authority_ = std::make_shared<scitos2_mira_utils::MiraAuthority>(logger_);
+  authority_->checkin(plugin_name_);
 
+  std::string mira_robot_resource = "/robot/Robot";
   declare_parameter_if_not_declared(
     node, plugin_name_ + ".mira_robot_resource",
-    rclcpp::ParameterValue(mira_robot_resource_), rcl_interfaces::msg::ParameterDescriptor()
+    rclcpp::ParameterValue(mira_robot_resource), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("The MIRA resource that exposes the robot's services and properties"));
-  node->get_parameter(plugin_name_ + ".mira_robot_resource", mira_robot_resource_);
+  node->get_parameter(plugin_name_ + ".mira_robot_resource", mira_robot_resource);
+  authority_->setResource(mira_robot_resource);
 
   // Declare and read parameters
   declare_parameter_if_not_declared(
@@ -240,9 +242,8 @@ void Drive::activate()
   }
 
   // MIRA parameters can only be written once the authority has started
-  if (!set_mira_param(
-      authority_, "MainControlUnit.RearLaser.Enabled",
-      magnetic_barrier_enabled_ ? "true" : "false", logger_))
+  if (!authority_->setParam(
+      "MainControlUnit.RearLaser.Enabled", magnetic_barrier_enabled_ ? "true" : "false"))
   {
     RCLCPP_ERROR(logger_, "Failed to set the magnetic_barrier_enabled MIRA parameter");
   }
@@ -277,9 +278,8 @@ rcl_interfaces::msg::SetParametersResult Drive::dynamicParametersCallback(
     if (type == ParameterType::PARAMETER_BOOL) {
       if (name == plugin_name_ + ".magnetic_barrier_enabled") {
         magnetic_barrier_enabled_ = parameter.as_bool();
-        set_mira_param(
-          authority_, "MainControlUnit.RearLaser.Enabled",
-          magnetic_barrier_enabled_ ? "true" : "false", logger_);
+        authority_->setParam(
+          "MainControlUnit.RearLaser.Enabled", magnetic_barrier_enabled_ ? "true" : "false");
         RCLCPP_INFO(
           logger_, "The parameter magnetic_barrier_enabled is set to: [%s]",
           magnetic_barrier_enabled_ ? "true" : "false");
@@ -407,7 +407,7 @@ void Drive::velocityCommandCallback(const geometry_msgs::msg::TwistStamped & msg
 {
   if (!emergency_stop_activated_ && is_active_) {
     mira::Velocity2 speed(msg.twist.linear.x, 0, msg.twist.angular.z);
-    call_mira_service(authority_, "setVelocity", std::optional<mira::Velocity2>(speed), logger_);
+    authority_->callService("setVelocity", std::optional<mira::Velocity2>(speed));
   }
 }
 
@@ -415,8 +415,8 @@ bool Drive::changeForce(
   const std::shared_ptr<scitos2_msgs::srv::ChangeForce::Request> request,
   std::shared_ptr<scitos2_msgs::srv::ChangeForce::Response> response)
 {
-  response->success = set_mira_param(
-    authority_, "MotorController.Force", mira::toString(request->force), logger_);
+  response->success = authority_->setParam(
+    "MotorController.Force", mira::toString(request->force));
   if (!response->success) {
     response->message = "MIRA service call failed";
   }
@@ -427,7 +427,7 @@ bool Drive::emergencyStop(
   const std::shared_ptr<scitos2_msgs::srv::EmergencyStop::Request>/*request*/,
   std::shared_ptr<scitos2_msgs::srv::EmergencyStop::Response> response)
 {
-  response->success = call_mira_service(authority_, "emergencyStop", logger_);
+  response->success = authority_->callService("emergencyStop");
   if (!response->success) {
     response->message = "MIRA service call failed";
   }
@@ -438,8 +438,8 @@ bool Drive::enableMotors(
   const std::shared_ptr<scitos2_msgs::srv::EnableMotors::Request> request,
   std::shared_ptr<scitos2_msgs::srv::EnableMotors::Response> response)
 {
-  response->success = call_mira_service(
-    authority_, "enableMotors", std::optional<bool>(request->enable), logger_);
+  response->success = authority_->callService(
+    "enableMotors", std::optional<bool>(request->enable));
   if (!response->success) {
     response->message = "MIRA service call failed";
   }
@@ -450,8 +450,8 @@ bool Drive::enableRfid(
   const std::shared_ptr<scitos2_msgs::srv::EnableRfid::Request> request,
   std::shared_ptr<scitos2_msgs::srv::EnableRfid::Response> response)
 {
-  response->success = set_mira_param(
-    authority_, "MainControlUnit.RearLaser.Enabled", request->enable ? "true" : "false", logger_);
+  response->success = authority_->setParam(
+    "MainControlUnit.RearLaser.Enabled", request->enable ? "true" : "false");
   if (!response->success) {
     response->message = "MIRA service call failed";
   }
@@ -477,7 +477,7 @@ bool Drive::resetMotorStop(
   const std::shared_ptr<scitos2_msgs::srv::ResetMotorStop::Request>/*request*/,
   std::shared_ptr<scitos2_msgs::srv::ResetMotorStop::Response> response)
 {
-  response->success = call_mira_service(authority_, "resetMotorStop", logger_);
+  response->success = authority_->callService("resetMotorStop");
   if (!response->success) {
     response->message = "MIRA service call failed";
   }
@@ -488,7 +488,7 @@ bool Drive::resetOdometry(
   const std::shared_ptr<scitos2_msgs::srv::ResetOdometry::Request>/*request*/,
   std::shared_ptr<scitos2_msgs::srv::ResetOdometry::Response> response)
 {
-  response->success = call_mira_service(authority_, "resetOdometry", logger_);
+  response->success = authority_->callService("resetOdometry");
   if (!response->success) {
     response->message = "MIRA service call failed";
   }
@@ -499,7 +499,7 @@ bool Drive::suspendBumper(
   const std::shared_ptr<scitos2_msgs::srv::SuspendBumper::Request>/*request*/,
   std::shared_ptr<scitos2_msgs::srv::SuspendBumper::Response> response)
 {
-  response->success = call_mira_service(authority_, "suspendBumper", logger_);
+  response->success = authority_->callService("suspendBumper");
   if (!response->success) {
     response->message = "MIRA service call failed";
   }
@@ -564,7 +564,7 @@ void Drive::resetMotorStopAfterTimeout(rclcpp::Time current_time)
   }
 
   if (bumper_activated_ && (current_time - last_bumper_reset_) > reset_bumper_interval_) {
-    call_mira_service(authority_, "resetMotorStop", logger_);
+    authority_->callService("resetMotorStop");
     last_bumper_reset_ = current_time;
   }
 }

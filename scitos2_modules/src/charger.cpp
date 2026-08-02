@@ -35,14 +35,16 @@ void Charger::configure(
 
   plugin_name_ = name;
   logger_ = node->get_logger();
-  authority_ = std::make_shared<mira::Authority>();
-  authority_->checkin("/", plugin_name_);
+  authority_ = std::make_shared<scitos2_mira_utils::MiraAuthority>(logger_);
+  authority_->checkin(plugin_name_);
 
+  std::string mira_robot_resource = "/robot/Robot";
   declare_parameter_if_not_declared(
     node, plugin_name_ + ".mira_robot_resource",
-    rclcpp::ParameterValue(mira_robot_resource_), rcl_interfaces::msg::ParameterDescriptor()
+    rclcpp::ParameterValue(mira_robot_resource), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("The MIRA resource that exposes the robot's services and properties"));
-  node->get_parameter(plugin_name_ + ".mira_robot_resource", mira_robot_resource_);
+  node->get_parameter(plugin_name_ + ".mira_robot_resource", mira_robot_resource);
+  authority_->setResource(mira_robot_resource);
 
   declare_parameter_if_not_declared(
     node, plugin_name_ + ".robot_base_frame",
@@ -128,8 +130,8 @@ bool Charger::savePersistentErrors(
   RCLCPP_INFO_STREAM(logger_, "Saving persistent error log to '" << request->filename << "'");
 
   // Call mira service
-  response->success = call_mira_service(
-    authority_, "savePersistentErrors", std::optional<std::string>(request->filename), logger_);
+  response->success = authority_->callService(
+    "savePersistentErrors", std::optional<std::string>(request->filename));
   if (!response->success) {
     response->message = "MIRA service call failed";
   }

@@ -37,6 +37,7 @@
 
 // SCITOS2
 #include "scitos2_core/module.hpp"
+#include "scitos2_mira_utils/mira_authority.hpp"
 #include "scitos2_msgs/msg/barrier_status.hpp"
 #include "scitos2_msgs/msg/bumper_status.hpp"
 #include "scitos2_msgs/msg/drive_status.hpp"
@@ -318,7 +319,7 @@ protected:
     const uint64 & status, const mira::Time & timestamp);
 
   // MIRA Authority
-  std::shared_ptr<mira::Authority> authority_;
+  std::shared_ptr<scitos2_mira_utils::MiraAuthority> authority_;
 
   // Plugin related
   std::string plugin_name_;

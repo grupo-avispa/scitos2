@@ -31,6 +31,7 @@
 
 // SCITOS2
 #include "scitos2_core/module.hpp"
+#include "scitos2_mira_utils/mira_authority.hpp"
 #include "scitos2_msgs/msg/charger_status.hpp"
 #include "scitos2_msgs/srv/save_persistent_errors.hpp"
 
@@ -126,7 +127,7 @@ protected:
     const uint8 & status, const mira::Time & timestamp);
 
   // MIRA Authority
-  std::shared_ptr<mira::Authority> authority_;
+  std::shared_ptr<scitos2_mira_utils::MiraAuthority> authority_;
 
   std::string plugin_name_;
   rclcpp::Logger logger_{rclcpp::get_logger("Charger")};

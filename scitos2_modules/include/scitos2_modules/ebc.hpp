@@ -31,6 +31,7 @@
 #include "rcl_interfaces/msg/set_parameters_result.hpp"
 
 #include "scitos2_core/module.hpp"
+#include "scitos2_mira_utils/mira_authority.hpp"
 
 namespace scitos2_modules
 {
@@ -110,7 +111,7 @@ protected:
   dynamicParametersCallback(std::vector<rclcpp::Parameter> parameters);
 
   // MIRA Authority
-  std::shared_ptr<mira::Authority> authority_;
+  std::shared_ptr<scitos2_mira_utils::MiraAuthority> authority_;
 
   std::string plugin_name_;
   rclcpp::Logger logger_{rclcpp::get_logger("EBC")};

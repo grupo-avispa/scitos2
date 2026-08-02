@@ -36,8 +36,8 @@ void IMU::configure(
   plugin_name_ = name;
   logger_ = node->get_logger();
   node_ = node;
-  authority_ = std::make_shared<mira::Authority>();
-  authority_->checkin("/", plugin_name_);
+  authority_ = std::make_shared<scitos2_mira_utils::MiraAuthority>(logger_);
+  authority_->checkin(plugin_name_);
 
   // Declare and read parameters
   declare_parameter_if_not_declared(
