@@ -684,8 +684,11 @@ scitos2_msgs::msg::EmergencyStopStatus Drive::miraToRosEmergencyStopStatus(
 }
 
 scitos2_msgs::msg::BarrierStatus Drive::miraToRosBarrierStatus(
-  const uint64 & status, const mira::Time & timestamp)
+  const uint64 & /*status*/, const mira::Time & timestamp)
 {
+  // The caller only invokes this after isBarrierCode() confirmed the RFID code marks a
+  // barrier, so barrier_stopped is unconditionally true here; the code value itself isn't
+  // needed to build the message.
   scitos2_msgs::msg::BarrierStatus barrier;
   {
     std::lock_guard<std::mutex> lock(mutex_);
