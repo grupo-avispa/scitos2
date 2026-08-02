@@ -32,6 +32,7 @@
 
 // SCITOS2
 #include "scitos2_core/module.hpp"
+#include "scitos2_mira_utils/mira_authority.hpp"
 
 namespace scitos2_modules
 {
@@ -110,7 +111,7 @@ protected:
   geometry_msgs::msg::Vector3 miraToRosGyroscope(const mira::Point3f & gyroscope);
 
   // MIRA Authority
-  std::shared_ptr<mira::Authority> authority_;
+  std::shared_ptr<scitos2_mira_utils::MiraAuthority> authority_;
 
   // Parent node, kept to (re)create the publishing timer on activate()
   rclcpp_lifecycle::LifecycleNode::WeakPtr node_;

@@ -60,6 +60,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(scitos2_msgs REQUIRED)
 find_package(scitos2_core REQUIRED)
 find_package(scitos2_common REQUIRED)
+find_package(scitos2_mira_utils REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
@@ -81,6 +82,7 @@ target_link_libraries(scitos2_charger
   PUBLIC
   rclcpp::rclcpp
   scitos2_core::scitos2_core
+  scitos2_mira_utils::scitos2_mira_utils
   ${scitos2_msgs_TARGETS}
   ${sensor_msgs_TARGETS}
   PRIVATE
@@ -97,6 +99,7 @@ target_link_libraries(scitos2_display
   PUBLIC
   rclcpp::rclcpp
   scitos2_core::scitos2_core
+  scitos2_mira_utils::scitos2_mira_utils
   ${scitos2_msgs_TARGETS}
   PRIVATE
   pluginlib::pluginlib
@@ -114,6 +117,7 @@ target_link_libraries(scitos2_drive
   ${nav_msgs_TARGETS}
   rclcpp::rclcpp
   scitos2_core::scitos2_core
+  scitos2_mira_utils::scitos2_mira_utils
   ${scitos2_msgs_TARGETS}
   ${sensor_msgs_TARGETS}
   tf2_ros::tf2_ros
@@ -135,6 +139,7 @@ target_link_libraries(scitos2_ebc
   PUBLIC
   rclcpp::rclcpp
   scitos2_core::scitos2_core
+  scitos2_mira_utils::scitos2_mira_utils
   PRIVATE
   pluginlib::pluginlib
 )
@@ -150,6 +155,7 @@ target_link_libraries(scitos2_imu
   ${geometry_msgs_TARGETS}
   rclcpp::rclcpp
   scitos2_core::scitos2_core
+  scitos2_mira_utils::scitos2_mira_utils
   ${sensor_msgs_TARGETS}
   PRIVATE
   pluginlib::pluginlib
@@ -206,6 +212,7 @@ ament_export_dependencies(
   pluginlib
   rclcpp
   scitos2_core
+  scitos2_mira_utils
   scitos2_msgs
   sensor_msgs
   tf2

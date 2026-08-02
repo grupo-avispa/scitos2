@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(scitos2_core)
+project(scitos2_mira_utils)
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to Release as none was specified.")
@@ -51,31 +51,30 @@ endif()
 # # Find ament macros and libraries
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
+find_package(scitos2_common REQUIRED)
+
+find_mira_path()
 
 # ##########
 # # Build ##
 # ##########
-# scitos2_core is a pure plugin interface (configure/cleanup/activate/deactivate) with no
-# MIRA dependency: MIRA-talking modules hold a scitos2_mira_utils::MiraAuthority instead of
-# inheriting MIRA helpers from here (see scitos2_mira_utils).
-add_library(scitos2_core INTERFACE)
-target_include_directories(scitos2_core
-  INTERFACE
+include_mira_packages()
+
+add_library(scitos2_mira_utils SHARED src/mira_authority.cpp)
+target_include_directories(scitos2_mira_utils PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
-target_link_libraries(scitos2_core INTERFACE
-  ${std_msgs_TARGETS}
+target_link_libraries(scitos2_mira_utils PUBLIC
   rclcpp::rclcpp
-  rclcpp_lifecycle::rclcpp_lifecycle
 )
+target_link_mira_libraries(scitos2_mira_utils)
 
 # ############
 # # Install ##
 # ############
-install(TARGETS scitos2_core
-  EXPORT scitos2_core
+install(TARGETS scitos2_mira_utils
+  EXPORT scitos2_mira_utils
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -94,15 +93,17 @@ if(BUILD_TESTING)
   # the following line skips the linter which checks for copyrights
   set(ament_cmake_copyright_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
+  find_package(ament_cmake_gtest REQUIRED)
+  add_subdirectory(test)
 endif()
 
 # ##################################
 # # ament specific configuration  ##
 # ##################################
 ament_export_include_directories(include/${PROJECT_NAME})
+ament_export_libraries(scitos2_mira_utils)
 ament_export_dependencies(
   rclcpp
-  rclcpp_lifecycle
 )
-ament_export_targets(scitos2_core)
+ament_export_targets(scitos2_mira_utils)
 ament_package()

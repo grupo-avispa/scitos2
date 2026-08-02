@@ -31,14 +31,16 @@ void Display::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
   plugin_name_ = name;
   logger_ = node->get_logger();
   clock_ = node->get_clock();
-  authority_ = std::make_shared<mira::Authority>();
-  authority_->checkin("/", plugin_name_);
+  authority_ = std::make_shared<scitos2_mira_utils::MiraAuthority>(logger_);
+  authority_->checkin(plugin_name_);
 
+  std::string mira_robot_resource = "/robot/Robot";
   declare_parameter_if_not_declared(
     node, plugin_name_ + ".mira_robot_resource",
-    rclcpp::ParameterValue(mira_robot_resource_), rcl_interfaces::msg::ParameterDescriptor()
+    rclcpp::ParameterValue(mira_robot_resource), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("The MIRA resource that exposes the robot's services and properties"));
-  node->get_parameter(plugin_name_ + ".mira_robot_resource", mira_robot_resource_);
+  node->get_parameter(plugin_name_ + ".mira_robot_resource", mira_robot_resource);
+  authority_->setResource(mira_robot_resource);
 
   // Create publisher
   display_data_pub_ = node->create_publisher<scitos2_msgs::msg::MenuEntry>(
@@ -205,13 +207,13 @@ void Display::menuDataCallback(mira::ChannelRead<uint8> data)
 void Display::changeMenuEntries()
 {
   if (user_menu_enabled_) {
-    set_mira_param(authority_, "StatusDisplay.EnableUserMenu", "true");
-    set_mira_param(authority_, "StatusDisplay.UserMenuName", menu_name_);
-    set_mira_param(authority_, "StatusDisplay.UserMenuEntryName1", menu_entry_name_1_);
-    set_mira_param(authority_, "StatusDisplay.UserMenuEntryName2", menu_entry_name_2_);
-    set_mira_param(authority_, "StatusDisplay.UserMenuEntryName3", menu_entry_name_3_);
+    authority_->setParam("StatusDisplay.EnableUserMenu", "true");
+    authority_->setParam("StatusDisplay.UserMenuName", menu_name_);
+    authority_->setParam("StatusDisplay.UserMenuEntryName1", menu_entry_name_1_);
+    authority_->setParam("StatusDisplay.UserMenuEntryName2", menu_entry_name_2_);
+    authority_->setParam("StatusDisplay.UserMenuEntryName3", menu_entry_name_3_);
   } else {
-    set_mira_param(authority_, "StatusDisplay.EnableUserMenu", "false");
+    authority_->setParam("StatusDisplay.EnableUserMenu", "false");
   }
 }
 

@@ -31,6 +31,7 @@
 
 // SCITOS2
 #include "scitos2_core/module.hpp"
+#include "scitos2_mira_utils/mira_authority.hpp"
 #include "scitos2_msgs/msg/menu_entry.hpp"
 
 namespace scitos2_modules
@@ -100,7 +101,7 @@ protected:
   void changeMenuEntries();
 
   // MIRA Authority
-  std::shared_ptr<mira::Authority> authority_;
+  std::shared_ptr<scitos2_mira_utils::MiraAuthority> authority_;
 
   std::string plugin_name_;
   rclcpp::Clock::SharedPtr clock_;
