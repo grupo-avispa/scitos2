@@ -37,7 +37,7 @@ MiraFramework::MiraFramework(const rclcpp::NodeOptions & options)
   RCLCPP_INFO(get_logger(), "Creating MIRA framework");
 
   // Redirect MIRA logger
-  MIRA_LOGGER.registerSink(scitos2_core::SinkLogger(this->get_logger()));
+  MIRA_LOGGER.registerSink(scitos2_mira_utils::SinkLogger(this->get_logger()));
   MIRA_LOGGER.setSeverityLevel(mira::SeverityLevel::DEBUG);
 
   framework_ = std::make_unique<mira::Framework>(0, nullptr);

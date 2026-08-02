@@ -57,6 +57,7 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(scitos2_core REQUIRED)
 find_package(scitos2_common REQUIRED)
+find_package(scitos2_mira_utils REQUIRED)
 
 find_mira_path()
 
@@ -81,6 +82,7 @@ target_link_libraries(${library_name}
   pluginlib::pluginlib
   rclcpp::rclcpp
   scitos2_core::scitos2_core
+  scitos2_mira_utils::scitos2_mira_utils
   PRIVATE
   rclcpp_components::component
 )
@@ -146,6 +148,7 @@ ament_export_dependencies(
   rclcpp
   rclcpp_components
   scitos2_core
+  scitos2_mira_utils
 )
 ament_export_targets(${library_name})
 ament_package()
