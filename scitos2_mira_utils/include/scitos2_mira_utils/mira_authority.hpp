@@ -26,6 +26,7 @@
 #include <string>
 
 #include "rclcpp/logger.hpp"
+#include "rclcpp/logging.hpp"
 
 namespace scitos2_mira_utils
 {

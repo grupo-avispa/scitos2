@@ -15,6 +15,8 @@
 
 #include "scitos2_mira_utils/mira_authority.hpp"
 
+#include "rclcpp/logging.hpp"
+
 namespace scitos2_mira_utils
 {
 
