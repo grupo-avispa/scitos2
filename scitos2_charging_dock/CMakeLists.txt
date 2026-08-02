@@ -82,11 +82,10 @@ target_include_directories(segmentation PUBLIC
 target_link_libraries(segmentation
   PUBLIC
   ${geometry_msgs_TARGETS}
+  pcl_ros::pcl_ros_tf
   rclcpp::rclcpp
   rclcpp_lifecycle::rclcpp_lifecycle
   ${sensor_msgs_TARGETS}
-  PRIVATE
-  pcl_ros::pcl_ros_tf
 )
 ament_target_dependencies(segmentation PUBLIC nav2_util) # TODO(ajtudela): Fix this in kilted
 
