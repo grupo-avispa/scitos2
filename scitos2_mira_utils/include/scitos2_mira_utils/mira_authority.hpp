@@ -16,7 +16,8 @@
 #ifndef SCITOS2_MIRA_UTILS__MIRA_AUTHORITY_HPP_
 #define SCITOS2_MIRA_UTILS__MIRA_AUTHORITY_HPP_
 
-#include <fw/Authority.h>
+// Authority.h enforces (via #error) that it is only ever included through Framework.h
+#include <fw/Framework.h>
 #include <rpc/RPCError.h>
 
 #include <functional>
