@@ -83,12 +83,11 @@ target_include_directories(segmentation PUBLIC
 target_link_libraries(segmentation
   PUBLIC
   ${geometry_msgs_TARGETS}
+  nav2_ros_common::nav2_ros_common
+  pcl_ros::pcl_ros_tf
   rclcpp::rclcpp
   rclcpp_lifecycle::rclcpp_lifecycle
   ${sensor_msgs_TARGETS}
-  PRIVATE
-  nav2_ros_common::nav2_ros_common
-  pcl_ros::pcl_ros_tf
 )
 
 # Add dock selector library: pure decision logic (which candidate is the dock), with no
