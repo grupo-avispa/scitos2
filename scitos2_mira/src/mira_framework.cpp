@@ -157,7 +157,11 @@ nav2_util::CallbackReturn MiraFramework::on_activate(const rclcpp_lifecycle::Sta
   ModuleMap::iterator it;
   for (it = modules_.begin(); it != modules_.end(); ++it) {
     try {
-      it->second->activate();
+      if (!it->second->activate()) {
+        RCLCPP_ERROR(get_logger(), "Failed to activate module '%s'", it->first.c_str());
+        on_deactivate(state);
+        return nav2_util::CallbackReturn::FAILURE;
+      }
     } catch (const std::exception & ex) {
       RCLCPP_ERROR(get_logger(), "Failed to activate module. Exception: %s", ex.what());
       on_deactivate(state);
@@ -190,15 +194,21 @@ nav2_util::CallbackReturn MiraFramework::on_deactivate(const rclcpp_lifecycle::S
 {
   RCLCPP_INFO(get_logger(), "Deactivating");
 
+  // Deactivate every module regardless of earlier failures: this is best-effort teardown,
+  // not a place to leave some modules still holding their MIRA authority
+  bool success = true;
   ModuleMap::iterator it;
   for (it = modules_.begin(); it != modules_.end(); ++it) {
-    it->second->deactivate();
+    if (!it->second->deactivate()) {
+      RCLCPP_ERROR(get_logger(), "Failed to deactivate module '%s'", it->first.c_str());
+      success = false;
+    }
   }
 
   // Destroy bond connection
   destroyBond();
 
-  return nav2_util::CallbackReturn::SUCCESS;
+  return success ? nav2_util::CallbackReturn::SUCCESS : nav2_util::CallbackReturn::FAILURE;
 }
 
 nav2_util::CallbackReturn MiraFramework::on_cleanup(const rclcpp_lifecycle::State & /*state*/)

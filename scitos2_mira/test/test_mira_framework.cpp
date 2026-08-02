@@ -47,9 +47,9 @@ public:
 
   virtual void cleanup() {}
 
-  virtual void activate() {}
+  virtual bool activate() {return true;}
 
-  virtual void deactivate() {}
+  virtual bool deactivate() {return true;}
 };
 
 // Mocked class loader

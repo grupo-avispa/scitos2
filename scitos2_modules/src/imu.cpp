@@ -81,7 +81,7 @@ void IMU::cleanup()
   timer_.reset();
 }
 
-void IMU::activate()
+bool IMU::activate()
 {
   RCLCPP_INFO(
     logger_, "Activating module : %s of type scitos2_module::IMU", plugin_name_.c_str());
@@ -101,17 +101,25 @@ void IMU::activate()
     authority_->start();
   } catch (const mira::Exception & ex) {
     RCLCPP_ERROR(logger_, "Failed to start scitos2_module::IMU. Exception: %s", ex.what());
-    return;
+    return false;
   }
+  return true;
 }
 
-void IMU::deactivate()
+bool IMU::deactivate()
 {
   RCLCPP_INFO(
     logger_, "Deactivating module : %s of type scitos2_module::IMU", plugin_name_.c_str());
-  authority_->checkout();
+  bool success = true;
+  try {
+    authority_->checkout();
+  } catch (const mira::Exception & ex) {
+    RCLCPP_ERROR(logger_, "Failed to checkout scitos2_module::IMU. Exception: %s", ex.what());
+    success = false;
+  }
   imu_pub_->on_deactivate();
   timer_.reset();
+  return success;
 }
 
 void IMU::accelerationDataCallback(mira::ChannelRead<mira::Point3f> data)

@@ -87,7 +87,7 @@ void Charger::cleanup()
   save_persistent_errors_service_.reset();
 }
 
-void Charger::activate()
+bool Charger::activate()
 {
   RCLCPP_INFO(
     logger_, "Activating module : %s of type scitos2_module::Charger", plugin_name_.c_str());
@@ -98,17 +98,25 @@ void Charger::activate()
     authority_->start();
   } catch (const mira::Exception & ex) {
     RCLCPP_ERROR(logger_, "Failed to start scitos2_module::Charger. Exception: %s", ex.what());
-    return;
+    return false;
   }
+  return true;
 }
 
-void Charger::deactivate()
+bool Charger::deactivate()
 {
   RCLCPP_INFO(
     logger_, "Deactivating module : %s of type scitos2_module::Charger", plugin_name_.c_str());
-  authority_->checkout();
+  bool success = true;
+  try {
+    authority_->checkout();
+  } catch (const mira::Exception & ex) {
+    RCLCPP_ERROR(logger_, "Failed to checkout scitos2_module::Charger. Exception: %s", ex.what());
+    success = false;
+  }
   battery_pub_->on_deactivate();
   charger_pub_->on_deactivate();
+  return success;
 }
 
 void Charger::batteryDataCallback(mira::ChannelRead<mira::robot::BatteryState> data)

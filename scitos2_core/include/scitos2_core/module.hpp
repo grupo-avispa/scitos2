@@ -60,13 +60,18 @@ public:
 
   /**
    * @brief Method to active the module and any threads involved in execution.
+   * @return bool True if activation succeeded (e.g. the MIRA authority started), false
+   * otherwise. Modules that can fail to activate must report it here instead of only
+   * logging, so the owning lifecycle node can abort the transition instead of reporting
+   * ACTIVE with a module that is not actually running.
    */
-  virtual void activate() = 0;
+  virtual bool activate() = 0;
 
   /**
    * @brief Method to deactive the module and any threads involved in execution.
+   * @return bool True if deactivation succeeded cleanly, false otherwise.
    */
-  virtual void deactivate() = 0;
+  virtual bool deactivate() = 0;
 
 protected:
   /**
