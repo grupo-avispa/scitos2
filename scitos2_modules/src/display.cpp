@@ -108,7 +108,7 @@ void Display::cleanup()
   display_data_pub_.reset();
 }
 
-void Display::activate()
+bool Display::activate()
 {
   RCLCPP_INFO(
     logger_, "Activating module : %s of type scitos2_module::Display", plugin_name_.c_str());
@@ -118,19 +118,27 @@ void Display::activate()
     authority_->start();
   } catch (const mira::Exception & ex) {
     RCLCPP_ERROR(logger_, "Failed to start scitos2_module::Display. Exception: %s", ex.what());
-    return;
+    return false;
   }
 
   // MIRA parameters can only be written once the authority has started
   changeMenuEntries();
+  return true;
 }
 
-void Display::deactivate()
+bool Display::deactivate()
 {
   RCLCPP_INFO(
     logger_, "Deactivating module : %s of type scitos2_module::Display", plugin_name_.c_str());
-  authority_->checkout();
+  bool success = true;
+  try {
+    authority_->checkout();
+  } catch (const mira::Exception & ex) {
+    RCLCPP_ERROR(logger_, "Failed to checkout scitos2_module::Display. Exception: %s", ex.what());
+    success = false;
+  }
   display_data_pub_->on_deactivate();
+  return success;
 }
 
 rcl_interfaces::msg::SetParametersResult Display::dynamicParametersCallback(

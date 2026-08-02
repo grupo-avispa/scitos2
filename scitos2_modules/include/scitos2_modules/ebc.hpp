@@ -95,12 +95,12 @@ public:
   /**
    * @brief Activate the module state machine.
    */
-  void activate() override;
+  bool activate() override;
 
   /**
    * @brief Deactivate the module state machine.
    */
-  void deactivate() override;
+  bool deactivate() override;
 
 protected:
   /**

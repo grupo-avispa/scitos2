@@ -49,9 +49,9 @@ public:
 
   virtual void cleanup() {}
 
-  virtual void activate() {}
+  virtual bool activate() {return true;}
 
-  virtual void deactivate() {}
+  virtual bool deactivate() {return true;}
 };
 
 scitos2_core::Module::Ptr MiraFrameworkFixture::loadModule(const std::string & type)

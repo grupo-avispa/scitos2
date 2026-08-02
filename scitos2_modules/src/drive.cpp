@@ -244,7 +244,7 @@ void Drive::cleanup()
   tf_broadcaster_.reset();
 }
 
-void Drive::activate()
+bool Drive::activate()
 {
   RCLCPP_INFO(
     logger_, "Activating module : %s of type scitos2_module::Drive", plugin_name_.c_str());
@@ -262,22 +262,32 @@ void Drive::activate()
     is_active_ = true;
   } catch (const mira::Exception & ex) {
     RCLCPP_ERROR(logger_, "Failed to start scitos2_module::Drive. Exception: %s", ex.what());
-    return;
+    return false;
   }
 
-  // MIRA parameters can only be written once the authority has started
+  // MIRA parameters can only be written once the authority has started. Not fatal to
+  // activation: the drive still works, just without the magnetic barrier configured.
   if (!authority_->setParam(
       "MainControlUnit.RearLaser.Enabled", magnetic_barrier_enabled_ ? "true" : "false"))
   {
     RCLCPP_ERROR(logger_, "Failed to set the magnetic_barrier_enabled MIRA parameter");
   }
+
+  return true;
 }
 
-void Drive::deactivate()
+bool Drive::deactivate()
 {
   RCLCPP_INFO(
     logger_, "Deactivating module : %s of type scitos2_module::Drive", plugin_name_.c_str());
-  authority_->checkout();
+  is_active_ = false;
+  bool success = true;
+  try {
+    authority_->checkout();
+  } catch (const mira::Exception & ex) {
+    RCLCPP_ERROR(logger_, "Failed to checkout scitos2_module::Drive. Exception: %s", ex.what());
+    success = false;
+  }
   bumper_pub_->on_deactivate();
   bumper_markers_pub_->on_deactivate();
   drive_status_pub_->on_deactivate();
@@ -286,7 +296,7 @@ void Drive::deactivate()
   mileage_pub_->on_deactivate();
   odometry_pub_->on_deactivate();
   rfid_pub_->on_deactivate();
-  is_active_ = false;
+  return success;
 }
 
 rcl_interfaces::msg::SetParametersResult Drive::dynamicParametersCallback(

@@ -126,7 +126,7 @@ void EBC::cleanup()
   authority_.reset();
 }
 
-void EBC::activate()
+bool EBC::activate()
 {
   RCLCPP_INFO(
     logger_, "Activating module : %s of type scitos2_module::EBC", plugin_name_.c_str());
@@ -135,10 +135,11 @@ void EBC::activate()
     authority_->start();
   } catch (const mira::Exception & ex) {
     RCLCPP_ERROR(logger_, "Failed to start scitos2_module::EBC. Exception: %s", ex.what());
-    return;
+    return false;
   }
 
-  // MIRA parameters can only be written once the authority has started
+  // MIRA parameters can only be written once the authority has started. Not fatal to
+  // activation: a failed port stays at whatever state MIRA already had it in.
   for (const auto & port : kBoolPorts) {
     if (!authority_->setParam(port.mira_key, port_enabled_[port.param] ? "true" : "false")) {
       RCLCPP_ERROR(logger_, "Failed to set the %s MIRA parameter", port.param.c_str());
@@ -149,13 +150,20 @@ void EBC::activate()
       RCLCPP_ERROR(logger_, "Failed to set the %s MIRA parameter", port.param.c_str());
     }
   }
+  return true;
 }
 
-void EBC::deactivate()
+bool EBC::deactivate()
 {
   RCLCPP_INFO(
     logger_, "Deactivating module : %s of type scitos2_module::EBC", plugin_name_.c_str());
-  authority_->checkout();
+  try {
+    authority_->checkout();
+  } catch (const mira::Exception & ex) {
+    RCLCPP_ERROR(logger_, "Failed to checkout scitos2_module::EBC. Exception: %s", ex.what());
+    return false;
+  }
+  return true;
 }
 
 rcl_interfaces::msg::SetParametersResult EBC::dynamicParametersCallback(
