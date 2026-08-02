@@ -245,7 +245,6 @@ TEST(ScitosIMUTest, accelerationTest) {
   acceleration.z() = 0.0;
 
   // Convert the acceleration to ROS
-  mira::Time time = mira::Time().now();
   auto ros_acceleration = module->miraToRosAcceleration(acceleration);
 
   // Check the values
@@ -265,7 +264,6 @@ TEST(ScitosIMUTest, gyroscopeTest) {
   gyroscope.z() = 0.0;
 
   // Convert the gyroscope to ROS
-  mira::Time time = mira::Time().now();
   auto ros_gyroscope = module->miraToRosGyroscope(gyroscope);
 
   // Check the values
