@@ -574,7 +574,9 @@ void Drive::resetMotorStopAfterTimeout(rclcpp::Time current_time)
   }
 
   if (bumper_activated_ && (current_time - last_bumper_reset_) > reset_bumper_interval_) {
-    authority_->callService("resetMotorStop");
+    if (authority_) {
+      authority_->callService("resetMotorStop");
+    }
     last_bumper_reset_ = current_time;
   }
 }

@@ -16,6 +16,7 @@
 #ifndef SCITOS2_BEHAVIOR_TREE__ACTION__EMERGENCY_STOP_SERVICE_HPP_
 #define SCITOS2_BEHAVIOR_TREE__ACTION__EMERGENCY_STOP_SERVICE_HPP_
 
+#include <memory>
 #include <string>
 
 #include "nav2_behavior_tree/bt_service_node.hpp"

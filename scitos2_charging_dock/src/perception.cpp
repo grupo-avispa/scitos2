@@ -13,12 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// C++
-#include <algorithm>
-
 // PCL
 #include <pcl/common/eigen.h>
 #include <pcl/registration/icp.h>
+
+// C++
+#include <algorithm>
 
 // TF
 #include "tf2/transform_datatypes.h"

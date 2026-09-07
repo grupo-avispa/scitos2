@@ -31,6 +31,16 @@ public:
   EmergencyStopService()
   : TestService("emergency_stop")
   {}
+
+protected:
+  void handle_service(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<scitos2_msgs::srv::EmergencyStop::Request> request,
+    const std::shared_ptr<scitos2_msgs::srv::EmergencyStop::Response> response) override
+  {
+    TestService::handle_service(request_header, request, response);
+    response->success = true;
+  }
 };
 
 class EmergencyStopServiceTestFixture : public ::testing::Test
