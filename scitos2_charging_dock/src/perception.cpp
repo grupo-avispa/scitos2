@@ -61,11 +61,11 @@ Perception::Perception(
     node, name_ + ".perception.dock_template", rclcpp::ParameterValue(""));
   nav2::declare_parameter_if_not_declared(
     node, name_ + ".perception.use_first_detection", rclcpp::ParameterValue(false));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".perception.max_yaw_error", rclcpp::ParameterValue(M_PI_2));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".perception.width_tolerance_min", rclcpp::ParameterValue(0.5));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".perception.width_tolerance_max", rclcpp::ParameterValue(1.25));
 
   node->get_parameter(name_ + ".perception.icp_min_score", icp_min_score_);
