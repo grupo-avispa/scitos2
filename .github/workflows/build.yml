@@ -59,8 +59,8 @@ jobs:
       - name: Install global dependencies
         run: |
           apt update && apt install --no-install-recommends -y \
-            libproc2-dev libopencv-dev \
-            python3-pip python3-colcon-coveragepy-result
+            libproc2-dev libopencv-dev lcov \
+            python3-pip python3-colcon-coveragepy-result python3-colcon-lcov-result
       - name: Checkout Repository
         uses: actions/checkout@v7
       - name: Restore MIRA cache
