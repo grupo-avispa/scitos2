@@ -13,6 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <memory>
+#include <stdexcept>
+
 #include "gtest/gtest.h"
 #include "rclcpp/rclcpp.hpp"
 #include "nav2_ros_common/node_utils.hpp"
@@ -1181,6 +1184,46 @@ TEST(ScitosDriveTest, velocityCommand) {
   // Have to join thread after rclcpp is shut down otherwise test hangs
   pub_thread.join();
   drive_thread.join();
+}
+
+TEST(ScitosDriveTest, configureWithExpiredNodeThrows) {
+  auto module = std::make_shared<DriveFixture>();
+  EXPECT_THROW(
+    module->configure(rclcpp_lifecycle::LifecycleNode::WeakPtr(), "test"), std::runtime_error);
+}
+
+TEST(ScitosDriveTest, reactivationAfterDeactivationIsReported) {
+  rclcpp::init(0, nullptr);
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testDriveTwice");
+  auto module = std::make_shared<DriveFixture>();
+  module->configure(node, "test");
+
+  // A checked out authority can't be started again, which is reported through the return
+  // value, while checking it out twice is harmless
+  EXPECT_TRUE(module->activate());
+  EXPECT_TRUE(module->deactivate());
+  EXPECT_FALSE(module->activate());
+  EXPECT_TRUE(module->deactivate());
+  module->cleanup();
+  rclcpp::shutdown();
+}
+
+TEST(ScitosDriveTest, emptyFrameAndTopicNamesAreRejected) {
+  rclcpp::init(0, nullptr);
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testDriveEmptyNames");
+  auto module = std::make_shared<DriveFixture>();
+  module->configure(node, "test");
+  module->activate();
+
+  for (const auto & name : {"robot_base_frame", "odom_frame", "odom_topic"}) {
+    auto result = node->set_parameter(rclcpp::Parameter(std::string("test.") + name, ""));
+    EXPECT_FALSE(result.successful) << name;
+    EXPECT_FALSE(result.reason.empty()) << name;
+  }
+
+  module->deactivate();
+  module->cleanup();
+  rclcpp::shutdown();
 }
 
 int main(int argc, char ** argv)

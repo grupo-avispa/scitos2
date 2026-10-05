@@ -13,6 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <memory>
+#include <stdexcept>
+
 #include "gtest/gtest.h"
 #include "rclcpp/rclcpp.hpp"
 #include "scitos2_modules/imu.hpp"
@@ -270,6 +273,39 @@ TEST(ScitosIMUTest, gyroscopeTest) {
   EXPECT_DOUBLE_EQ(ros_gyroscope.x, M_PI / 180.0);
   EXPECT_DOUBLE_EQ(ros_gyroscope.y, 2.0 * M_PI / 180.0);
   EXPECT_DOUBLE_EQ(ros_gyroscope.z, 0.0);
+}
+
+TEST(ScitosIMUTest, configureWithExpiredNodeThrows) {
+  auto module = std::make_shared<IMUFixture>();
+  EXPECT_THROW(
+    module->configure(rclcpp_lifecycle::LifecycleNode::WeakPtr(), "test"), std::runtime_error);
+}
+
+TEST(ScitosIMUTest, reactivationAfterDeactivationIsReported) {
+  rclcpp::init(0, nullptr);
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testIMUTwice");
+  auto module = std::make_shared<IMUFixture>();
+  module->configure(node, "test");
+
+  // A checked out authority can't be started again, which is reported through the return
+  // value, while checking it out twice is harmless
+  EXPECT_TRUE(module->activate());
+  EXPECT_TRUE(module->deactivate());
+  EXPECT_FALSE(module->activate());
+  EXPECT_TRUE(module->deactivate());
+  module->cleanup();
+  rclcpp::shutdown();
+}
+
+TEST(ScitosIMUTest, activateWithExpiredNodeThrows) {
+  rclcpp::init(0, nullptr);
+  auto module = std::make_shared<IMUFixture>();
+  {
+    auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testIMUExpired");
+    module->configure(node, "test");
+  }
+  EXPECT_THROW(module->activate(), std::runtime_error);
+  rclcpp::shutdown();
 }
 
 int main(int argc, char ** argv)
