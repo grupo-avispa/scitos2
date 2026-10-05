@@ -442,6 +442,27 @@ TEST(SegmentationTest, storeDockPointcloud) {
   EXPECT_TRUE(success);
 }
 
+TEST(SegmentationTest, invalidDynamicParametersAreRejected) {
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("segmentation_invalid_params_test");
+  auto segmentation = std::make_shared<SegmentationFixture>(node, "test");
+  node->configure();
+  node->activate();
+
+  const std::string prefix = "test.segmentation.";
+  EXPECT_FALSE(node->set_parameter(rclcpp::Parameter(prefix + "min_points", 0)).successful);
+  EXPECT_FALSE(node->set_parameter(rclcpp::Parameter(prefix + "max_points", 1)).successful);
+  EXPECT_FALSE(
+    node->set_parameter(rclcpp::Parameter(prefix + "distance_threshold", 0.0)).successful);
+  EXPECT_FALSE(node->set_parameter(rclcpp::Parameter(prefix + "min_distance", -1.0)).successful);
+  EXPECT_FALSE(node->set_parameter(rclcpp::Parameter(prefix + "max_distance", 0.0)).successful);
+  EXPECT_FALSE(node->set_parameter(rclcpp::Parameter(prefix + "min_width", 0.0)).successful);
+  EXPECT_FALSE(node->set_parameter(rclcpp::Parameter(prefix + "max_width", 0.0)).successful);
+
+  node->deactivate();
+  node->cleanup();
+  node->shutdown();
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
