@@ -178,6 +178,7 @@ nav2::CallbackReturn MiraFramework::on_activate(const rclcpp_lifecycle::State & 
   }
 
   // Create a timer to publish diagnostics
+  diag_pub_->on_activate();
   timer_ = this->create_wall_timer(
     std::chrono::seconds(1), [this]() {
       diag_pub_->publish(createDiagnostics());
@@ -202,6 +203,12 @@ nav2::CallbackReturn MiraFramework::on_deactivate(const rclcpp_lifecycle::State 
       RCLCPP_ERROR(get_logger(), "Failed to deactivate module '%s'", it->first.c_str());
       success = false;
     }
+  }
+
+  // Stop publishing diagnostics
+  timer_.reset();
+  if (diag_pub_) {
+    diag_pub_->on_deactivate();
   }
 
   // Destroy bond connection

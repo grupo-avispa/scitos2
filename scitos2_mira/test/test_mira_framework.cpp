@@ -13,9 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <chrono>
+#include <map>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <thread>
+#include <vector>
+
 #include "gtest/gtest.h"
 #include "rclcpp/rclcpp.hpp"
 #include "ament_index_cpp/get_package_share_directory.hpp"
+#include "diagnostic_msgs/msg/diagnostic_array.hpp"
+#include "diagnostic_msgs/msg/diagnostic_status.hpp"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "nav2_ros_common/lifecycle_node.hpp"
 #include "nav2_ros_common/node_utils.hpp"
@@ -40,7 +50,10 @@ public:
 class DummyModule : public scitos2_core::Module
 {
 public:
-  DummyModule() {}
+  enum class Behavior { OK, FAIL_ACTIVATE, THROW_ACTIVATE, FAIL_DEACTIVATE };
+
+  explicit DummyModule(Behavior behavior = Behavior::OK)
+  : behavior_(behavior) {}
 
   ~DummyModule() {}
 
@@ -49,43 +62,101 @@ public:
 
   virtual void cleanup() {}
 
-  virtual bool activate() {return true;}
+  virtual bool activate()
+  {
+    if (behavior_ == Behavior::THROW_ACTIVATE) {
+      throw std::runtime_error("activation exception");
+    }
+    return behavior_ != Behavior::FAIL_ACTIVATE;
+  }
 
-  virtual bool deactivate() {return true;}
+  virtual bool deactivate() {return behavior_ != Behavior::FAIL_DEACTIVATE;}
+
+private:
+  Behavior behavior_;
 };
 
 scitos2_core::Module::Ptr MiraFrameworkFixture::loadModule(const std::string & type)
 {
-  if (type == "drive") {
-    return scitos2_core::Module::Ptr(new DummyModule());
+  using Behavior = DummyModule::Behavior;
+  const std::map<std::string, Behavior> mocked = {
+    {"drive", Behavior::OK},
+    {"fail_activate", Behavior::FAIL_ACTIVATE},
+    {"throw_activate", Behavior::THROW_ACTIVATE},
+    {"fail_deactivate", Behavior::FAIL_DEACTIVATE}};
+  auto behavior = mocked.find(type);
+  if (behavior != mocked.end()) {
+    return scitos2_core::Module::Ptr(new DummyModule(behavior->second));
   }
   return scitos2_mira::MiraFramework::loadModule(type);
 }
 
+namespace
+{
+using lifecycle_msgs::msg::State;
+
+// MIRA only allows one framework per process, so every test shares the same node. The tests
+// are order dependent: those that need a framework without a loaded configuration come first
+// and the one that leaves the node finalized comes last.
+std::shared_ptr<MiraFrameworkFixture> sharedNode()
+{
+  static auto node = std::make_shared<MiraFrameworkFixture>();
+  return node;
+}
+
+std::string scitosConfig()
+{
+  return ament_index_cpp::get_package_share_directory("scitos2_mira") +
+         "/test/scitos_config.xml";
+}
+
+void setParameter(const std::string & name, const rclcpp::ParameterValue & value)
+{
+  auto node = sharedNode();
+  nav2::declare_parameter_if_not_declared(node, name, value);
+  node->set_parameter(rclcpp::Parameter(name, value));
+}
+
+// Select the modules the node loads, each one mocked by the class loader through its name
+void setModules(const std::vector<std::string> & modules)
+{
+  setParameter("module_plugins", rclcpp::ParameterValue(modules));
+  for (const auto & module : modules) {
+    setParameter(module + ".plugin", rclcpp::ParameterValue(module));
+  }
+}
+}  // namespace
+
+TEST(ScitosMiraFrameworkTest, diagnosticsReportAMissingConfiguration) {
+  auto msg = sharedNode()->createDiagnostics();
+  ASSERT_EQ(msg.status.size(), 1u);
+  EXPECT_EQ(msg.status[0].level, diagnostic_msgs::msg::DiagnosticStatus::ERROR);
+}
+
+TEST(ScitosMiraFrameworkTest, configureFailsWithMissingConfigFile) {
+  auto node = sharedNode();
+  setParameter("scitos_config", rclcpp::ParameterValue("/does/not/exist.xml"));
+  setModules({});
+
+  EXPECT_EQ(node->configure().id(), State::PRIMARY_STATE_UNCONFIGURED);
+}
+
 TEST(ScitosMiraFrameworkTest, configure) {
-  // Create the node
-  auto node = std::make_shared<MiraFrameworkFixture>();
+  auto node = sharedNode();
 
   // Set an empty scitos config parameter
-  nav2::declare_parameter_if_not_declared(node, "scitos_config", rclcpp::ParameterValue(""));
+  setParameter("scitos_config", rclcpp::ParameterValue(""));
 
   // Configure the node
   node->configure();
   node->activate();
 
   // Check results: the node should be in the unconfigured state as scitos_config plugins is empty
-  EXPECT_EQ(node->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_UNCONFIGURED);
+  EXPECT_EQ(node->get_current_state().id(), State::PRIMARY_STATE_UNCONFIGURED);
 
   // Now, set the scitos config parameter. In the the robot this should be a XML file
-  std::string pkg = ament_index_cpp::get_package_share_directory("scitos2_mira");
-  node->set_parameter(
-    rclcpp::Parameter(
-      "scitos_config", rclcpp::ParameterValue(std::string(pkg + "/test/scitos_config.xml"))));
-  nav2::declare_parameter_if_not_declared(
-    node, "module_plugins",
-    rclcpp::ParameterValue(std::vector<std::string>(1, "drive")));
-  nav2::declare_parameter_if_not_declared(
-    node, "drive.plugin", rclcpp::ParameterValue("drive"));
+  setParameter("scitos_config", rclcpp::ParameterValue(scitosConfig()));
+  setModules({"drive"});
 
   // Configure the node
   node->configure();
@@ -95,7 +166,7 @@ TEST(ScitosMiraFrameworkTest, configure) {
   node->createDiagnostics();
 
   // Check results: the node should be in the active state
-  EXPECT_EQ(node->get_current_state().id(), lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE);
+  EXPECT_EQ(node->get_current_state().id(), State::PRIMARY_STATE_ACTIVE);
 
   // Cleaning up
   node->deactivate();
@@ -108,7 +179,83 @@ TEST(ScitosMiraFrameworkTest, configure) {
   // Cleaning up
   node->deactivate();
   node->cleanup();
+}
+
+TEST(ScitosMiraFrameworkTest, diagnosticsWarnWithoutModules) {
+  auto node = sharedNode();
+  setModules({});
+  ASSERT_EQ(node->configure().id(), State::PRIMARY_STATE_INACTIVE);
+
+  auto msg = node->createDiagnostics();
+  EXPECT_EQ(msg.status[0].level, diagnostic_msgs::msg::DiagnosticStatus::WARN);
+
+  node->cleanup();
+}
+
+TEST(ScitosMiraFrameworkTest, configureFailsWithUnknownModule) {
+  auto node = sharedNode();
+  setModules({"not_a_module"});
+  EXPECT_EQ(node->configure().id(), State::PRIMARY_STATE_UNCONFIGURED);
+}
+
+TEST(ScitosMiraFrameworkTest, activationFailureOfAModuleIsReported) {
+  auto node = sharedNode();
+  setModules({"fail_activate"});
+  ASSERT_EQ(node->configure().id(), State::PRIMARY_STATE_INACTIVE);
+  EXPECT_EQ(node->activate().id(), State::PRIMARY_STATE_INACTIVE);
+  node->cleanup();
+}
+
+TEST(ScitosMiraFrameworkTest, activationExceptionOfAModuleIsReported) {
+  auto node = sharedNode();
+  setModules({"throw_activate"});
+  ASSERT_EQ(node->configure().id(), State::PRIMARY_STATE_INACTIVE);
+  EXPECT_EQ(node->activate().id(), State::PRIMARY_STATE_INACTIVE);
+  node->cleanup();
+}
+
+TEST(ScitosMiraFrameworkTest, diagnosticsArePublishedWhileActive) {
+  auto node = sharedNode();
+  setModules({"drive"});
+  ASSERT_EQ(node->configure().id(), State::PRIMARY_STATE_INACTIVE);
+  ASSERT_EQ(node->activate().id(), State::PRIMARY_STATE_ACTIVE);
+
+  auto sub_node = std::make_shared<rclcpp::Node>("diagnostics_listener");
+  diagnostic_msgs::msg::DiagnosticArray::SharedPtr received;
+  auto sub = sub_node->create_subscription<diagnostic_msgs::msg::DiagnosticArray>(
+    "/diagnostics", 10,
+    [&](diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg) {received = msg;});
+
+  rclcpp::executors::SingleThreadedExecutor executor;
+  executor.add_node(node->get_node_base_interface());
+  executor.add_node(sub_node);
+  auto start = std::chrono::steady_clock::now();
+  while (!received && std::chrono::steady_clock::now() - start < std::chrono::seconds(5)) {
+    executor.spin_some();
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+  }
+
+  ASSERT_TRUE(received);
+  EXPECT_EQ(received->status[0].level, diagnostic_msgs::msg::DiagnosticStatus::OK);
+
+  executor.remove_node(node->get_node_base_interface());
+  node->deactivate();
+  node->cleanup();
+}
+
+TEST(ScitosMiraFrameworkTest, deactivationFailureOfAModuleIsReported) {
+  auto node = sharedNode();
+  setModules({"fail_deactivate"});
+  ASSERT_EQ(node->configure().id(), State::PRIMARY_STATE_INACTIVE);
+  ASSERT_EQ(node->activate().id(), State::PRIMARY_STATE_ACTIVE);
+
+  // A failed deactivation leaves the node in the active state
+  node->deactivate();
+  EXPECT_EQ(node->get_current_state().id(), State::PRIMARY_STATE_ACTIVE);
+
+  // Shutting down from the active state exercises the shutdown transition
   node->shutdown();
+  EXPECT_EQ(node->get_current_state().id(), State::PRIMARY_STATE_FINALIZED);
 }
 
 int main(int argc, char ** argv)
