@@ -455,6 +455,40 @@ TEST(ScitosDockingPerception, enableDebugAtRuntimeDoesNotCrash) {
   node->shutdown();
 }
 
+TEST(ScitosDockingPerception, invalidDynamicParametersAreRejected) {
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("perception_invalid_params_test");
+  auto perception = std::make_shared<PerceptionFixture>(node, "test", nullptr);
+  node->configure();
+  node->activate();
+
+  const std::string prefix = "test.perception.";
+  EXPECT_FALSE(node->set_parameter(rclcpp::Parameter(prefix + "icp_max_iter", 0)).successful);
+  EXPECT_FALSE(node->set_parameter(rclcpp::Parameter(prefix + "icp_min_score", -1.0)).successful);
+  EXPECT_FALSE(node->set_parameter(rclcpp::Parameter(prefix + "icp_max_corr_dis", 0.0)).successful);
+  EXPECT_FALSE(
+    node->set_parameter(rclcpp::Parameter(prefix + "icp_max_trans_eps", 0.0)).successful);
+  EXPECT_FALSE(
+    node->set_parameter(rclcpp::Parameter(prefix + "icp_max_eucl_fit_eps", 0.0)).successful);
+  EXPECT_FALSE(node->set_parameter(rclcpp::Parameter(prefix + "max_yaw_error", -0.1)).successful);
+  EXPECT_FALSE(
+    node->set_parameter(rclcpp::Parameter(prefix + "width_tolerance_min", -0.1)).successful);
+  EXPECT_FALSE(
+    node->set_parameter(rclcpp::Parameter(prefix + "width_tolerance_min", 1e6)).successful);
+  EXPECT_FALSE(
+    node->set_parameter(rclcpp::Parameter(prefix + "width_tolerance_max", 0.0)).successful);
+
+  // Valid values are still accepted
+  EXPECT_TRUE(node->set_parameter(rclcpp::Parameter(prefix + "max_yaw_error", 0.2)).successful);
+  EXPECT_TRUE(
+    node->set_parameter(rclcpp::Parameter(prefix + "width_tolerance_max", 1.5)).successful);
+  EXPECT_TRUE(
+    node->set_parameter(rclcpp::Parameter(prefix + "width_tolerance_min", 0.05)).successful);
+
+  node->deactivate();
+  node->cleanup();
+  node->shutdown();
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);
