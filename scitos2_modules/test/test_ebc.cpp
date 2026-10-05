@@ -13,6 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <memory>
+#include <stdexcept>
+
 #include "gtest/gtest.h"
 #include "rclcpp/rclcpp.hpp"
 #include "scitos2_modules/ebc.hpp"
@@ -164,6 +167,43 @@ TEST(ScitosEBCTest, dynamicParametersOutRange) {
   EXPECT_EQ(node->get_parameter("test.port1_24v_max_current").as_double(), 4.0);
 
   // Cleaning up
+  module->deactivate();
+  module->cleanup();
+  rclcpp::shutdown();
+}
+
+TEST(ScitosEBCTest, configureWithExpiredNodeThrows) {
+  auto module = std::make_shared<EBCFixture>();
+  EXPECT_THROW(
+    module->configure(rclcpp_lifecycle::LifecycleNode::WeakPtr(), "test"), std::runtime_error);
+}
+
+TEST(ScitosEBCTest, reactivationAfterDeactivationIsReported) {
+  rclcpp::init(0, nullptr);
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testEBCTwice");
+  auto module = std::make_shared<EBCFixture>();
+  module->configure(node, "test");
+
+  // A checked out authority can't be started again, which is reported through the return
+  // value, while checking it out twice is harmless
+  EXPECT_TRUE(module->activate());
+  EXPECT_TRUE(module->deactivate());
+  EXPECT_FALSE(module->activate());
+  EXPECT_TRUE(module->deactivate());
+  module->cleanup();
+  rclcpp::shutdown();
+}
+
+TEST(ScitosEBCTest, invalidCurrentIsRejected) {
+  rclcpp::init(0, nullptr);
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testEBCInvalid");
+  auto module = std::make_shared<EBCFixture>();
+  module->configure(node, "test");
+  module->activate();
+
+  EXPECT_FALSE(node->set_parameter(rclcpp::Parameter("test.mcu_5v_max_current", -1.0)).successful);
+  EXPECT_FALSE(node->set_parameter(rclcpp::Parameter("test.mcu_5v_max_current", 100.0)).successful);
+
   module->deactivate();
   module->cleanup();
   rclcpp::shutdown();
