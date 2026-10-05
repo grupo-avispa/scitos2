@@ -14,6 +14,11 @@
 // limitations under the License.
 
 #include <fw/Framework.h>
+#include <fw/MicroUnit.h>
+
+#include <atomic>
+#include <stdexcept>
+#include <string>
 
 #include "gtest/gtest.h"
 #include "scitos2_mira_utils/mira_authority.hpp"
@@ -49,6 +54,56 @@ TEST(MiraAuthorityTest, customResourceIsHonored) {
   // Still fails (the resource doesn't exist either), but exercises the configured
   // resource path instead of the default
   EXPECT_FALSE(authority.callService("someService"));
+
+  authority.checkout();
+}
+
+// A fake robot resource exposing the services MiraAuthority talks to
+class FakeRobot : public mira::MicroUnit
+{
+public:
+  FakeRobot() {}
+
+  template<typename Reflector>
+  void reflect(Reflector & r)
+  {
+    MIRA_REFLECT_BASE(r, mira::MicroUnit);
+    r.method("noArgs", &FakeRobot::noArgs, this, "No-argument service");
+    r.method("withArg", &FakeRobot::withArg, this, "Service with an argument", "x", "An int");
+    r.method("fails", &FakeRobot::fails, this, "Service that always throws");
+  }
+
+  void noArgs() {no_args_calls_++;}
+  void withArg(int x) {last_arg_ = x;}
+  void fails() {throw std::runtime_error("expected failure");}
+
+  std::atomic<int> no_args_calls_{0};
+  std::atomic<int> last_arg_{-1};
+};
+
+TEST(MiraAuthorityTest, servicesAndParamsAgainstARealResource) {
+  FakeRobot robot;
+  robot.checkin("/robot", "Robot");
+  robot.publishService(robot);
+  robot.start();
+
+  scitos2_mira_utils::MiraAuthority authority;
+  authority.checkin("test_mira_authority_real");
+  authority.start();
+
+  EXPECT_TRUE(authority.callService("noArgs"));
+  EXPECT_EQ(robot.no_args_calls_, 1);
+  EXPECT_TRUE(authority.callService<int>("withArg", 42));
+  EXPECT_EQ(robot.last_arg_, 42);
+  EXPECT_TRUE(authority.callService<int>("noArgs"));
+
+  // Failures reported by the remote side (including a property that does not exist) are
+  // turned into a `false` / empty result
+  EXPECT_FALSE(authority.callService("fails"));
+  EXPECT_FALSE(authority.callService("doesNotExist"));
+  EXPECT_FALSE(authority.callService<int>("fails", 1));
+  EXPECT_FALSE(authority.setParam("NoSuchParam", "1"));
+  EXPECT_EQ(authority.getParam("NoSuchParam"), "");
 
   authority.checkout();
 }
