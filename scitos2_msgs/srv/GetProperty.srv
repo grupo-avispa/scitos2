@@ -1,0 +1,7 @@
+# This service reads a property of a MIRA resource.
+
+string name          # Name of the property (e.g. "MotorController.Force").
+---
+bool success         # True if the property was read.
+string message       # Error message, if any.
+string value         # Value of the property, as text.

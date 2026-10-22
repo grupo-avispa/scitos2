@@ -1,0 +1,9 @@
+# This service calls any method of any MIRA service with JSON as the payload.
+
+string service       # MIRA service (e.g. "/robot/Robot").
+string method        # Method of the service (e.g. "setVelocity").
+string params        # Parameters of the method as a JSON array (e.g. "[0.1, 0.0, 0.0]"). Empty if none.
+---
+bool success         # True if the call was answered.
+string message       # Error message, if any.
+string result        # Result of the call, as JSON.

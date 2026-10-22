@@ -177,6 +177,29 @@ public:
    */
   std::string getParam(const std::string & param_name);
 
+  /**
+   * @brief Get the value of a MIRA parameter, telling a failure from an empty value.
+   *
+   * @param param_name The name of the parameter
+   * @param value The value of the parameter. Untouched on failure
+   * @return bool If the parameter was read successfully
+   */
+  bool getParam(const std::string & param_name, std::string & value);
+
+  /**
+   * @brief Call a method of any MIRA service with JSON as the payload.
+   *
+   * @param service The MIRA service (e.g. "/robot/Robot")
+   * @param method The method of the service
+   * @param params The parameters of the method as a JSON array. Empty if there are none
+   * @param result The result of the call, as JSON. Untouched on failure
+   * @param error The reason of the failure, if any
+   * @return bool If the call was answered
+   */
+  bool callJson(
+    const std::string & service, const std::string & method, const std::string & params,
+    std::string & result, std::string & error);
+
 protected:
   /**
    * @brief Whether the authority is valid and the configured resource exists.

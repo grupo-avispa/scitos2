@@ -42,3 +42,12 @@ ament_add_gtest(test_imu
 target_link_libraries(test_imu
   scitos2_imu
 )
+
+# Test for inspector
+ament_add_gtest(test_inspector
+  test_inspector.cpp
+  ENV RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+)
+target_link_libraries(test_inspector
+  scitos2_inspector
+)

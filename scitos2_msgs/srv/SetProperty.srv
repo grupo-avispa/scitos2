@@ -1,0 +1,7 @@
+# This service writes a property of a MIRA resource.
+
+string name          # Name of the property (e.g. "MotorController.Force").
+string value         # New value of the property, as text.
+---
+bool success         # True if the property was written.
+string message       # Error message, if any.

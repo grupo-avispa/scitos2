@@ -24,4 +24,9 @@
             <description>IMU module</description>
         </class>
     </library>
+    <library path="scitos2_inspector">
+        <class type="scitos2_modules::Inspector" base_class_type="scitos2_core::Module">
+            <description>Generic access to the properties and services of MIRA</description>
+        </class>
+    </library>
 </class_libraries>

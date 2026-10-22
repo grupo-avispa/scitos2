@@ -39,15 +39,18 @@ set(msg_files
   "msg/RfidTag.msg"
 )
 set(srv_files
+  "srv/CallJson.srv"
   "srv/ChangeForce.srv"
   "srv/EmergencyStop.srv"
   "srv/EnableMotors.srv"
   "srv/EnableRfid.srv"
+  "srv/GetProperty.srv"
   "srv/ResetBarrierStop.srv"
   "srv/ResetMotorStop.srv"
   "srv/ResetOdometry.srv"
   "srv/SaveDock.srv"
   "srv/SavePersistentErrors.srv"
+  "srv/SetProperty.srv"
   "srv/SuspendBumper.srv"
 )
 

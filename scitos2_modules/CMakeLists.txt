@@ -146,6 +146,22 @@ target_link_libraries(scitos2_ebc
 )
 target_link_mira_libraries(scitos2_ebc)
 
+add_library(scitos2_inspector SHARED src/inspector.cpp)
+target_include_directories(scitos2_inspector PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+)
+target_link_libraries(scitos2_inspector
+  PUBLIC
+  rclcpp::rclcpp
+  scitos2_core::scitos2_core
+  scitos2_mira_utils::scitos2_mira_utils
+  ${scitos2_msgs_TARGETS}
+  PRIVATE
+  pluginlib::pluginlib
+)
+target_link_mira_libraries(scitos2_inspector)
+
 add_library(scitos2_imu SHARED src/imu.cpp)
 target_include_directories(scitos2_imu PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
@@ -173,6 +189,7 @@ install(TARGETS
   scitos2_drive
   scitos2_ebc
   scitos2_imu
+  scitos2_inspector
   EXPORT ${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
@@ -205,6 +222,7 @@ ament_export_libraries(
   scitos2_drive
   scitos2_ebc
   scitos2_imu
+  scitos2_inspector
 )
 ament_export_dependencies(
   diagnostic_updater

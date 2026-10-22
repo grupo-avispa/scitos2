@@ -14,6 +14,34 @@ This package encapsulates MIRA authorities as modules, some of which expose the 
 
 ## Modules
 
+### Inspector
+
+The Inspector module gives access to any property and any method of the robot through generic services, to explore and tweak it from the command line without writing code. Add `inspector` to `module_plugins` with `plugin: scitos2_modules::Inspector`.
+
+#### Services
+
+* **`mira/get_property`** ([scitos2_msgs/GetProperty])
+
+	Reads a property of the robot, for example `{name: 'MotorController.Force'}`.
+
+* **`mira/set_property`** ([scitos2_msgs/SetProperty])
+
+	Writes a property of the robot, as text.
+
+* **`mira/call_json`** ([scitos2_msgs/CallJson])
+
+	Calls a method of a MIRA service with the parameters as a JSON array, and returns the result as JSON, for example `{service: '/robot/Robot', method: 'setVelocity', params: '[0.0, 0.0, 0.0]'}`.
+
+#### Parameters
+
+* **`mira_robot_resource`** (string, default: "/robot/Robot")
+
+	The MIRA resource that exposes the robot's properties.
+
+* **`mira_rpc_timeout`** (int, default: 1000)
+
+	Milliseconds to wait for MIRA to answer a call before giving up.
+
 ### Diagnostics
 
 `Charger`, `Drive` and `IMU` report their own status in `/diagnostics`: the drive status flags, the battery, and whether data keeps arriving from MIRA.
