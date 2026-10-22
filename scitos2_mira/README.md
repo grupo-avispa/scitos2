@@ -38,6 +38,14 @@ A lifecycle node that interfaces with the MIRA framework.
 
 	Specifies the modules to be loaded.
 
+* **`mira_robot_resource`** (string, default: "/robot/Robot")
+
+	The MIRA resource to wait for before activating the modules, which write properties of the robot when they are activated.
+
+* **`mira_resource_timeout`** (int, default: 5000)
+
+	Milliseconds to wait for that resource. If it does not appear the modules are activated anyway.
+
 * **`scitos_config`** (string, default: "")
 
 	Specifies the path to the SCITOS robot configuration file in XML format. This parameter should point to your SCITOSDriver.xml robot config file, which should have been installed during the MIRA software installation. Typically, this file is located in the ``/opt/SCITOS/ directory``.

@@ -14,6 +14,10 @@ This package encapsulates MIRA authorities as modules, some of which expose the 
 
 ## Modules
 
+### Diagnostics
+
+`Charger`, `Drive` and `IMU` report their own status in `/diagnostics`: the drive status flags, the battery, and whether data keeps arriving from MIRA.
+
 ### Charger
 
 The Charger module monitors the state of the battery and the charging station.
@@ -47,6 +51,10 @@ The Charger module monitors the state of the battery and the charging station.
 * **`mira_robot_resource`** (string, default: "/robot/Robot")
 
 	The MIRA resource that exposes the robot's services and properties.
+
+* **`mira_rpc_timeout`** (int, default: 1000)
+
+	Milliseconds to wait for MIRA to answer a service or property call before giving up.
 
 ### Display
 
@@ -84,6 +92,10 @@ The Display module manages the status display on the robot's base.
 
 	The MIRA resource that exposes the robot's services and properties.
 
+* **`mira_rpc_timeout`** (int, default: 1000)
+
+	Milliseconds to wait for MIRA to answer a service or property call before giving up.
+
 ### Drive
 
 The Drive module controls the robot's motors, handling velocity commands, odometry, bumpers, and more.
@@ -115,6 +127,10 @@ The Drive module controls the robot's motors, handling velocity commands, odomet
 * **`drive_status`** ([scitos2_msgs/DriveStatus])
 
 	Publishes the state of the motors, free-run mode, emergency button status, bumper status, and more.
+
+* **`cmd_vel_applied`** ([geometry_msgs/TwistStamped])
+
+	Publishes the velocity that the driver is really applying. Comparing it with `cmd_vel` shows when the driver limits the commanded velocity.
 
 * **`emergency_stop_status`** ([scitos2_msgs/EmergencyStopStatus])
 
@@ -196,9 +212,17 @@ The Drive module controls the robot's motors, handling velocity commands, odomet
 
 	Specifies the radius of the robot in meters.
 
+* **`mira_drive_module`** (string, default: "auto")
+
+	MIRA module that holds the drive properties (`MainControlUnit`, `MotorController`...). With `auto` it is detected from the robot when the module is activated.
+
 * **`mira_robot_resource`** (string, default: "/robot/Robot")
 
 	The MIRA resource that exposes the robot's services and properties.
+
+* **`mira_rpc_timeout`** (int, default: 1000)
+
+	Milliseconds to wait for MIRA to answer a service or property call before giving up.
 
 ### EBC
 
@@ -281,6 +305,10 @@ The EBC module controls the power for extra devices.
 * **`mira_robot_resource`** (string, default: "/robot/Robot")
 
 	The MIRA resource that exposes the robot's services and properties.
+
+* **`mira_rpc_timeout`** (int, default: 1000)
+
+	Milliseconds to wait for MIRA to answer a service or property call before giving up.
 
 
 [nav_msgs/Odometry]: http://docs.ros2.org/jazzy/api/nav_msgs/msg/Odometry.html
