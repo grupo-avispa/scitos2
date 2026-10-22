@@ -14,6 +14,8 @@
 // limitations under the License.
 
 // C++
+#include <algorithm>
+#include <cstdint>
 #include <limits>
 
 #include "scitos2_modules/imu.hpp"
@@ -35,9 +37,16 @@ void IMU::configure(
 
   plugin_name_ = name;
   logger_ = node->get_logger();
-  node_ = node;
   authority_ = std::make_shared<scitos2_mira_utils::MiraAuthority>(logger_);
   authority_->checkin(plugin_name_);
+
+  std::string mira_robot_resource = "/robot/Robot";
+  declare_parameter_if_not_declared(
+    node, plugin_name_ + ".mira_robot_resource",
+    rclcpp::ParameterValue(mira_robot_resource), rcl_interfaces::msg::ParameterDescriptor()
+    .set__description("The MIRA resource that exposes the robot's services and properties"));
+  node->get_parameter(plugin_name_ + ".mira_robot_resource", mira_robot_resource);
+  authority_->setResource(mira_robot_resource);
 
   // Declare and read parameters
   declare_parameter_if_not_declared(
@@ -76,9 +85,15 @@ void IMU::cleanup()
 {
   RCLCPP_INFO(
     logger_, "Cleaning up module : %s of type scitos2_module::IMU", plugin_name_.c_str());
+  if (authority_) {
+    try {
+      authority_->checkout();
+    } catch (const mira::Exception & ex) {
+      RCLCPP_ERROR(logger_, "Failed to checkout scitos2_module::IMU. Exception: %s", ex.what());
+    }
+  }
   authority_.reset();
   imu_pub_.reset();
-  timer_.reset();
 }
 
 bool IMU::activate()
@@ -87,18 +102,9 @@ bool IMU::activate()
     logger_, "Activating module : %s of type scitos2_module::IMU", plugin_name_.c_str());
   imu_pub_->on_activate();
 
-  auto node = node_.lock();
-  if (!node) {
-    throw std::runtime_error("Unable to lock node!");
-  }
-  timer_ = node->create_wall_timer(
-    std::chrono::milliseconds(10), [this]() {
-      std::lock_guard<std::mutex> lock_data(mutex_);
-      imu_pub_->publish(imu_msg_);
-    });
-
   try {
     authority_->start();
+    is_active_ = true;
   } catch (const mira::Exception & ex) {
     RCLCPP_ERROR(logger_, "Failed to start scitos2_module::IMU. Exception: %s", ex.what());
     return false;
@@ -110,30 +116,48 @@ bool IMU::deactivate()
 {
   RCLCPP_INFO(
     logger_, "Deactivating module : %s of type scitos2_module::IMU", plugin_name_.c_str());
-  bool success = true;
-  try {
-    authority_->checkout();
-  } catch (const mira::Exception & ex) {
-    RCLCPP_ERROR(logger_, "Failed to checkout scitos2_module::IMU. Exception: %s", ex.what());
-    success = false;
-  }
+  // The MIRA authority stays checked in (see cleanup()), so the module can be activated again
+  is_active_ = false;
   imu_pub_->on_deactivate();
-  timer_.reset();
-  return success;
+  return true;
 }
 
 void IMU::accelerationDataCallback(mira::ChannelRead<mira::Point3f> data)
 {
+  if (!is_active_) {
+    return;
+  }
+
   std::lock_guard<std::mutex> lock_data(mutex_);
-  imu_msg_.header.stamp = rclcpp::Time(data->timestamp.toUnixNS());
+  latest_stamp_ns_ = std::max<int64_t>(latest_stamp_ns_, data->timestamp.toUnixNS());
   imu_msg_.linear_acceleration = miraToRosAcceleration(*data);
+  has_acceleration_ = true;
+  publishIfComplete();
 }
 
 void IMU::gyroscopeDataCallback(mira::ChannelRead<mira::Point3f> data)
 {
+  if (!is_active_) {
+    return;
+  }
+
   std::lock_guard<std::mutex> lock_data(mutex_);
-  imu_msg_.header.stamp = rclcpp::Time(data->timestamp.toUnixNS());
+  latest_stamp_ns_ = std::max<int64_t>(latest_stamp_ns_, data->timestamp.toUnixNS());
   imu_msg_.angular_velocity = miraToRosGyroscope(*data);
+  has_gyroscope_ = true;
+  publishIfComplete();
+}
+
+void IMU::publishIfComplete()
+{
+  if (!has_acceleration_ || !has_gyroscope_) {
+    return;
+  }
+
+  imu_msg_.header.stamp = rclcpp::Time(latest_stamp_ns_);
+  imu_pub_->publish(imu_msg_);
+  has_acceleration_ = false;
+  has_gyroscope_ = false;
 }
 
 geometry_msgs::msg::Vector3 IMU::miraToRosAcceleration(const mira::Point3f & acceleration)

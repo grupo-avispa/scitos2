@@ -21,6 +21,8 @@
 #include <geometry/Point.h>
 
 // C++
+#include <atomic>
+#include <cstdint>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -110,22 +112,29 @@ protected:
    */
   geometry_msgs::msg::Vector3 miraToRosGyroscope(const mira::Point3f & gyroscope);
 
+  /**
+   * @brief Publish the IMU message once a new acceleration and a new angular velocity have
+   * arrived since the last one. The caller must hold mutex_.
+   */
+  void publishIfComplete();
+
   // MIRA Authority
   std::shared_ptr<scitos2_mira_utils::MiraAuthority> authority_;
-
-  // Parent node, kept to (re)create the publishing timer on activate()
-  rclcpp_lifecycle::LifecycleNode::WeakPtr node_;
 
   std::string plugin_name_;
   rclcpp::Logger logger_{rclcpp::get_logger("IMU")};
 
   std::string robot_base_frame_, imu_topic_;
   sensor_msgs::msg::Imu imu_msg_;
+  // Guards imu_msg_ and the fields below, written from the two MIRA data callbacks
   std::mutex mutex_;
+  std::atomic<bool> is_active_{false};
+  bool has_acceleration_{false};
+  bool has_gyroscope_{false};
+  int64_t latest_stamp_ns_{0};
 
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::Imu>>
   imu_pub_;
-  rclcpp::TimerBase::SharedPtr timer_;
 };
 
 }  // namespace scitos2_modules

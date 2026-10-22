@@ -38,6 +38,22 @@ public:
   }
 };
 
+// Publish one acceleration and one angular velocity sample through the MIRA channels
+void publishImuSample(
+  mira::Channel<mira::Point3f> & acc_pub, mira::Channel<mira::Point3f> & gyro_pub)
+{
+  mira::Point3f sample;
+  sample.x() = 1.0;
+  sample.y() = 2.0;
+  sample.z() = 3.0;
+  auto acc_writer = acc_pub.write();
+  acc_writer->value() = sample;
+  acc_writer.finish();
+  auto gyro_writer = gyro_pub.write();
+  gyro_writer->value() = sample;
+  gyro_writer.finish();
+}
+
 TEST(ScitosIMUTest, configure) {
   rclcpp::init(0, nullptr);
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testIMU");
@@ -151,8 +167,13 @@ TEST(ScitosIMUTest, acceSubPub) {
   sub_thread.join();
 }
 
-TEST(ScitosIMUTest, timerRecreatedAfterReactivation) {
+TEST(ScitosIMUTest, publishesAfterReactivation) {
   rclcpp::init(0, nullptr);
+  mira::Authority authority("/", "test_imu_reactivation");
+  authority.start();
+  auto acc_pub = authority.publish<mira::Point3f>("/robot/Acceleration");
+  auto gyro_pub = authority.publish<mira::Point3f>("/robot/Gyroscope");
+
   // Create and configure the module, then cycle active -> inactive -> active
   auto imu_node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testIMU");
   auto module = std::make_shared<IMUFixture>();
@@ -176,8 +197,9 @@ TEST(ScitosIMUTest, timerRecreatedAfterReactivation) {
     });
   auto sub_thread = std::thread([&]() {rclcpp::spin(sub_node->get_node_base_interface());});
 
-  // The publishing timer fires every 10 ms; if it wasn't recreated on the second
-  // activate(), no message will ever arrive here
+  // The MIRA subscriptions must survive the deactivation: if they were dropped, no message
+  // will ever arrive here
+  publishImuSample(acc_pub, gyro_pub);
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
   EXPECT_TRUE(received_msg);
@@ -196,6 +218,11 @@ TEST(ScitosIMUTest, timerRecreatedAfterReactivation) {
 
 TEST(ScitosIMUTest, imuTopicParameterIsHonored) {
   rclcpp::init(0, nullptr);
+  mira::Authority authority("/", "test_imu_topic");
+  authority.start();
+  auto acc_pub = authority.publish<mira::Point3f>("/robot/Acceleration");
+  auto gyro_pub = authority.publish<mira::Point3f>("/robot/Gyroscope");
+
   auto imu_node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testIMU");
   // Declare the topic override before configure() so declare_parameter_if_not_declared()
   // keeps it instead of overwriting it with the default
@@ -220,6 +247,7 @@ TEST(ScitosIMUTest, imuTopicParameterIsHonored) {
     });
   auto sub_thread = std::thread([&]() {rclcpp::spin(sub_node->get_node_base_interface());});
 
+  publishImuSample(acc_pub, gyro_pub);
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
   EXPECT_EQ(sub->get_publisher_count(), 1);
@@ -281,30 +309,18 @@ TEST(ScitosIMUTest, configureWithExpiredNodeThrows) {
     module->configure(rclcpp_lifecycle::LifecycleNode::WeakPtr(), "test"), std::runtime_error);
 }
 
-TEST(ScitosIMUTest, reactivationAfterDeactivationIsReported) {
+TEST(ScitosIMUTest, reactivationAfterDeactivationSucceeds) {
   rclcpp::init(0, nullptr);
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testIMUTwice");
   auto module = std::make_shared<IMUFixture>();
   module->configure(node, "test");
 
-  // A checked out authority can't be started again, which is reported through the return
-  // value, while checking it out twice is harmless
+  // The authority is only checked out on cleanup, so the module can be activated again
   EXPECT_TRUE(module->activate());
   EXPECT_TRUE(module->deactivate());
-  EXPECT_FALSE(module->activate());
+  EXPECT_TRUE(module->activate());
   EXPECT_TRUE(module->deactivate());
   module->cleanup();
-  rclcpp::shutdown();
-}
-
-TEST(ScitosIMUTest, activateWithExpiredNodeThrows) {
-  rclcpp::init(0, nullptr);
-  auto module = std::make_shared<IMUFixture>();
-  {
-    auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testIMUExpired");
-    module->configure(node, "test");
-  }
-  EXPECT_THROW(module->activate(), std::runtime_error);
   rclcpp::shutdown();
 }
 
