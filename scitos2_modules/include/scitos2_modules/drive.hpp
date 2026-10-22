@@ -318,8 +318,29 @@ protected:
   scitos2_msgs::msg::BarrierStatus miraToRosBarrierStatus(
     const uint64 & status, const mira::Time & timestamp);
 
+  /**
+   * @brief Find out which MIRA module holds the drive properties when the parameter
+   * mira_drive_module is 'auto'. The result is kept once found.
+   *
+   * @return bool True if the module is known, false if the robot did not answer
+   */
+  bool resolveDriveModule();
+
+  /**
+   * @brief Set a property of the MIRA drive module.
+   *
+   * @param property Name of the property inside the module (e.g. "Force")
+   * @param value Value to set
+   * @return bool True if the property was written
+   */
+  bool setDriveParam(const std::string & property, const std::string & value);
+
   // MIRA Authority
   std::shared_ptr<scitos2_mira_utils::MiraAuthority> authority_;
+
+  // MIRA module with the drive properties. It is only used from the ROS executor thread
+  // (activation, services and parameter callbacks), so it does not need a lock
+  std::string drive_module_{"auto"};
 
   // Plugin related
   std::string plugin_name_;

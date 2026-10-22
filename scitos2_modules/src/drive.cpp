@@ -66,6 +66,16 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
   node->get_parameter(plugin_name_ + ".mira_rpc_timeout", mira_rpc_timeout);
   authority_->setTimeout(std::chrono::milliseconds(std::max(mira_rpc_timeout, 1)));
 
+  declare_parameter_if_not_declared(
+    node, plugin_name_ + ".mira_drive_module",
+    rclcpp::ParameterValue("auto"), rcl_interfaces::msg::ParameterDescriptor()
+    .set__description(
+      "MIRA module that holds the drive properties (e.g. MainControlUnit or MotorController), "
+      "or 'auto' to detect it from the robot"));
+  node->get_parameter(plugin_name_ + ".mira_drive_module", drive_module_);
+  RCLCPP_INFO(
+    logger_, "The parameter mira_drive_module is set to: [%s]", drive_module_.c_str());
+
   // Declare and read parameters
   declare_parameter_if_not_declared(
     node, plugin_name_ + ".robot_base_frame",
@@ -263,9 +273,7 @@ bool Drive::activate()
 
   // MIRA parameters can only be written once the authority has started. Not fatal to
   // activation: the drive still works, just without the magnetic barrier configured.
-  if (!authority_->setParam(
-      "MainControlUnit.RearLaser.Enabled", magnetic_barrier_enabled_ ? "true" : "false"))
-  {
+  if (!setDriveParam("RearLaser.Enabled", magnetic_barrier_enabled_ ? "true" : "false")) {
     RCLCPP_ERROR(logger_, "Failed to set the magnetic_barrier_enabled MIRA parameter");
   }
 
@@ -274,9 +282,9 @@ bool Drive::activate()
 
 bool Drive::deactivate()
 {
-  // The MIRA authority stays checked in (see cleanup()), so the module can be activated again
   RCLCPP_INFO(
     logger_, "Deactivating module : %s of type scitos2_module::Drive", plugin_name_.c_str());
+  // The MIRA authority stays checked in (see cleanup()), so the module can be activated again
   is_active_ = false;
   bumper_pub_->on_deactivate();
   bumper_markers_pub_->on_deactivate();
@@ -302,8 +310,7 @@ rcl_interfaces::msg::SetParametersResult Drive::dynamicParametersCallback(
     if (type == ParameterType::PARAMETER_BOOL) {
       if (name == plugin_name_ + ".magnetic_barrier_enabled") {
         magnetic_barrier_enabled_ = parameter.as_bool();
-        authority_->setParam(
-          "MainControlUnit.RearLaser.Enabled", magnetic_barrier_enabled_ ? "true" : "false");
+        setDriveParam("RearLaser.Enabled", magnetic_barrier_enabled_ ? "true" : "false");
         RCLCPP_INFO(
           logger_, "The parameter magnetic_barrier_enabled is set to: [%s]",
           magnetic_barrier_enabled_ ? "true" : "false");
@@ -346,13 +353,13 @@ rcl_interfaces::msg::SetParametersResult Drive::dynamicParametersCallback(
   result.successful = true;
   return result;
 }
+
+void Drive::odometryDataCallback(mira::ChannelRead<mira::robot::Odometry2> data)
+{
   if (!is_active_) {
     return;
   }
 
-
-void Drive::odometryDataCallback(mira::ChannelRead<mira::robot::Odometry2> data)
-{
   auto odom_msg = miraToRosOdometry(data->value(), data->timestamp);
   odometry_pub_->publish(odom_msg);
 
@@ -362,13 +369,13 @@ void Drive::odometryDataCallback(mira::ChannelRead<mira::robot::Odometry2> data)
     tf_broadcaster_->sendTransform(tf_msg);
   }
 }
+
+void Drive::bumperDataCallback(mira::ChannelRead<bool> data)
+{
   if (!is_active_) {
     return;
   }
 
-
-void Drive::bumperDataCallback(mira::ChannelRead<bool> data)
-{
   rclcpp::Time stamp = rclcpp::Time(data->timestamp.toUnixNS());
 
   scitos2_msgs::msg::BumperStatus bumper_status;
@@ -386,13 +393,13 @@ void Drive::bumperDataCallback(mira::ChannelRead<bool> data)
 
   resetMotorStopAfterTimeout(stamp);
 }
+
+void Drive::mileageDataCallback(mira::ChannelRead<float> data)
+{
   if (!is_active_) {
     return;
   }
 
-
-void Drive::mileageDataCallback(mira::ChannelRead<float> data)
-{
   scitos2_msgs::msg::Mileage mileage_msg;
   {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -402,13 +409,13 @@ void Drive::mileageDataCallback(mira::ChannelRead<float> data)
   mileage_msg.distance = data->value();
   mileage_pub_->publish(mileage_msg);
 }
+
+void Drive::driveStatusCallback(mira::ChannelRead<uint32> data)
+{
   if (!is_active_) {
     return;
   }
 
-
-void Drive::driveStatusCallback(mira::ChannelRead<uint32> data)
-{
   auto drive_status_msg = miraToRosDriveStatus(data->value(), data->timestamp);
   auto emergency_stop_msg = miraToRosEmergencyStopStatus(data->value(), data->timestamp);
 
@@ -428,13 +435,13 @@ void Drive::driveStatusCallback(mira::ChannelRead<uint32> data)
 
   emergency_stop_activated_ = emergency_stop_msg.emergency_stop_activated;
 }
+
+void Drive::rfidStatusCallback(mira::ChannelRead<uint64> data)
+{
   if (!is_active_) {
     return;
   }
 
-
-void Drive::rfidStatusCallback(mira::ChannelRead<uint64> data)
-{
   if (isBarrierCode(data->value())) {
     auto barrier_status = miraToRosBarrierStatus(data->value(), data->timestamp);
     std::lock_guard<std::mutex> lock(mutex_);
@@ -455,12 +462,41 @@ void Drive::velocityCommandCallback(const geometry_msgs::msg::TwistStamped & msg
   }
 }
 
+bool Drive::resolveDriveModule()
+{
+  if (drive_module_ != "auto") {
+    return true;
+  }
+
+  // Each candidate is probed with a property that only its own family of boards exposes
+  static const std::array<std::pair<std::string, std::string>, 2> candidates = {{
+    std::make_pair("MotorController", "MotorController.Force"),
+    std::make_pair("MainControlUnit", "MainControlUnit.RearLaser.Enabled")}};
+  for (const auto & [module, probe] : candidates) {
+    if (!authority_->getParam(probe).empty()) {
+      drive_module_ = module;
+      RCLCPP_INFO(logger_, "Detected the MIRA drive module: [%s]", drive_module_.c_str());
+      return true;
+    }
+  }
+
+  RCLCPP_WARN(logger_, "Unable to detect the MIRA drive module, the property was not written");
+  return false;
+}
+
+bool Drive::setDriveParam(const std::string & property, const std::string & value)
+{
+  if (!resolveDriveModule()) {
+    return false;
+  }
+  return authority_->setParam(drive_module_ + "." + property, value);
+}
+
 bool Drive::changeForce(
   const std::shared_ptr<scitos2_msgs::srv::ChangeForce::Request> request,
   std::shared_ptr<scitos2_msgs::srv::ChangeForce::Response> response)
 {
-  response->success = authority_->setParam(
-    "MotorController.Force", mira::toString(request->force));
+  response->success = setDriveParam("Force", mira::toString(request->force));
   if (!response->success) {
     response->message = "MIRA service call failed";
   }
@@ -494,8 +530,7 @@ bool Drive::enableRfid(
   const std::shared_ptr<scitos2_msgs::srv::EnableRfid::Request> request,
   std::shared_ptr<scitos2_msgs::srv::EnableRfid::Response> response)
 {
-  response->success = authority_->setParam(
-    "MainControlUnit.RearLaser.Enabled", request->enable ? "true" : "false");
+  response->success = setDriveParam("RearLaser.Enabled", request->enable ? "true" : "false");
   if (!response->success) {
     response->message = "MIRA service call failed";
   }
