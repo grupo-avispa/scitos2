@@ -36,11 +36,95 @@ MiraFramework::MiraFramework(const rclcpp::NodeOptions & options)
 {
   RCLCPP_INFO(get_logger(), "Creating MIRA framework");
 
+  // The parameters that shape the MIRA framework are read here because the framework is
+  // created in the constructor: there is only one per process and it has to exist before the
+  // node is configured
+  int port = 0;
+  std::vector<std::string> known_frameworks, variables;
+  std::string save_processed_config;
+  int log_level = -1;
+  nav2_util::declare_parameter_if_not_declared(
+    this, "mira_port", rclcpp::ParameterValue(0),
+    rcl_interfaces::msg::ParameterDescriptor()
+    .set__description(
+      "Port where the MIRA framework listens, so that miracenter or mirainspect can connect to "
+      "the robot while ROS is running. 0 disables it"));
+  this->get_parameter("mira_port", port);
+  nav2_util::declare_parameter_if_not_declared(
+    this, "mira_known_frameworks", rclcpp::ParameterValue(std::vector<std::string>()),
+    rcl_interfaces::msg::ParameterDescriptor()
+    .set__description("MIRA frameworks to connect to, as host:port"));
+  this->get_parameter("mira_known_frameworks", known_frameworks);
+  nav2_util::declare_parameter_if_not_declared(
+    this, "mira_variables", rclcpp::ParameterValue(std::vector<std::string>()),
+    rcl_interfaces::msg::ParameterDescriptor()
+    .set__description("Variables of the MIRA configuration, as name=value"));
+  this->get_parameter("mira_variables", variables);
+  nav2_util::declare_parameter_if_not_declared(
+    this, "save_processed_config", rclcpp::ParameterValue(""),
+    rcl_interfaces::msg::ParameterDescriptor()
+    .set__description("File where MIRA saves the configuration once its variables are resolved"));
+  this->get_parameter("save_processed_config", save_processed_config);
+  nav2_util::declare_parameter_if_not_declared(
+    this, "mira_log_level", rclcpp::ParameterValue(-1),
+    rcl_interfaces::msg::ParameterDescriptor()
+    .set__description(
+      "Severity of the messages of MIRA (0 critical ... 5 trace). -1 follows the log level of "
+      "this node"));
+  this->get_parameter("mira_log_level", log_level);
+
   // Redirect MIRA logger
   MIRA_LOGGER.registerSink(scitos2_mira_utils::SinkLogger(this->get_logger()));
-  MIRA_LOGGER.setSeverityLevel(mira::SeverityLevel::DEBUG);
+  MIRA_LOGGER.setSeverityLevel(miraSeverity(log_level));
 
-  framework_ = std::make_unique<mira::Framework>(0, nullptr);
+  framework_ = std::make_unique<mira::Framework>(
+    buildMiraArguments(port, known_frameworks, variables, save_processed_config));
+}
+
+std::vector<std::string> MiraFramework::buildMiraArguments(
+  int port, const std::vector<std::string> & known_frameworks,
+  const std::vector<std::string> & variables, const std::string & save_processed_config)
+{
+  // The first argument is the name of the program, like in argv
+  std::vector<std::string> args{"scitos2_mira"};
+  if (port > 0) {
+    args.push_back("-p");
+    args.push_back(std::to_string(port));
+  }
+  for (const auto & known : known_frameworks) {
+    args.push_back("-k");
+    args.push_back(known);
+  }
+  for (const auto & variable : variables) {
+    args.push_back("-v");
+    args.push_back(variable);
+  }
+  if (!save_processed_config.empty()) {
+    args.push_back("--save-processed-config");
+    args.push_back(save_processed_config);
+  }
+  return args;
+}
+
+mira::SeverityLevel MiraFramework::miraSeverity(int log_level) const
+{
+  if (log_level >= mira::SeverityLevel::CRITICAL && log_level <= mira::SeverityLevel::TRACE) {
+    return static_cast<mira::SeverityLevel>(log_level);
+  }
+
+  // Follow the level of the ROS logger, so that MIRA does not format messages that ROS drops
+  switch (rcutils_logging_get_logger_effective_level(get_logger().get_name())) {
+    case RCUTILS_LOG_SEVERITY_DEBUG:
+      return mira::SeverityLevel::DEBUG;
+    case RCUTILS_LOG_SEVERITY_INFO:
+      return mira::SeverityLevel::NOTICE;
+    case RCUTILS_LOG_SEVERITY_WARN:
+      return mira::SeverityLevel::WARNING;
+    case RCUTILS_LOG_SEVERITY_ERROR:
+      return mira::SeverityLevel::ERROR;
+    default:
+      return mira::SeverityLevel::CRITICAL;
+  }
 }
 
 MiraFramework::~MiraFramework()

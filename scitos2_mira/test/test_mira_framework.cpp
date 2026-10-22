@@ -43,6 +43,19 @@ public:
       this, "mira_resource_timeout", rclcpp::ParameterValue(0));
   }
 
+  static std::vector<std::string> buildMiraArguments(
+    int port, const std::vector<std::string> & known_frameworks,
+    const std::vector<std::string> & variables, const std::string & save_processed_config)
+  {
+    return scitos2_mira::MiraFramework::buildMiraArguments(
+      port, known_frameworks, variables, save_processed_config);
+  }
+
+  mira::SeverityLevel miraSeverity(int log_level) const
+  {
+    return scitos2_mira::MiraFramework::miraSeverity(log_level);
+  }
+
   diagnostic_msgs::msg::DiagnosticArray createDiagnostics()
   {
     return scitos2_mira::MiraFramework::createDiagnostics();
@@ -160,6 +173,37 @@ void setModules(const std::vector<std::string> & modules)
   }
 }
 }  // namespace
+
+TEST(ScitosMiraFrameworkTest, argumentsOfTheFramework) {
+  // Without parameters only the name of the program is passed
+  EXPECT_EQ(
+    MiraFrameworkFixture::buildMiraArguments(0, {}, {}, ""),
+    std::vector<std::string>({"scitos2_mira"}));
+
+  EXPECT_EQ(
+    MiraFrameworkFixture::buildMiraArguments(
+      1234, {"robot:5678", "other:9"}, {"robot=Tory", "can=/dev/x"}, "/tmp/resolved.xml"),
+    std::vector<std::string>(
+      {"scitos2_mira", "-p", "1234", "-k", "robot:5678", "-k", "other:9", "-v", "robot=Tory",
+        "-v", "can=/dev/x", "--save-processed-config", "/tmp/resolved.xml"}));
+}
+
+TEST(ScitosMiraFrameworkTest, severityOfTheMiraLog) {
+  auto node = sharedNode();
+
+  // An explicit level is used as it is
+  EXPECT_EQ(node->miraSeverity(0), mira::SeverityLevel::CRITICAL);
+  EXPECT_EQ(node->miraSeverity(5), mira::SeverityLevel::TRACE);
+
+  // Otherwise it follows the level of the ROS logger
+  const char * logger_name = node->get_logger().get_name();
+  ASSERT_EQ(
+    rcutils_logging_set_logger_level(logger_name, RCUTILS_LOG_SEVERITY_WARN), RCUTILS_RET_OK);
+  EXPECT_EQ(node->miraSeverity(-1), mira::SeverityLevel::WARNING);
+  ASSERT_EQ(
+    rcutils_logging_set_logger_level(logger_name, RCUTILS_LOG_SEVERITY_DEBUG), RCUTILS_RET_OK);
+  EXPECT_EQ(node->miraSeverity(-1), mira::SeverityLevel::DEBUG);
+}
 
 TEST(ScitosMiraFrameworkTest, diagnosticsReportAMissingConfiguration) {
   auto msg = sharedNode()->createDiagnostics();

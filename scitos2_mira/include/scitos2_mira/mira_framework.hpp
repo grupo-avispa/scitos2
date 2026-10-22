@@ -62,7 +62,29 @@ public:
    */
   ~MiraFramework();
 
+  /**
+   * @brief Build the command line arguments of the MIRA framework from the parameters of the node.
+   *
+   * @param port Port where MIRA listens, or 0 to leave it disabled
+   * @param known_frameworks Other MIRA frameworks to connect to, as host:port
+   * @param variables Variables of the MIRA configuration, as name=value
+   * @param save_processed_config File where MIRA saves the resolved configuration, or empty
+   * @return std::vector<std::string> The arguments, starting with the program name
+   */
+  static std::vector<std::string> buildMiraArguments(
+    int port, const std::vector<std::string> & known_frameworks,
+    const std::vector<std::string> & variables, const std::string & save_processed_config);
+
 protected:
+  /**
+   * @brief Severity of the messages of MIRA to log.
+   *
+   * @param log_level Level set by the user (0 critical ... 5 trace), or -1 to follow the level
+   * of the ROS logger of the node
+   * @return mira::SeverityLevel The severity to use
+   */
+  mira::SeverityLevel miraSeverity(int log_level) const;
+
   /**
    * @brief Configures the modules plugin.
    *
