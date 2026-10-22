@@ -25,25 +25,8 @@ using rcl_interfaces::msg::ParameterType;
 
 void Display::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std::string name)
 {
-  // Declare and read parameters
-  auto node = parent.lock();
-  if (!node) {
-    throw std::runtime_error("Unable to lock node!");
-  }
-
-  plugin_name_ = name;
-  logger_ = node->get_logger();
+  auto node = configureMira(parent, name);
   clock_ = node->get_clock();
-  authority_ = std::make_shared<scitos2_mira_utils::MiraAuthority>(logger_);
-  authority_->checkin(plugin_name_);
-
-  std::string mira_robot_resource = "/robot/Robot";
-  declare_parameter_if_not_declared(
-    node, plugin_name_ + ".mira_robot_resource",
-    rclcpp::ParameterValue(mira_robot_resource), rcl_interfaces::msg::ParameterDescriptor()
-    .set__description("The MIRA resource that exposes the robot's services and properties"));
-  node->get_parameter(plugin_name_ + ".mira_robot_resource", mira_robot_resource);
-  authority_->setResource(mira_robot_resource);
   int mira_rpc_timeout = 1000;
   declare_parameter_if_not_declared(
     node, plugin_name_ + ".mira_rpc_timeout",
@@ -114,15 +97,7 @@ void Display::cleanup()
 {
   RCLCPP_INFO(
     logger_, "Cleaning up module : %s of type scitos2_module::Display", plugin_name_.c_str());
-  if (authority_) {
-    try {
-      authority_->checkout();
-    } catch (const mira::Exception & ex) {
-      RCLCPP_ERROR(
-        logger_, "Failed to checkout scitos2_module::Display. Exception: %s", ex.what());
-    }
-  }
-  authority_.reset();
+  cleanupMira();
   display_data_pub_.reset();
 }
 
@@ -132,10 +107,7 @@ bool Display::activate()
     logger_, "Activating module : %s of type scitos2_module::Display", plugin_name_.c_str());
   display_data_pub_->on_activate();
 
-  try {
-    authority_->start();
-  } catch (const mira::Exception & ex) {
-    RCLCPP_ERROR(logger_, "Failed to start scitos2_module::Display. Exception: %s", ex.what());
+  if (!startMira()) {
     return false;
   }
 

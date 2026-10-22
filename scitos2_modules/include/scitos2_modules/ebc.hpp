@@ -30,8 +30,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rcl_interfaces/msg/set_parameters_result.hpp"
 
-#include "scitos2_core/module.hpp"
-#include "scitos2_mira_utils/mira_authority.hpp"
+#include "scitos2_mira_utils/mira_module.hpp"
 
 namespace scitos2_modules
 {
@@ -65,7 +64,7 @@ struct EbcCurrentPort
  * @brief Module for the EBC power board control.
  *
  */
-class EBC : public scitos2_core::Module
+class EBC : public scitos2_mira_utils::MiraModule
 {
 public:
   /**
@@ -110,11 +109,6 @@ protected:
   rcl_interfaces::msg::SetParametersResult
   dynamicParametersCallback(std::vector<rclcpp::Parameter> parameters);
 
-  // MIRA Authority
-  std::shared_ptr<scitos2_mira_utils::MiraAuthority> authority_;
-
-  std::string plugin_name_;
-  rclcpp::Logger logger_{rclcpp::get_logger("EBC")};
 
   // Dynamic parameters handler
   std::mutex mutex_;

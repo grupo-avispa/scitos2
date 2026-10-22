@@ -77,34 +77,9 @@ using std::placeholders::_2;
 
 void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std::string name)
 {
-  // Declare and read parameters
-  auto node = parent.lock();
-  if (!node) {
-    throw std::runtime_error("Unable to lock node!");
-  }
-
+  auto node = configureMira(parent, name);
   is_active_ = false;
-  plugin_name_ = name;
-  logger_ = node->get_logger();
   clock_ = node->get_clock();
-  authority_ = std::make_shared<scitos2_mira_utils::MiraAuthority>(logger_);
-  authority_->checkin(plugin_name_);
-
-  std::string mira_robot_resource = "/robot/Robot";
-  declare_parameter_if_not_declared(
-    node, plugin_name_ + ".mira_robot_resource",
-    rclcpp::ParameterValue(mira_robot_resource), rcl_interfaces::msg::ParameterDescriptor()
-    .set__description("The MIRA resource that exposes the robot's services and properties"));
-  node->get_parameter(plugin_name_ + ".mira_robot_resource", mira_robot_resource);
-  authority_->setResource(mira_robot_resource);
-
-  int mira_rpc_timeout = 1000;
-  declare_parameter_if_not_declared(
-    node, plugin_name_ + ".mira_rpc_timeout",
-    rclcpp::ParameterValue(mira_rpc_timeout), rcl_interfaces::msg::ParameterDescriptor()
-    .set__description("Milliseconds to wait for MIRA to answer a service or property call"));
-  node->get_parameter(plugin_name_ + ".mira_rpc_timeout", mira_rpc_timeout);
-  authority_->setTimeout(std::chrono::milliseconds(std::max(mira_rpc_timeout, 1)));
 
   declare_parameter_if_not_declared(
     node, plugin_name_ + ".mira_drive_module",
@@ -267,14 +242,7 @@ void Drive::cleanup()
 {
   RCLCPP_INFO(
     logger_, "Cleaning up module : %s of type scitos2_module::Drive", plugin_name_.c_str());
-  if (authority_) {
-    try {
-      authority_->checkout();
-    } catch (const mira::Exception & ex) {
-      RCLCPP_ERROR(logger_, "Failed to checkout scitos2_module::Drive. Exception: %s", ex.what());
-    }
-  }
-  authority_.reset();
+  cleanupMira();
   bumper_pub_.reset();
   bumper_markers_pub_.reset();
   drive_status_pub_.reset();
@@ -309,13 +277,10 @@ bool Drive::activate()
   rfid_pub_->on_activate();
   cmd_vel_applied_pub_->on_activate();
 
-  try {
-    authority_->start();
-    is_active_ = true;
-  } catch (const mira::Exception & ex) {
-    RCLCPP_ERROR(logger_, "Failed to start scitos2_module::Drive. Exception: %s", ex.what());
+  if (!startMira()) {
     return false;
   }
+  is_active_ = true;
 
   // MIRA parameters can only be written once the authority has started. Not fatal to
   // activation: the drive still works, just without the magnetic barrier configured.

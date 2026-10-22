@@ -30,8 +30,7 @@
 #include "rcl_interfaces/msg/set_parameters_result.hpp"
 
 // SCITOS2
-#include "scitos2_core/module.hpp"
-#include "scitos2_mira_utils/mira_authority.hpp"
+#include "scitos2_mira_utils/mira_module.hpp"
 #include "scitos2_msgs/msg/menu_entry.hpp"
 
 namespace scitos2_modules
@@ -42,7 +41,7 @@ namespace scitos2_modules
  * @brief Module for interfacing the status on the mini embedded display.
  *
  */
-class Display : public scitos2_core::Module
+class Display : public scitos2_mira_utils::MiraModule
 {
 public:
   /**
@@ -100,12 +99,7 @@ protected:
    */
   void changeMenuEntries();
 
-  // MIRA Authority
-  std::shared_ptr<scitos2_mira_utils::MiraAuthority> authority_;
-
-  std::string plugin_name_;
   rclcpp::Clock::SharedPtr clock_;
-  rclcpp::Logger logger_{rclcpp::get_logger("Display")};
 
   // Dynamic parameters handler
   std::mutex mutex_;

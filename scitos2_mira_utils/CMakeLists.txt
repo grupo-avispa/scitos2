@@ -51,6 +51,8 @@ endif()
 # # Find ament macros and libraries
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclcpp_lifecycle REQUIRED)
+find_package(scitos2_core REQUIRED)
 find_package(scitos2_common REQUIRED)
 
 find_mira_path()
@@ -60,13 +62,18 @@ find_mira_path()
 # ##########
 include_mira_packages()
 
-add_library(scitos2_mira_utils SHARED src/mira_authority.cpp)
+add_library(scitos2_mira_utils SHARED
+  src/mira_authority.cpp
+  src/mira_module.cpp
+)
 target_include_directories(scitos2_mira_utils PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 target_link_libraries(scitos2_mira_utils PUBLIC
   rclcpp::rclcpp
+  rclcpp_lifecycle::rclcpp_lifecycle
+  scitos2_core::scitos2_core
 )
 target_link_mira_libraries(scitos2_mira_utils)
 
@@ -104,6 +111,8 @@ ament_export_include_directories(include/${PROJECT_NAME})
 ament_export_libraries(scitos2_mira_utils)
 ament_export_dependencies(
   rclcpp
+  rclcpp_lifecycle
+  scitos2_core
 )
 ament_export_targets(scitos2_mira_utils)
 ament_package()

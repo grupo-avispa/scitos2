@@ -32,8 +32,7 @@
 #include "sensor_msgs/msg/battery_state.hpp"
 
 // SCITOS2
-#include "scitos2_core/module.hpp"
-#include "scitos2_mira_utils/mira_authority.hpp"
+#include "scitos2_mira_utils/mira_module.hpp"
 #include "scitos2_msgs/msg/charger_status.hpp"
 #include "scitos2_msgs/srv/save_persistent_errors.hpp"
 
@@ -45,7 +44,7 @@ namespace scitos2_modules
  * @brief Module for communicating with the charger and battery.
  *
  */
-class Charger : public scitos2_core::Module
+class Charger : public scitos2_mira_utils::MiraModule
 {
 public:
   /**
@@ -142,11 +141,6 @@ protected:
    */
   void fillDiagnostics(diagnostic_updater::DiagnosticStatusWrapper & stat);
 
-  // MIRA Authority
-  std::shared_ptr<scitos2_mira_utils::MiraAuthority> authority_;
-
-  std::string plugin_name_;
-  rclcpp::Logger logger_{rclcpp::get_logger("Charger")};
 
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::BatteryState>>
   battery_pub_;

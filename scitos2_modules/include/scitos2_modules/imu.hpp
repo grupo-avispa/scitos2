@@ -35,8 +35,7 @@
 #include "sensor_msgs/msg/imu.hpp"
 
 // SCITOS2
-#include "scitos2_core/module.hpp"
-#include "scitos2_mira_utils/mira_authority.hpp"
+#include "scitos2_mira_utils/mira_module.hpp"
 
 namespace scitos2_modules
 {
@@ -46,7 +45,7 @@ namespace scitos2_modules
  * @brief Module for communicating with the IMU.
  *
  */
-class IMU : public scitos2_core::Module
+class IMU : public scitos2_mira_utils::MiraModule
 {
 public:
   /**
@@ -134,11 +133,6 @@ protected:
    */
   void fillDiagnostics(diagnostic_updater::DiagnosticStatusWrapper & stat);
 
-  // MIRA Authority
-  std::shared_ptr<scitos2_mira_utils::MiraAuthority> authority_;
-
-  std::string plugin_name_;
-  rclcpp::Logger logger_{rclcpp::get_logger("IMU")};
 
   std::string robot_base_frame_, imu_topic_;
   sensor_msgs::msg::Imu imu_msg_;

@@ -39,8 +39,7 @@
 #include "visualization_msgs/msg/marker_array.hpp"
 
 // SCITOS2
-#include "scitos2_core/module.hpp"
-#include "scitos2_mira_utils/mira_authority.hpp"
+#include "scitos2_mira_utils/mira_module.hpp"
 #include "scitos2_modules/drive_status_bits.hpp"
 #include "scitos2_msgs/msg/barrier_status.hpp"
 #include "scitos2_msgs/msg/bumper_status.hpp"
@@ -67,7 +66,7 @@ constexpr uint64 MAGNETIC_BARRIER_RFID_CODE = 0xabababab;
  * @brief Module for interfacing all related to drive: odometry, motor controller, state etc.
  *
  */
-class Drive : public scitos2_core::Module
+class Drive : public scitos2_mira_utils::MiraModule
 {
 public:
   /**
@@ -379,17 +378,12 @@ protected:
    */
   void summarizeDriveStatus(uint32_t status, diagnostic_updater::DiagnosticStatusWrapper & stat);
 
-  // MIRA Authority
-  std::shared_ptr<scitos2_mira_utils::MiraAuthority> authority_;
-
   // MIRA module with the drive properties. It is only used from the ROS executor thread
   // (activation, services and parameter callbacks), so it does not need a lock
   std::string drive_module_{"auto"};
 
   // Plugin related
-  std::string plugin_name_;
   rclcpp::Clock::SharedPtr clock_;
-  rclcpp::Logger logger_{rclcpp::get_logger("Drive")};
 
   // Guards robot_base_frame_, odom_frame_ and barrier_status_, which are written from
   // dynamicParametersCallback()/MIRA data callbacks and read from other MIRA data callbacks
