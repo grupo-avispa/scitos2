@@ -374,17 +374,16 @@ TEST(ScitosChargerTest, configureWithExpiredNodeThrows) {
     module->configure(rclcpp_lifecycle::LifecycleNode::WeakPtr(), "test"), std::runtime_error);
 }
 
-TEST(ScitosChargerTest, reactivationAfterDeactivationIsReported) {
+TEST(ScitosChargerTest, reactivationAfterDeactivationSucceeds) {
   rclcpp::init(0, nullptr);
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testChargerTwice");
   auto module = std::make_shared<ChargerFixture>();
   module->configure(node, "test");
 
-  // A checked out authority can't be started again, which is reported through the return
-  // value, while checking it out twice is harmless
+  // The authority is only checked out on cleanup, so the module can be activated again
   EXPECT_TRUE(module->activate());
   EXPECT_TRUE(module->deactivate());
-  EXPECT_FALSE(module->activate());
+  EXPECT_TRUE(module->activate());
   EXPECT_TRUE(module->deactivate());
   module->cleanup();
   rclcpp::shutdown();

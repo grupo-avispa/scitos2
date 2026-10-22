@@ -86,6 +86,7 @@ nav2_util::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::St
       return nav2_util::CallbackReturn::FAILURE;
     }
   } else {
+    // The framework outlives a cleanup (it is only terminated on shutdown), so it is reused
     RCLCPP_WARN(get_logger(), "Already loaded scitos config");
   }
 
@@ -169,13 +170,16 @@ nav2_util::CallbackReturn MiraFramework::on_activate(const rclcpp_lifecycle::Sta
     }
   }
 
-  // Start the MIRA framework
-  try {
-    framework_->start();
-  } catch (const mira::Exception & ex) {
-    RCLCPP_ERROR(get_logger(), "Failed to start MIRA framework. Exception: %s", ex.what());
-    on_deactivate(state);
-    return nav2_util::CallbackReturn::FAILURE;
+  // Start the MIRA framework, only once: it keeps running while the node is deactivated
+  if (!started_) {
+    try {
+      framework_->start();
+      started_ = true;
+    } catch (const mira::Exception & ex) {
+      RCLCPP_ERROR(get_logger(), "Failed to start MIRA framework. Exception: %s", ex.what());
+      on_deactivate(state);
+      return nav2_util::CallbackReturn::FAILURE;
+    }
   }
 
   // Create a timer to publish diagnostics
@@ -232,19 +236,19 @@ nav2_util::CallbackReturn MiraFramework::on_cleanup(const rclcpp_lifecycle::Stat
   diag_pub_.reset();
   timer_.reset();
 
-  try {
-    framework_->requestTermination();
-  } catch (const mira::Exception & ex) {
-    RCLCPP_ERROR(get_logger(), "Failed to request termination. Exception: %s", ex.what());
-    return nav2_util::CallbackReturn::FAILURE;
-  }
-
   return nav2_util::CallbackReturn::SUCCESS;
 }
 
 nav2_util::CallbackReturn MiraFramework::on_shutdown(const rclcpp_lifecycle::State &)
 {
   RCLCPP_INFO(get_logger(), "Shutting down");
+
+  try {
+    framework_->requestTermination();
+  } catch (const mira::Exception & ex) {
+    RCLCPP_ERROR(get_logger(), "Failed to request termination. Exception: %s", ex.what());
+    return nav2_util::CallbackReturn::FAILURE;
+  }
 
   return nav2_util::CallbackReturn::SUCCESS;
 }

@@ -213,6 +213,13 @@ void Drive::cleanup()
 {
   RCLCPP_INFO(
     logger_, "Cleaning up module : %s of type scitos2_module::Drive", plugin_name_.c_str());
+  if (authority_) {
+    try {
+      authority_->checkout();
+    } catch (const mira::Exception & ex) {
+      RCLCPP_ERROR(logger_, "Failed to checkout scitos2_module::Drive. Exception: %s", ex.what());
+    }
+  }
   authority_.reset();
   bumper_pub_.reset();
   bumper_markers_pub_.reset();
@@ -267,16 +274,10 @@ bool Drive::activate()
 
 bool Drive::deactivate()
 {
+  // The MIRA authority stays checked in (see cleanup()), so the module can be activated again
   RCLCPP_INFO(
     logger_, "Deactivating module : %s of type scitos2_module::Drive", plugin_name_.c_str());
   is_active_ = false;
-  bool success = true;
-  try {
-    authority_->checkout();
-  } catch (const mira::Exception & ex) {
-    RCLCPP_ERROR(logger_, "Failed to checkout scitos2_module::Drive. Exception: %s", ex.what());
-    success = false;
-  }
   bumper_pub_->on_deactivate();
   bumper_markers_pub_->on_deactivate();
   drive_status_pub_->on_deactivate();
@@ -285,7 +286,7 @@ bool Drive::deactivate()
   mileage_pub_->on_deactivate();
   odometry_pub_->on_deactivate();
   rfid_pub_->on_deactivate();
-  return success;
+  return true;
 }
 
 rcl_interfaces::msg::SetParametersResult Drive::dynamicParametersCallback(
@@ -345,6 +346,10 @@ rcl_interfaces::msg::SetParametersResult Drive::dynamicParametersCallback(
   result.successful = true;
   return result;
 }
+  if (!is_active_) {
+    return;
+  }
+
 
 void Drive::odometryDataCallback(mira::ChannelRead<mira::robot::Odometry2> data)
 {
@@ -357,6 +362,10 @@ void Drive::odometryDataCallback(mira::ChannelRead<mira::robot::Odometry2> data)
     tf_broadcaster_->sendTransform(tf_msg);
   }
 }
+  if (!is_active_) {
+    return;
+  }
+
 
 void Drive::bumperDataCallback(mira::ChannelRead<bool> data)
 {
@@ -377,6 +386,10 @@ void Drive::bumperDataCallback(mira::ChannelRead<bool> data)
 
   resetMotorStopAfterTimeout(stamp);
 }
+  if (!is_active_) {
+    return;
+  }
+
 
 void Drive::mileageDataCallback(mira::ChannelRead<float> data)
 {
@@ -389,6 +402,10 @@ void Drive::mileageDataCallback(mira::ChannelRead<float> data)
   mileage_msg.distance = data->value();
   mileage_pub_->publish(mileage_msg);
 }
+  if (!is_active_) {
+    return;
+  }
+
 
 void Drive::driveStatusCallback(mira::ChannelRead<uint32> data)
 {
@@ -411,6 +428,10 @@ void Drive::driveStatusCallback(mira::ChannelRead<uint32> data)
 
   emergency_stop_activated_ = emergency_stop_msg.emergency_stop_activated;
 }
+  if (!is_active_) {
+    return;
+  }
+
 
 void Drive::rfidStatusCallback(mira::ChannelRead<uint64> data)
 {

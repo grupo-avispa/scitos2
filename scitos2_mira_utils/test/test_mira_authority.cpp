@@ -135,6 +135,18 @@ TEST(MiraAuthorityTest, slowServiceTimesOutInsteadOfBlocking) {
   authority.checkout();
 }
 
+TEST(MiraAuthorityTest, startAndCheckoutAreIdempotent) {
+  scitos2_mira_utils::MiraAuthority authority;
+  // Nothing to check out before checking in
+  EXPECT_NO_THROW(authority.checkout());
+
+  authority.checkin("test_mira_authority_idempotent");
+  EXPECT_NO_THROW(authority.start());
+  EXPECT_NO_THROW(authority.start());
+  EXPECT_NO_THROW(authority.checkout());
+  EXPECT_NO_THROW(authority.checkout());
+}
+
 int main(int argc, char ** argv)
 {
   testing::InitGoogleTest(&argc, argv);

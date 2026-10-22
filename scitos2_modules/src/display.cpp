@@ -114,6 +114,14 @@ void Display::cleanup()
 {
   RCLCPP_INFO(
     logger_, "Cleaning up module : %s of type scitos2_module::Display", plugin_name_.c_str());
+  if (authority_) {
+    try {
+      authority_->checkout();
+    } catch (const mira::Exception & ex) {
+      RCLCPP_ERROR(
+        logger_, "Failed to checkout scitos2_module::Display. Exception: %s", ex.what());
+    }
+  }
   authority_.reset();
   display_data_pub_.reset();
 }
@@ -140,15 +148,8 @@ bool Display::deactivate()
 {
   RCLCPP_INFO(
     logger_, "Deactivating module : %s of type scitos2_module::Display", plugin_name_.c_str());
-  bool success = true;
-  try {
-    authority_->checkout();
-  } catch (const mira::Exception & ex) {
-    RCLCPP_ERROR(logger_, "Failed to checkout scitos2_module::Display. Exception: %s", ex.what());
-    success = false;
-  }
   display_data_pub_->on_deactivate();
-  return success;
+  return true;
 }
 
 rcl_interfaces::msg::SetParametersResult Display::dynamicParametersCallback(

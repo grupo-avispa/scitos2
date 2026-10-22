@@ -131,6 +131,14 @@ void EBC::cleanup()
 {
   RCLCPP_INFO(
     logger_, "Cleaning up module : %s of type scitos2_module::EBC", plugin_name_.c_str());
+  if (authority_) {
+    try {
+      authority_->checkout();
+    } catch (const mira::Exception & ex) {
+      RCLCPP_ERROR(
+        logger_, "Failed to checkout scitos2_module::EBC. Exception: %s", ex.what());
+    }
+  }
   authority_.reset();
 }
 
@@ -165,12 +173,6 @@ bool EBC::deactivate()
 {
   RCLCPP_INFO(
     logger_, "Deactivating module : %s of type scitos2_module::EBC", plugin_name_.c_str());
-  try {
-    authority_->checkout();
-  } catch (const mira::Exception & ex) {
-    RCLCPP_ERROR(logger_, "Failed to checkout scitos2_module::EBC. Exception: %s", ex.what());
-    return false;
-  }
   return true;
 }
 

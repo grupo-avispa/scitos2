@@ -115,6 +115,7 @@ protected:
   // MIRA framework
   std::unique_ptr<mira::Framework> framework_;
   bool loaded_;
+  bool started_{false};
 
   // Module Plugins
   pluginlib::ClassLoader<scitos2_core::Module> module_loader_;

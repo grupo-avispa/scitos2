@@ -40,15 +40,26 @@ void MiraAuthority::setResource(const std::string & resource)
 void MiraAuthority::checkin(const std::string & name)
 {
   authority_->checkin("/", name);
+  checked_in_ = true;
 }
 
 void MiraAuthority::start()
 {
+  if (started_) {
+    return;
+  }
   authority_->start();
+  started_ = true;
 }
 
 void MiraAuthority::checkout()
 {
+  if (!checked_in_) {
+    return;
+  }
+  // Mark it first: whatever happens in checkout() the authority can't be reused afterwards
+  checked_in_ = false;
+  started_ = false;
   authority_->checkout();
 }
 

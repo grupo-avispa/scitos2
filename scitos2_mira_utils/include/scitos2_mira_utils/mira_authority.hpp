@@ -71,11 +71,13 @@ public:
 
   /**
    * @brief Start the authority. Must be called before any service/parameter call can succeed.
+   * Starting an authority that is already started is a no-op, so a module can be activated again
+   * after a deactivation without touching the MIRA side.
    */
   void start();
 
   /**
-   * @brief Check out the authority.
+   * @brief Check out the authority. Does nothing if it is not checked in.
    */
   void checkout();
 
@@ -177,6 +179,8 @@ protected:
   std::shared_ptr<mira::Authority> authority_;
   std::string resource_{"/robot/Robot"};
   mira::Duration timeout_{mira::Duration::seconds(1)};
+  bool checked_in_{false};
+  bool started_{false};
   rclcpp::Logger logger_;
 };
 

@@ -363,7 +363,7 @@ protected:
   bool magnetic_barrier_enabled_;
   std::atomic<bool> emergency_stop_activated_{false};
   scitos2_msgs::msg::BarrierStatus barrier_status_;
-  bool is_active_;
+  std::atomic<bool> is_active_{false};
 
   // Bumper
   std::atomic<bool> bumper_activated_{false};
