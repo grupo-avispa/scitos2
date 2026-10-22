@@ -135,6 +135,24 @@ TEST(MiraAuthorityTest, slowServiceTimesOutInsteadOfBlocking) {
   authority.checkout();
 }
 
+TEST(MiraAuthorityTest, waitForResource) {
+  scitos2_mira_utils::MiraAuthority authority;
+  authority.setResource("/robot/Waited");
+  authority.checkin("test_mira_authority_wait");
+  authority.start();
+
+  EXPECT_FALSE(authority.waitForResource(std::chrono::milliseconds(100)));
+
+  FakeRobot robot;
+  robot.checkin("/robot", "Waited");
+  robot.publishService(robot);
+  robot.start();
+
+  EXPECT_TRUE(authority.waitForResource(std::chrono::milliseconds(2000)));
+
+  authority.checkout();
+}
+
 TEST(MiraAuthorityTest, startAndCheckoutAreIdempotent) {
   scitos2_mira_utils::MiraAuthority authority;
   // Nothing to check out before checking in

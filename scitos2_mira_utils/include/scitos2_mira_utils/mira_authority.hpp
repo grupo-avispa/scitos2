@@ -90,6 +90,14 @@ public:
   void setTimeout(const std::chrono::milliseconds & timeout);
 
   /**
+   * @brief Wait for the configured resource to be available in MIRA.
+   *
+   * @param timeout The maximum time to wait
+   * @return bool True if the resource exists, false if the time ran out
+   */
+  bool waitForResource(const std::chrono::milliseconds & timeout);
+
+  /**
    * @brief Subscribe to a MIRA channel.
    *
    * @tparam T The type of the channel data

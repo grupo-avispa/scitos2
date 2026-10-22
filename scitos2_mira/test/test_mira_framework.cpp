@@ -37,7 +37,11 @@ class MiraFrameworkFixture : public scitos2_mira::MiraFramework
 public:
   MiraFrameworkFixture()
   : scitos2_mira::MiraFramework(rclcpp::NodeOptions())
-  {}
+  {
+    // There is no robot in the tests, so do not wait for it when activating
+    nav2_util::declare_parameter_if_not_declared(
+      this, "mira_resource_timeout", rclcpp::ParameterValue(0));
+  }
 
   diagnostic_msgs::msg::DiagnosticArray createDiagnostics()
   {

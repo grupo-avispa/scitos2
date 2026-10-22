@@ -33,6 +33,7 @@
 
 // Scitos2
 #include "scitos2_core/module.hpp"
+#include "scitos2_mira_utils/mira_authority.hpp"
 #include "scitos2_mira_utils/sink_logger.hpp"
 
 namespace scitos2_mira
@@ -105,6 +106,12 @@ protected:
   nav2_util::CallbackReturn on_shutdown(const rclcpp_lifecycle::State & state) override;
 
   /**
+   * @brief Wait until the MIRA robot resource exists, up to the configured timeout.
+   * Only warns if it does not appear.
+   */
+  void waitForRobotResource();
+
+  /**
    * @brief Create a diagnostics message.
    */
   diagnostic_msgs::msg::DiagnosticArray createDiagnostics();
@@ -116,6 +123,8 @@ protected:
   std::unique_ptr<mira::Framework> framework_;
   bool loaded_;
   bool started_{false};
+  std::string robot_resource_{"/robot/Robot"};
+  int resource_timeout_{5000};
 
   // Module Plugins
   pluginlib::ClassLoader<scitos2_core::Module> module_loader_;

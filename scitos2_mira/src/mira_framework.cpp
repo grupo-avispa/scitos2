@@ -91,6 +91,18 @@ nav2_util::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::St
   }
 
   nav2_util::declare_parameter_if_not_declared(
+    this, "mira_robot_resource", rclcpp::ParameterValue("/robot/Robot"),
+    rcl_interfaces::msg::ParameterDescriptor()
+    .set__description("The MIRA resource to wait for before activating the modules"));
+  this->get_parameter("mira_robot_resource", robot_resource_);
+
+  nav2_util::declare_parameter_if_not_declared(
+    this, "mira_resource_timeout", rclcpp::ParameterValue(5000),
+    rcl_interfaces::msg::ParameterDescriptor()
+    .set__description("Milliseconds to wait for the MIRA robot resource when activating"));
+  this->get_parameter("mira_resource_timeout", resource_timeout_);
+
+  nav2_util::declare_parameter_if_not_declared(
     this, "module_plugins",
     rclcpp::ParameterValue(default_ids_),
     rcl_interfaces::msg::ParameterDescriptor()
@@ -154,6 +166,22 @@ nav2_util::CallbackReturn MiraFramework::on_activate(const rclcpp_lifecycle::Sta
 {
   RCLCPP_INFO(get_logger(), "Activating");
 
+  // Start the MIRA framework, only once: it keeps running while the node is deactivated
+  if (!started_) {
+    try {
+      framework_->start();
+      started_ = true;
+    } catch (const mira::Exception & ex) {
+      RCLCPP_ERROR(get_logger(), "Failed to start MIRA framework. Exception: %s", ex.what());
+      on_deactivate(state);
+      return nav2_util::CallbackReturn::FAILURE;
+    }
+  }
+
+  // The modules write MIRA properties when they are activated, which only works once the
+  // robot unit exists. Not fatal: the modules report the writes that failed
+  waitForRobotResource();
+
   // Activate the modules
   ModuleMap::iterator it;
   for (it = modules_.begin(); it != modules_.end(); ++it) {
@@ -165,18 +193,6 @@ nav2_util::CallbackReturn MiraFramework::on_activate(const rclcpp_lifecycle::Sta
       }
     } catch (const std::exception & ex) {
       RCLCPP_ERROR(get_logger(), "Failed to activate module. Exception: %s", ex.what());
-      on_deactivate(state);
-      return nav2_util::CallbackReturn::FAILURE;
-    }
-  }
-
-  // Start the MIRA framework, only once: it keeps running while the node is deactivated
-  if (!started_) {
-    try {
-      framework_->start();
-      started_ = true;
-    } catch (const mira::Exception & ex) {
-      RCLCPP_ERROR(get_logger(), "Failed to start MIRA framework. Exception: %s", ex.what());
       on_deactivate(state);
       return nav2_util::CallbackReturn::FAILURE;
     }
@@ -251,6 +267,24 @@ nav2_util::CallbackReturn MiraFramework::on_shutdown(const rclcpp_lifecycle::Sta
   }
 
   return nav2_util::CallbackReturn::SUCCESS;
+}
+
+void MiraFramework::waitForRobotResource()
+{
+  scitos2_mira_utils::MiraAuthority probe(get_logger());
+  probe.setResource(robot_resource_);
+  try {
+    probe.checkin("scitos_mira_probe");
+    probe.start();
+    if (!probe.waitForResource(std::chrono::milliseconds(resource_timeout_))) {
+      RCLCPP_WARN(
+        get_logger(), "MIRA resource '%s' not available after %d ms, activating the modules anyway",
+        robot_resource_.c_str(), resource_timeout_);
+    }
+    probe.checkout();
+  } catch (const mira::Exception & ex) {
+    RCLCPP_ERROR(get_logger(), "Failed to wait for the MIRA resource. Exception: %s", ex.what());
+  }
 }
 
 diagnostic_msgs::msg::DiagnosticArray MiraFramework::createDiagnostics()
