@@ -15,6 +15,8 @@
 
 #include "scitos2_mira_utils/mira_authority.hpp"
 
+#include <chrono>
+
 #include "rclcpp/logging.hpp"
 
 namespace scitos2_mira_utils
@@ -50,6 +52,11 @@ void MiraAuthority::checkout()
   authority_->checkout();
 }
 
+void MiraAuthority::setTimeout(const std::chrono::milliseconds & timeout)
+{
+  timeout_ = mira::Duration::milliseconds(timeout.count());
+}
+
 bool MiraAuthority::callService(const std::string & service_name)
 {
   if (!isReady()) {
@@ -60,7 +67,13 @@ bool MiraAuthority::callService(const std::string & service_name)
 
   try {
     mira::RPCFuture<void> rpc = authority_->callService<void>(resource_, service_name);
-    rpc.timedWait(mira::Duration::seconds(1));
+    if (!rpc.timedWait(timeout_)) {
+      RCLCPP_WARN(
+        logger_, "MIRA service '%s' timed out after %ld ms",
+        service_name.c_str(),
+        static_cast<long>(timeout_.total_milliseconds()));  // NOLINT
+      return false;
+    }
     rpc.get();
     RCLCPP_DEBUG(logger_, "MIRA service '%s' called successfully", service_name.c_str());
   } catch (mira::XRPC & e) {
@@ -83,7 +96,13 @@ bool MiraAuthority::setParam(const std::string & param_name, const std::string &
   try {
     mira::RPCFuture<void> rpc = authority_->callService<void>(
       resource_ + "#builtin", std::string("setProperty"), param_name, value);
-    rpc.timedWait(mira::Duration::seconds(1));
+    if (!rpc.timedWait(timeout_)) {
+      RCLCPP_WARN(
+        logger_, "MIRA service '%s' timed out after %ld ms",
+        param_name.c_str(),
+        static_cast<long>(timeout_.total_milliseconds()));  // NOLINT
+      return false;
+    }
     rpc.get();
   } catch (mira::XRPC & e) {
     RCLCPP_WARN(
@@ -105,7 +124,13 @@ std::string MiraAuthority::getParam(const std::string & param_name)
   try {
     mira::RPCFuture<std::string> rpc = authority_->callService<std::string>(
       resource_ + "#builtin", std::string("getProperty"), param_name);
-    rpc.timedWait(mira::Duration::seconds(1));
+    if (!rpc.timedWait(timeout_)) {
+      RCLCPP_WARN(
+        logger_, "MIRA service '%s' timed out after %ld ms",
+        param_name.c_str(),
+        static_cast<long>(timeout_.total_milliseconds()));  // NOLINT
+      return "";
+    }
     return rpc.get();
   } catch (mira::XRPC & e) {
     RCLCPP_WARN(

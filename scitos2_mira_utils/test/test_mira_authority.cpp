@@ -17,8 +17,10 @@
 #include <fw/MicroUnit.h>
 
 #include <atomic>
+#include <chrono>
 #include <stdexcept>
 #include <string>
+#include <thread>
 
 #include "gtest/gtest.h"
 #include "scitos2_mira_utils/mira_authority.hpp"
@@ -71,11 +73,13 @@ public:
     r.method("noArgs", &FakeRobot::noArgs, this, "No-argument service");
     r.method("withArg", &FakeRobot::withArg, this, "Service with an argument", "x", "An int");
     r.method("fails", &FakeRobot::fails, this, "Service that always throws");
+    r.method("slow", &FakeRobot::slow, this, "Service that takes a while to answer");
   }
 
   void noArgs() {no_args_calls_++;}
   void withArg(int x) {last_arg_ = x;}
   void fails() {throw std::runtime_error("expected failure");}
+  void slow() {std::this_thread::sleep_for(std::chrono::milliseconds(500));}
 
   std::atomic<int> no_args_calls_{0};
   std::atomic<int> last_arg_{-1};
@@ -104,6 +108,29 @@ TEST(MiraAuthorityTest, servicesAndParamsAgainstARealResource) {
   EXPECT_FALSE(authority.callService<int>("fails", 1));
   EXPECT_FALSE(authority.setParam("NoSuchParam", "1"));
   EXPECT_EQ(authority.getParam("NoSuchParam"), "");
+
+  authority.checkout();
+}
+
+TEST(MiraAuthorityTest, slowServiceTimesOutInsteadOfBlocking) {
+  FakeRobot robot;
+  robot.checkin("/robot", "Robot");
+  robot.publishService(robot);
+  robot.start();
+
+  scitos2_mira_utils::MiraAuthority authority;
+  authority.checkin("test_mira_authority_timeout");
+  authority.start();
+  authority.setTimeout(std::chrono::milliseconds(50));
+
+  // The service needs 500 ms, so the call must give up after ~50 ms instead of waiting for it
+  auto begin = std::chrono::steady_clock::now();
+  EXPECT_FALSE(authority.callService("slow"));
+  EXPECT_LT(std::chrono::steady_clock::now() - begin, std::chrono::milliseconds(400));
+
+  // Let the robot finish the slow call before the next one
+  std::this_thread::sleep_for(std::chrono::milliseconds(600));
+  EXPECT_TRUE(authority.callService("noArgs"));
 
   authority.checkout();
 }

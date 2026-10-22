@@ -20,6 +20,7 @@
 #include <fw/Framework.h>
 #include <rpc/RPCError.h>
 
+#include <chrono>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -79,6 +80,14 @@ public:
   void checkout();
 
   /**
+   * @brief Set how long a service/parameter call waits for the answer of MIRA before giving up.
+   * Defaults to 1 second.
+   *
+   * @param timeout The timeout of the calls. Must be positive
+   */
+  void setTimeout(const std::chrono::milliseconds & timeout);
+
+  /**
    * @brief Subscribe to a MIRA channel.
    *
    * @tparam T The type of the channel data
@@ -92,7 +101,7 @@ public:
   }
 
   /**
-   * @brief Call a MIRA service with a timeout of 1 second, with no request payload.
+   * @brief Call a MIRA service, with no request payload.
    *
    * @param service_name The name of the service
    * @return bool If the service was called successfully
@@ -100,7 +109,7 @@ public:
   bool callService(const std::string & service_name);
 
   /**
-   * @brief Call a MIRA service with a timeout of 1 second.
+   * @brief Call a MIRA service.
    *
    * @tparam T The type of the request payload
    * @param service_name The name of the service
@@ -124,7 +133,12 @@ public:
       } else {
         rpc = authority_->callService<void>(resource_, service_name);
       }
-      rpc.timedWait(mira::Duration::seconds(1));
+      if (!rpc.timedWait(timeout_)) {
+        RCLCPP_WARN(
+          logger_, "MIRA service '%s' timed out after %ld ms", service_name.c_str(),
+          static_cast<long>(timeout_.total_milliseconds()));  // NOLINT
+        return false;
+      }
       rpc.get();
       RCLCPP_DEBUG(logger_, "MIRA service '%s' called successfully", service_name.c_str());
     } catch (mira::XRPC & e) {
@@ -162,6 +176,7 @@ protected:
 
   std::shared_ptr<mira::Authority> authority_;
   std::string resource_{"/robot/Robot"};
+  mira::Duration timeout_{mira::Duration::seconds(1)};
   rclcpp::Logger logger_;
 };
 

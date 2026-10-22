@@ -16,6 +16,9 @@
 // C++
 #include <limits>
 
+#include <algorithm>
+#include <chrono>
+
 #include "scitos2_modules/charger.hpp"
 
 namespace scitos2_modules
@@ -45,6 +48,13 @@ void Charger::configure(
     .set__description("The MIRA resource that exposes the robot's services and properties"));
   node->get_parameter(plugin_name_ + ".mira_robot_resource", mira_robot_resource);
   authority_->setResource(mira_robot_resource);
+  int mira_rpc_timeout = 1000;
+  declare_parameter_if_not_declared(
+    node, plugin_name_ + ".mira_rpc_timeout",
+    rclcpp::ParameterValue(mira_rpc_timeout), rcl_interfaces::msg::ParameterDescriptor()
+    .set__description("Milliseconds to wait for MIRA to answer a service or property call"));
+  node->get_parameter(plugin_name_ + ".mira_rpc_timeout", mira_rpc_timeout);
+  authority_->setTimeout(std::chrono::milliseconds(std::max(mira_rpc_timeout, 1)));
 
   declare_parameter_if_not_declared(
     node, plugin_name_ + ".robot_base_frame",
