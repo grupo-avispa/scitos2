@@ -21,11 +21,13 @@
 #include <robot/BatteryState.h>
 
 // C++
+#include <chrono>
 #include <memory>
 #include <mutex>
 #include <string>
 
 // ROS
+#include "diagnostic_updater/diagnostic_status_wrapper.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/battery_state.hpp"
 
@@ -80,6 +82,13 @@ public:
    */
   bool deactivate() override;
 
+  /**
+   * @brief Add the status of the module to the diagnostics of the node.
+   *
+   * @param array The diagnostic array to add the status to
+   */
+  void diagnostics(diagnostic_msgs::msg::DiagnosticArray & array) override;
+
 protected:
   /**
    * @brief Callback for battery data.
@@ -126,6 +135,13 @@ protected:
   scitos2_msgs::msg::ChargerStatus miraToRosChargerStatus(
     const uint8 & status, const mira::Time & timestamp);
 
+  /**
+   * @brief Fill the diagnostic status of the battery and the charger.
+   *
+   * @param stat Status to fill
+   */
+  void fillDiagnostics(diagnostic_updater::DiagnosticStatusWrapper & stat);
+
   // MIRA Authority
   std::shared_ptr<scitos2_mira_utils::MiraAuthority> authority_;
 
@@ -144,6 +160,18 @@ protected:
   // Design capacity of the battery in Ah. Depends on the physical battery model fitted to
   // the robot, there is no way to query it from MIRA.
   double design_capacity_{40.0};
+
+  // Time without data from MIRA after which the diagnostics report an error
+  static constexpr std::chrono::seconds kDataTimeout{5};
+  // Battery charge below which the diagnostics report a warning, in the range [0, 1]
+  static constexpr float kLowBatteryPercentage{0.15f};
+
+  // Guards the last data received, written by the MIRA callbacks and read by the updater
+  std::mutex diagnostics_mutex_;
+  sensor_msgs::msg::BatteryState last_battery_;
+  scitos2_msgs::msg::ChargerStatus last_charger_;
+  std::chrono::steady_clock::time_point last_battery_time_;
+  std::chrono::steady_clock::time_point last_charger_time_;
 };
 
 }  // namespace scitos2_modules

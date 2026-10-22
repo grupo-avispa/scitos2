@@ -104,6 +104,16 @@ public:
     return scitos2_modules::Drive::miraToRosOdometry(odometry, timestamp);
   }
 
+  void summarizeDriveStatus(uint32_t status, diagnostic_updater::DiagnosticStatusWrapper & stat)
+  {
+    scitos2_modules::Drive::summarizeDriveStatus(status, stat);
+  }
+
+  void fillDiagnostics(diagnostic_updater::DiagnosticStatusWrapper & stat)
+  {
+    scitos2_modules::Drive::fillDiagnostics(stat);
+  }
+
   geometry_msgs::msg::TwistStamped miraToRosTargetVelocity(
     const mira::Velocity2 & velocity, const mira::Time & timestamp)
   {
@@ -790,6 +800,48 @@ TEST(ScitosDriveTest, barrierStatus) {
   EXPECT_EQ(ros_status.header.stamp, rclcpp::Time(time.toUnixNS()));
   EXPECT_TRUE(ros_status.barrier_stopped);
   EXPECT_EQ(ros_status.last_detection_stamp, rclcpp::Time(time.toUnixNS()));
+}
+
+TEST(ScitosDriveTest, diagnosticsSummarizeTheDriveStatus) {
+  using diagnostic_msgs::msg::DiagnosticStatus;
+  auto module = std::make_shared<DriveFixture>();
+
+  // Nothing raised
+  diagnostic_updater::DiagnosticStatusWrapper stat;
+  module->summarizeDriveStatus(1u, stat);
+  EXPECT_EQ(stat.level, DiagnosticStatus::OK);
+  EXPECT_EQ(stat.message, "Drive OK");
+
+  // A bumper is a warning and the message names it
+  module->summarizeDriveStatus(1u << 10, stat);
+  EXPECT_EQ(stat.level, DiagnosticStatus::WARN);
+  EXPECT_NE(stat.message.find("bumper_front_status"), std::string::npos);
+
+  // The worst level wins
+  module->summarizeDriveStatus((1u << 10) | (1u << 8), stat);
+  EXPECT_EQ(stat.level, DiagnosticStatus::ERROR);
+  EXPECT_NE(stat.message.find("emergency_stop_status"), std::string::npos);
+}
+
+TEST(ScitosDriveTest, diagnosticsReportMissingData) {
+  using diagnostic_msgs::msg::DiagnosticStatus;
+  rclcpp::init(0, nullptr);
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testDriveDiagnostics");
+  auto module = std::make_shared<DriveFixture>();
+  module->configure(node, "test");
+
+  diagnostic_updater::DiagnosticStatusWrapper stat;
+  module->fillDiagnostics(stat);
+  EXPECT_EQ(stat.level, DiagnosticStatus::OK);
+
+  // Active, but MIRA has not published any drive status
+  module->activate();
+  module->fillDiagnostics(stat);
+  EXPECT_EQ(stat.level, DiagnosticStatus::ERROR);
+
+  module->deactivate();
+  module->cleanup();
+  rclcpp::shutdown();
 }
 
 TEST(ScitosDriveTest, targetVelocity) {

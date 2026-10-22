@@ -52,6 +52,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(nav2_costmap_2d REQUIRED)
+find_package(diagnostic_updater REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
@@ -79,6 +80,7 @@ target_include_directories(scitos2_charger PUBLIC
 )
 target_link_libraries(scitos2_charger
   PUBLIC
+  diagnostic_updater::diagnostic_updater
   rclcpp::rclcpp
   scitos2_core::scitos2_core
   scitos2_mira_utils::scitos2_mira_utils
@@ -112,6 +114,7 @@ target_include_directories(scitos2_drive PUBLIC
 )
 target_link_libraries(scitos2_drive
   PUBLIC
+  diagnostic_updater::diagnostic_updater
   ${geometry_msgs_TARGETS}
   ${nav_msgs_TARGETS}
   rclcpp::rclcpp
@@ -150,6 +153,7 @@ target_include_directories(scitos2_imu PUBLIC
 )
 target_link_libraries(scitos2_imu
   PUBLIC
+  diagnostic_updater::diagnostic_updater
   ${geometry_msgs_TARGETS}
   rclcpp::rclcpp
   scitos2_core::scitos2_core
@@ -203,6 +207,7 @@ ament_export_libraries(
   scitos2_imu
 )
 ament_export_dependencies(
+  diagnostic_updater
   geometry_msgs
   nav2_costmap_2d
   nav_msgs

@@ -19,6 +19,7 @@
 #include <memory>
 #include <string>
 
+#include "diagnostic_msgs/msg/diagnostic_array.hpp"
 #include "rcl_interfaces/msg/parameter_descriptor.hpp"
 #include "rclcpp/parameter_value.hpp"
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
@@ -72,6 +73,18 @@ public:
    * @return bool True if deactivation succeeded cleanly, false otherwise.
    */
   virtual bool deactivate() = 0;
+
+  /**
+   * @brief Method to add the status of the module to the diagnostics of the node. It is called
+   * periodically while the node is active, so it must not block. Modules without anything to
+   * report keep the default, which adds nothing.
+   *
+   * @param array The diagnostic array to add the statuses of the module to
+   */
+  virtual void diagnostics(diagnostic_msgs::msg::DiagnosticArray & array)
+  {
+    (void)array;
+  }
 
 protected:
   /**

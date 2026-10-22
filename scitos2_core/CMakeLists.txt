@@ -50,6 +50,7 @@ endif()
 # ###############################################
 # # Find ament macros and libraries
 find_package(ament_cmake REQUIRED)
+find_package(diagnostic_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 
@@ -66,6 +67,7 @@ target_include_directories(scitos2_core
   "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 target_link_libraries(scitos2_core INTERFACE
+  ${diagnostic_msgs_TARGETS}
   ${std_msgs_TARGETS}
   rclcpp::rclcpp
   rclcpp_lifecycle::rclcpp_lifecycle
@@ -101,6 +103,7 @@ endif()
 # ##################################
 ament_export_include_directories(include/${PROJECT_NAME})
 ament_export_dependencies(
+  diagnostic_msgs
   rclcpp
   rclcpp_lifecycle
 )

@@ -22,12 +22,14 @@
 
 // C++
 #include <atomic>
+#include <chrono>
 #include <cstdint>
 #include <memory>
 #include <mutex>
 #include <string>
 
 // ROS
+#include "diagnostic_updater/diagnostic_status_wrapper.hpp"
 #include "geometry_msgs/msg/vector3.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/imu.hpp"
@@ -81,6 +83,13 @@ public:
    */
   bool deactivate() override;
 
+  /**
+   * @brief Add the status of the module to the diagnostics of the node.
+   *
+   * @param array The diagnostic array to add the status to
+   */
+  void diagnostics(diagnostic_msgs::msg::DiagnosticArray & array) override;
+
 protected:
   /**
    * @brief Callback for Acceleration data. The units and ranges are +- 2g.
@@ -118,6 +127,13 @@ protected:
    */
   void publishIfComplete();
 
+  /**
+   * @brief Fill the diagnostic status of the IMU.
+   *
+   * @param stat Status to fill
+   */
+  void fillDiagnostics(diagnostic_updater::DiagnosticStatusWrapper & stat);
+
   // MIRA Authority
   std::shared_ptr<scitos2_mira_utils::MiraAuthority> authority_;
 
@@ -132,6 +148,11 @@ protected:
   bool has_acceleration_{false};
   bool has_gyroscope_{false};
   int64_t latest_stamp_ns_{0};
+  std::chrono::steady_clock::time_point last_publish_time_;
+  uint64_t published_samples_{0};
+
+  // Time without data from MIRA after which the diagnostics report an error
+  static constexpr std::chrono::seconds kDataTimeout{2};
 
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::Imu>>
   imu_pub_;

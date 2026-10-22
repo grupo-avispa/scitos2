@@ -36,6 +36,13 @@ public:
   {
     return scitos2_modules::IMU::miraToRosGyroscope(gyroscope);
   }
+
+  using scitos2_modules::IMU::diagnostics;
+
+  void fillDiagnostics(diagnostic_updater::DiagnosticStatusWrapper & stat)
+  {
+    scitos2_modules::IMU::fillDiagnostics(stat);
+  }
 };
 
 // Publish one acceleration and one angular velocity sample through the MIRA channels
@@ -67,6 +74,55 @@ TEST(ScitosIMUTest, configure) {
   module->deactivate();
   module->cleanup();
   rclcpp::shutdown();
+}
+
+TEST(ScitosIMUTest, diagnosticsFollowTheData) {
+  using diagnostic_msgs::msg::DiagnosticStatus;
+  rclcpp::init(0, nullptr);
+  mira::Authority authority("/", "test_imu_diagnostics");
+  authority.start();
+  auto acc_pub = authority.publish<mira::Point3f>("/robot/Acceleration");
+  auto gyro_pub = authority.publish<mira::Point3f>("/robot/Gyroscope");
+
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testIMUDiagnostics");
+  auto module = std::make_shared<IMUFixture>();
+  module->configure(node, "test");
+
+  // Inactive modules are not an error
+  diagnostic_updater::DiagnosticStatusWrapper stat;
+  module->fillDiagnostics(stat);
+  EXPECT_EQ(stat.level, DiagnosticStatus::OK);
+
+  // Active without data
+  module->activate();
+  module->fillDiagnostics(stat);
+  EXPECT_EQ(stat.level, DiagnosticStatus::ERROR);
+
+  // Data flowing
+  publishImuSample(acc_pub, gyro_pub);
+  auto start = std::chrono::steady_clock::now();
+  while (stat.level != DiagnosticStatus::OK &&
+    std::chrono::steady_clock::now() - start < std::chrono::seconds(5))
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    module->fillDiagnostics(stat);
+  }
+  EXPECT_EQ(stat.level, DiagnosticStatus::OK);
+
+  module->deactivate();
+  module->cleanup();
+  rclcpp::shutdown();
+}
+
+TEST(ScitosIMUTest, diagnosticsAddTheStatusOfTheModule) {
+  auto module = std::make_shared<IMUFixture>();
+
+  diagnostic_msgs::msg::DiagnosticArray array;
+  module->diagnostics(array);
+
+  ASSERT_EQ(array.status.size(), 1u);
+  EXPECT_EQ(array.status[0].name, "IMU");
+  EXPECT_EQ(array.status[0].hardware_id, "scitos2");
 }
 
 TEST(ScitosIMUTest, dynamicParameters) {

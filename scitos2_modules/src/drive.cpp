@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <array>
+#include <string>
 #include <chrono>
 #include <utility>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
@@ -30,6 +31,45 @@
 
 namespace scitos2_modules
 {
+
+namespace
+{
+
+using diagnostic_msgs::msg::DiagnosticStatus;
+
+// Flags of the drive status that are not part of a normal operation, with the level that they
+// deserve. The rest of the flags (modes, laser fields...) are only reported as values
+struct DriveStatusFlag
+{
+  DriveStatusBit bit;
+  const char * name;
+  uint8_t level;
+};
+
+const std::array<DriveStatusFlag, 20> kDriveStatusFlags = {{
+  {DriveStatusBit::EMERGENCY_STOP_STATUS, "emergency_stop_status", DiagnosticStatus::ERROR},
+  {DriveStatusBit::ERROR_SIFAS_COMMUNICATION, "error_sifas_communication", DiagnosticStatus::ERROR},
+  {DriveStatusBit::ERROR_SIFAS_INTERNAL, "error_sifas_internal", DiagnosticStatus::ERROR},
+  {DriveStatusBit::ERROR_MOTOR_LEFT, "error_motor_left", DiagnosticStatus::ERROR},
+  {DriveStatusBit::ERROR_MOTOR_RIGHT, "error_motor_right", DiagnosticStatus::ERROR},
+  {DriveStatusBit::ERROR_FIRMARE, "error_firmare", DiagnosticStatus::ERROR},
+  {DriveStatusBit::RELAY_ACTIVE, "relay_active", DiagnosticStatus::ERROR},
+  {DriveStatusBit::MODE_FORCED_STOPPED, "mode_forced_stopped", DiagnosticStatus::WARN},
+  {DriveStatusBit::BUMPER_FRONT_STATUS, "bumper_front_status", DiagnosticStatus::WARN},
+  {DriveStatusBit::BUMPER_REAR_STATUS, "bumper_rear_status", DiagnosticStatus::WARN},
+  {DriveStatusBit::SOFTWARE_SAFE_STOP, "software_safe_stop", DiagnosticStatus::WARN},
+  {DriveStatusBit::ERROR_BATTERY_LOW, "error_battery_low", DiagnosticStatus::WARN},
+  {DriveStatusBit::ERROR_TEMPERATURE_HIGH, "error_temperature_high", DiagnosticStatus::WARN},
+  {DriveStatusBit::TEMPERATURE_WARNING, "temperature_warning", DiagnosticStatus::WARN},
+  {DriveStatusBit::ERROR_STALL_MODE, "error_stall_mode", DiagnosticStatus::WARN},
+  {DriveStatusBit::TRACTION_LOSS, "traction_loss", DiagnosticStatus::WARN},
+  {DriveStatusBit::ERROR_ROTATION_TOO_HIGH, "error_rotation_too_high", DiagnosticStatus::WARN},
+  {DriveStatusBit::ERROR_MOTOR_ACCELERATION, "error_motor_acceleration", DiagnosticStatus::WARN},
+  {DriveStatusBit::LIMITED_PWM_LEFT, "limited_pwm_left", DiagnosticStatus::WARN},
+  {DriveStatusBit::LIMITED_PWM_RIGHT, "limited_pwm_right", DiagnosticStatus::WARN},
+}};
+
+}  // namespace
 
 using rcl_interfaces::msg::ParameterType;
 using std::placeholders::_1;
@@ -440,6 +480,12 @@ void Drive::driveStatusCallback(mira::ChannelRead<uint32> data)
   drive_status_pub_->publish(drive_status_msg);
   emergency_stop_pub_->publish(emergency_stop_msg);
 
+  {
+    std::lock_guard<std::mutex> lock(status_mutex_);
+    last_status_ = data->value();
+    last_status_time_ = std::chrono::steady_clock::now();
+  }
+
   emergency_stop_activated_ = emergency_stop_msg.emergency_stop_activated;
 }
 
@@ -704,6 +750,62 @@ geometry_msgs::msg::TransformStamped Drive::miraToRosTf(
   tf_msg.transform.translation.z = 0.0;
   tf_msg.transform.rotation = tf2::toMsg(tf2::Quaternion({0, 0, 1}, odometry.pose.phi()));
   return tf_msg;
+}
+
+void Drive::diagnostics(diagnostic_msgs::msg::DiagnosticArray & array)
+{
+  diagnostic_updater::DiagnosticStatusWrapper stat;
+  stat.name = "Drive";
+  stat.hardware_id = "scitos2";
+  fillDiagnostics(stat);
+  array.status.push_back(stat);
+}
+
+void Drive::fillDiagnostics(diagnostic_updater::DiagnosticStatusWrapper & stat)
+{
+  uint32_t status;
+  std::chrono::steady_clock::time_point status_time;
+  {
+    std::lock_guard<std::mutex> lock(status_mutex_);
+    status = last_status_;
+    status_time = last_status_time_;
+  }
+
+  if (!is_active_) {
+    stat.summary(DiagnosticStatus::OK, "Module is not active");
+  } else if (status_time == std::chrono::steady_clock::time_point{} ||
+    std::chrono::steady_clock::now() - status_time > kStatusTimeout)
+  {
+    stat.summary(DiagnosticStatus::ERROR, "No drive status received from MIRA");
+  } else {
+    summarizeDriveStatus(status, stat);
+  }
+}
+
+void Drive::summarizeDriveStatus(
+  uint32_t status, diagnostic_updater::DiagnosticStatusWrapper & stat)
+{
+  uint8_t level = DiagnosticStatus::OK;
+  std::string raised;
+  for (const auto & flag : kDriveStatusFlags) {
+    if (!isDriveStatusBitSet(status, flag.bit)) {
+      continue;
+    }
+    level = std::max(level, flag.level);
+    raised += (raised.empty() ? "" : ", ") + std::string(flag.name);
+  }
+  stat.summary(level, raised.empty() ? "Drive OK" : raised);
+
+  for (const auto & flag : kDriveStatusFlags) {
+    stat.add(flag.name, isDriveStatusBitSet(status, flag.bit));
+  }
+  stat.add("mode_normal", isDriveStatusBitSet(status, DriveStatusBit::MODE_NORMAL));
+  stat.add(
+    "safety_field_front_laser",
+    isDriveStatusBitSet(status, DriveStatusBit::SAFETY_FIELD_FRONT_LASER));
+  stat.add(
+    "safety_field_rear_laser",
+    isDriveStatusBitSet(status, DriveStatusBit::SAFETY_FIELD_REAR_LASER));
 }
 
 geometry_msgs::msg::TwistStamped Drive::miraToRosTargetVelocity(

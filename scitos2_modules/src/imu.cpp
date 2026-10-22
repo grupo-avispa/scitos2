@@ -15,6 +15,7 @@
 
 // C++
 #include <algorithm>
+#include <chrono>
 #include <cstdint>
 #include <limits>
 
@@ -158,6 +159,41 @@ void IMU::publishIfComplete()
   imu_pub_->publish(imu_msg_);
   has_acceleration_ = false;
   has_gyroscope_ = false;
+  last_publish_time_ = std::chrono::steady_clock::now();
+  ++published_samples_;
+}
+
+void IMU::diagnostics(diagnostic_msgs::msg::DiagnosticArray & array)
+{
+  diagnostic_updater::DiagnosticStatusWrapper stat;
+  stat.name = "IMU";
+  stat.hardware_id = "scitos2";
+  fillDiagnostics(stat);
+  array.status.push_back(stat);
+}
+
+void IMU::fillDiagnostics(diagnostic_updater::DiagnosticStatusWrapper & stat)
+{
+  using diagnostic_msgs::msg::DiagnosticStatus;
+
+  std::chrono::steady_clock::time_point last_publish;
+  uint64_t samples;
+  {
+    std::lock_guard<std::mutex> lock_data(mutex_);
+    last_publish = last_publish_time_;
+    samples = published_samples_;
+  }
+
+  if (!is_active_) {
+    stat.summary(DiagnosticStatus::OK, "Module is not active");
+  } else if (last_publish == std::chrono::steady_clock::time_point{} ||
+    std::chrono::steady_clock::now() - last_publish > kDataTimeout)
+  {
+    stat.summary(DiagnosticStatus::ERROR, "No IMU data received from MIRA");
+  } else {
+    stat.summary(DiagnosticStatus::OK, "IMU OK");
+  }
+  stat.add("Samples published", samples);
 }
 
 geometry_msgs::msg::Vector3 IMU::miraToRosAcceleration(const mira::Point3f & acceleration)

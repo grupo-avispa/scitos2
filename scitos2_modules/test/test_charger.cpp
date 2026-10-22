@@ -40,6 +40,11 @@ public:
   {
     return scitos2_modules::Charger::miraToRosChargerStatus(status, timestamp);
   }
+
+  void fillDiagnostics(diagnostic_updater::DiagnosticStatusWrapper & stat)
+  {
+    scitos2_modules::Charger::fillDiagnostics(stat);
+  }
 };
 
 TEST(ScitosChargerTest, configure) {
@@ -52,6 +57,44 @@ TEST(ScitosChargerTest, configure) {
   module->activate();
 
   // Cleaning up
+  module->deactivate();
+  module->cleanup();
+  rclcpp::shutdown();
+}
+
+TEST(ScitosChargerTest, diagnosticsFollowTheBatteryData) {
+  using diagnostic_msgs::msg::DiagnosticStatus;
+  rclcpp::init(0, nullptr);
+  mira::Authority authority("/", "test_charger_diagnostics");
+  authority.start();
+  auto publisher = authority.publish<mira::robot::BatteryState>("/robot/charger/Battery");
+
+  auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testChargerDiagnostics");
+  auto module = std::make_shared<ChargerFixture>();
+  module->configure(node, "test");
+  module->activate();
+
+  // Nothing has been received yet
+  diagnostic_updater::DiagnosticStatusWrapper stat;
+  module->fillDiagnostics(stat);
+  EXPECT_EQ(stat.level, DiagnosticStatus::ERROR);
+
+  // Publish a low battery and wait for it to reach the module
+  mira::robot::BatteryState battery;
+  battery.voltage = 24.0;
+  battery.lifePercent = 5;
+  auto writer = publisher.write();
+  writer->value() = battery;
+  writer.finish();
+  auto start = std::chrono::steady_clock::now();
+  while (stat.level == DiagnosticStatus::ERROR &&
+    std::chrono::steady_clock::now() - start < std::chrono::seconds(5))
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    module->fillDiagnostics(stat);
+  }
+  EXPECT_EQ(stat.level, DiagnosticStatus::WARN);
+
   module->deactivate();
   module->cleanup();
   rclcpp::shutdown();

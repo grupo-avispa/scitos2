@@ -306,6 +306,10 @@ diagnostic_msgs::msg::DiagnosticArray MiraFramework::createDiagnostics()
   }
 
   msg.status.push_back(status);
+
+  for (const auto & module : modules_) {
+    module.second->diagnostics(msg);
+  }
   return msg;
 }
 

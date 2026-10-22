@@ -72,7 +72,14 @@ public:
     return behavior_ != Behavior::FAIL_ACTIVATE;
   }
 
-  virtual bool deactivate() {return behavior_ != Behavior::FAIL_DEACTIVATE;}
+  bool deactivate() override {return behavior_ != Behavior::FAIL_DEACTIVATE;}
+
+  void diagnostics(diagnostic_msgs::msg::DiagnosticArray & array) override
+  {
+    diagnostic_msgs::msg::DiagnosticStatus status;
+    status.name = "Dummy module";
+    array.status.push_back(status);
+  }
 
 private:
   Behavior behavior_;
@@ -264,6 +271,10 @@ TEST(ScitosMiraFrameworkTest, diagnosticsArePublishedWhileActive) {
 
   ASSERT_TRUE(received);
   EXPECT_EQ(received->status[0].level, diagnostic_msgs::msg::DiagnosticStatus::OK);
+
+  // The status of every module is published next to the one of the framework
+  ASSERT_EQ(received->status.size(), 2u);
+  EXPECT_EQ(received->status[1].name, "Dummy module");
 
   executor.remove_node(node->get_node_base_interface());
   node->deactivate();

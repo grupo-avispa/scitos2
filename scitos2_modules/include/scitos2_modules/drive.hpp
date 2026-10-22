@@ -22,12 +22,15 @@
 
 // C++
 #include <atomic>
+#include <chrono>
+#include <cstdint>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <vector>
 
 // ROS
+#include "diagnostic_updater/diagnostic_status_wrapper.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rcl_interfaces/msg/set_parameters_result.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
@@ -100,6 +103,13 @@ public:
    * @brief Deactivate the module state machine.
    */
   bool deactivate() override;
+
+  /**
+   * @brief Add the status of the module to the diagnostics of the node.
+   *
+   * @param array The diagnostic array to add the status to
+   */
+  void diagnostics(diagnostic_msgs::msg::DiagnosticArray & array) override;
 
 protected:
   /**
@@ -353,6 +363,22 @@ protected:
    */
   bool setDriveParam(const std::string & property, const std::string & value);
 
+  /**
+   * @brief Fill the diagnostic status of the drive from the last drive status received.
+   *
+   * @param stat Status to fill
+   */
+  void fillDiagnostics(diagnostic_updater::DiagnosticStatusWrapper & stat);
+
+  /**
+   * @brief Summarize a drive status word: the worst level of the flags that are raised and the
+   * value of the rest.
+   *
+   * @param status Drive status word from MIRA
+   * @param stat Status to fill
+   */
+  void summarizeDriveStatus(uint32_t status, diagnostic_updater::DiagnosticStatusWrapper & stat);
+
   // MIRA Authority
   std::shared_ptr<scitos2_mira_utils::MiraAuthority> authority_;
 
@@ -413,6 +439,13 @@ protected:
   std::string footprint_;
   double robot_radius_;
   std::vector<geometry_msgs::msg::Point> unpadded_footprint_;
+
+  // Diagnostics
+  static constexpr std::chrono::seconds kStatusTimeout{2};
+  // Guards the last drive status, written by the MIRA callback and read by the updater
+  std::mutex status_mutex_;
+  uint32_t last_status_{0};
+  std::chrono::steady_clock::time_point last_status_time_;
 
   // TF
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;

@@ -14,10 +14,9 @@
 // limitations under the License.
 
 // C++
-#include <limits>
-
 #include <algorithm>
 #include <chrono>
+#include <limits>
 
 #include "scitos2_modules/charger.hpp"
 
@@ -134,12 +133,76 @@ void Charger::batteryDataCallback(mira::ChannelRead<mira::robot::BatteryState> d
 {
   sensor_msgs::msg::BatteryState battery = miraToRosBatteryState(*data, data->timestamp);
   battery_pub_->publish(battery);
+
+  std::lock_guard<std::mutex> lock(diagnostics_mutex_);
+  last_battery_ = battery;
+  last_battery_time_ = std::chrono::steady_clock::now();
 }
 
 void Charger::chargerStatusCallback(mira::ChannelRead<uint8> data)
 {
   scitos2_msgs::msg::ChargerStatus charger = miraToRosChargerStatus(*data, data->timestamp);
   charger_pub_->publish(charger);
+
+  std::lock_guard<std::mutex> lock(diagnostics_mutex_);
+  last_charger_ = charger;
+  last_charger_time_ = std::chrono::steady_clock::now();
+}
+
+void Charger::diagnostics(diagnostic_msgs::msg::DiagnosticArray & array)
+{
+  diagnostic_updater::DiagnosticStatusWrapper stat;
+  stat.name = "Charger";
+  stat.hardware_id = "scitos2";
+  fillDiagnostics(stat);
+  array.status.push_back(stat);
+}
+
+void Charger::fillDiagnostics(diagnostic_updater::DiagnosticStatusWrapper & stat)
+{
+  using diagnostic_msgs::msg::DiagnosticStatus;
+
+  sensor_msgs::msg::BatteryState battery;
+  scitos2_msgs::msg::ChargerStatus charger;
+  std::chrono::steady_clock::time_point battery_time, charger_time;
+  {
+    std::lock_guard<std::mutex> lock(diagnostics_mutex_);
+    battery = last_battery_;
+    charger = last_charger_;
+    battery_time = last_battery_time_;
+    charger_time = last_charger_time_;
+  }
+
+  const auto now = std::chrono::steady_clock::now();
+  const bool has_battery = battery_time != std::chrono::steady_clock::time_point{} &&
+    now - battery_time < kDataTimeout;
+  const bool has_charger = charger_time != std::chrono::steady_clock::time_point{} &&
+    now - charger_time < kDataTimeout;
+
+  if (!has_battery) {
+    stat.summary(DiagnosticStatus::ERROR, "No battery data received from MIRA");
+  } else if (has_charger && charger.internal_error_flag) {
+    stat.summary(DiagnosticStatus::ERROR, "Charger internal error");
+  } else if (has_charger && charger.empty) {
+    stat.summary(DiagnosticStatus::ERROR, "Battery empty");
+  } else if (battery.percentage < kLowBatteryPercentage) {
+    stat.summary(DiagnosticStatus::WARN, "Battery low");
+  } else {
+    stat.summary(DiagnosticStatus::OK, "Battery OK");
+  }
+
+  if (has_battery) {
+    stat.add("Voltage (V)", battery.voltage);
+    stat.add("Current (A)", battery.current);
+    stat.add("Percentage", battery.percentage);
+    stat.add("Charging", battery.power_supply_status ==
+      sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_CHARGING);
+  }
+  if (has_charger) {
+    stat.add("Charger full", charger.full);
+    stat.add("Charger derating", charger.derating);
+    stat.add("Charger internal error", charger.internal_error_flag);
+  }
 }
 
 bool Charger::savePersistentErrors(
