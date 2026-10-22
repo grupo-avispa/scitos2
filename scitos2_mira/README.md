@@ -46,6 +46,26 @@ A lifecycle node that interfaces with the MIRA framework.
 
 	Milliseconds to wait for that resource. If it does not appear the modules are activated anyway.
 
+* **`mira_port`** (int, default: 0)
+
+	Port where the MIRA framework listens, so that `miracenter` or `mirainspect` can connect to the robot while ROS is running (`mirainspect channel list -k<port>`). 0 disables it.
+
+* **`mira_known_frameworks`** (string array, default: [])
+
+	Other MIRA frameworks to connect to, as `host:port`.
+
+* **`mira_variables`** (string array, default: [])
+
+	Variables of the MIRA configuration, as `name=value`. The first definition of a variable wins.
+
+* **`save_processed_config`** (string, default: "")
+
+	File where MIRA saves the configuration once its variables are resolved, to debug it.
+
+* **`mira_log_level`** (int, default: -1)
+
+	Severity of the messages of MIRA, from 0 (critical) to 5 (trace). -1 follows the log level of the node.
+
 * **`scitos_config`** (string, default: "")
 
 	Specifies the path to the SCITOS robot configuration file in XML format. This parameter should point to your SCITOSDriver.xml robot config file, which should have been installed during the MIRA software installation. Typically, this file is located in the ``/opt/SCITOS/ directory``.
