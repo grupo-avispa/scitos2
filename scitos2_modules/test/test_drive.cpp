@@ -104,6 +104,12 @@ public:
     return scitos2_modules::Drive::miraToRosOdometry(odometry, timestamp);
   }
 
+  geometry_msgs::msg::TwistStamped miraToRosTargetVelocity(
+    const mira::Velocity2 & velocity, const mira::Time & timestamp)
+  {
+    return scitos2_modules::Drive::miraToRosTargetVelocity(velocity, timestamp);
+  }
+
   geometry_msgs::msg::TransformStamped miraToRosTf(
     const mira::robot::Odometry2 & odometry, const mira::Time & timestamp)
   {
@@ -784,6 +790,68 @@ TEST(ScitosDriveTest, barrierStatus) {
   EXPECT_EQ(ros_status.header.stamp, rclcpp::Time(time.toUnixNS()));
   EXPECT_TRUE(ros_status.barrier_stopped);
   EXPECT_EQ(ros_status.last_detection_stamp, rclcpp::Time(time.toUnixNS()));
+}
+
+TEST(ScitosDriveTest, targetVelocity) {
+  auto module = std::make_shared<DriveFixture>();
+  module->setBaseFrame("base_test");
+  mira::Time time = mira::Time().now();
+
+  auto twist = module->miraToRosTargetVelocity(mira::Velocity2(0.5, 0.1, -0.25), time);
+
+  EXPECT_EQ(twist.header.frame_id, "base_test");
+  EXPECT_EQ(twist.header.stamp, rclcpp::Time(time.toUnixNS()));
+  EXPECT_FLOAT_EQ(twist.twist.linear.x, 0.5);
+  EXPECT_FLOAT_EQ(twist.twist.linear.y, 0.1);
+  EXPECT_FLOAT_EQ(twist.twist.angular.z, -0.25);
+}
+
+TEST(ScitosDriveTest, targetVelocityPublisher) {
+  rclcpp::init(0, nullptr);
+  mira::Authority authority("/", "test_drive_target_velocity");
+  authority.start();
+  auto publisher = authority.publish<mira::Velocity2>("/robot/TargetVelocity");
+
+  auto drive_node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testDriveTarget");
+  auto module = std::make_shared<DriveFixture>();
+  module->configure(drive_node, "test");
+  module->activate();
+  auto drive_thread = std::thread([&]() {rclcpp::spin(drive_node->get_node_base_interface());});
+
+  auto sub_node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testDriveTargetSub");
+  sub_node->configure();
+  sub_node->activate();
+  std::atomic<bool> received_msg{false};
+  std::atomic<double> linear_x{0.0};
+  auto sub = sub_node->create_subscription<geometry_msgs::msg::TwistStamped>(
+    "cmd_vel_applied", 1,
+    [&](const geometry_msgs::msg::TwistStamped & msg) {
+      linear_x = msg.twist.linear.x;
+      received_msg = true;
+    });
+  auto sub_thread = std::thread([&]() {rclcpp::spin(sub_node->get_node_base_interface());});
+
+  auto writer = publisher.write();
+  writer->value() = mira::Velocity2(0.4, 0.0, 0.0);
+  writer.finish();
+
+  // Wait for the message to be received
+  auto start = std::chrono::steady_clock::now();
+  while (!received_msg && std::chrono::steady_clock::now() - start < std::chrono::seconds(5)) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+
+  EXPECT_TRUE(received_msg);
+  EXPECT_FLOAT_EQ(linear_x, 0.4);
+
+  module->deactivate();
+  sub_node->deactivate();
+  module->cleanup();
+  sub_node->cleanup();
+  sub_node->shutdown();
+  rclcpp::shutdown();
+  drive_thread.join();
+  sub_thread.join();
 }
 
 TEST(ScitosDriveTest, odometryPublisher) {

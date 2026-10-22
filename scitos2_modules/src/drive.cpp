@@ -170,6 +170,8 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
     odom_topic_, rclcpp::SystemDefaultsQoS());
   rfid_pub_ = node->create_publisher<scitos2_msgs::msg::RfidTag>(
     "rfid", rclcpp::SystemDefaultsQoS());
+  cmd_vel_applied_pub_ = node->create_publisher<geometry_msgs::msg::TwistStamped>(
+    "cmd_vel_applied", rclcpp::SystemDefaultsQoS());
 
   // Create MIRA subscribers
   authority_->subscribe<mira::robot::Odometry2>(
@@ -182,6 +184,8 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
     "/robot/DriveStatusPlain", std::bind(&Drive::driveStatusCallback, this, _1));
   authority_->subscribe<uint64>(
     "/robot/RFIDUserTag", std::bind(&Drive::rfidStatusCallback, this, _1));
+  authority_->subscribe<mira::Velocity2>(
+    "/robot/TargetVelocity", std::bind(&Drive::targetVelocityCallback, this, _1));
 
   // Create ROS subscribers
   cmd_vel_sub_ = node->create_subscription<geometry_msgs::msg::TwistStamped>(
@@ -239,6 +243,7 @@ void Drive::cleanup()
   mileage_pub_.reset();
   odometry_pub_.reset();
   rfid_pub_.reset();
+  cmd_vel_applied_pub_.reset();
   change_force_service_.reset();
   emergency_stop_service_.reset();
   enable_motors_service_.reset();
@@ -262,6 +267,7 @@ bool Drive::activate()
   mileage_pub_->on_activate();
   odometry_pub_->on_activate();
   rfid_pub_->on_activate();
+  cmd_vel_applied_pub_->on_activate();
 
   try {
     authority_->start();
@@ -294,6 +300,7 @@ bool Drive::deactivate()
   mileage_pub_->on_deactivate();
   odometry_pub_->on_deactivate();
   rfid_pub_->on_deactivate();
+  cmd_vel_applied_pub_->on_deactivate();
   return true;
 }
 
@@ -452,6 +459,15 @@ void Drive::rfidStatusCallback(mira::ChannelRead<uint64> data)
   scitos2_msgs::msg::RfidTag tag_msg;
   tag_msg.tag = data->value();
   rfid_pub_->publish(tag_msg);
+}
+
+void Drive::targetVelocityCallback(mira::ChannelRead<mira::Velocity2> data)
+{
+  if (!is_active_) {
+    return;
+  }
+
+  cmd_vel_applied_pub_->publish(miraToRosTargetVelocity(data->value(), data->timestamp));
 }
 
 void Drive::velocityCommandCallback(const geometry_msgs::msg::TwistStamped & msg)
@@ -688,6 +704,21 @@ geometry_msgs::msg::TransformStamped Drive::miraToRosTf(
   tf_msg.transform.translation.z = 0.0;
   tf_msg.transform.rotation = tf2::toMsg(tf2::Quaternion({0, 0, 1}, odometry.pose.phi()));
   return tf_msg;
+}
+
+geometry_msgs::msg::TwistStamped Drive::miraToRosTargetVelocity(
+  const mira::Velocity2 & velocity, const mira::Time & timestamp)
+{
+  geometry_msgs::msg::TwistStamped twist;
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    twist.header.frame_id = robot_base_frame_;
+  }
+  twist.header.stamp = rclcpp::Time(timestamp.toUnixNS());
+  twist.twist.linear.x = velocity.x();
+  twist.twist.linear.y = velocity.y();
+  twist.twist.angular.z = velocity.phi();
+  return twist;
 }
 
 scitos2_msgs::msg::DriveStatus Drive::miraToRosDriveStatus(

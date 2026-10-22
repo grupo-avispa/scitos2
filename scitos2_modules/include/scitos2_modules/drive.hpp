@@ -138,6 +138,13 @@ protected:
   void rfidStatusCallback(mira::ChannelRead<uint64> data);
 
   /**
+   * @brief Callback executed when the velocity that the robot is really following is received.
+   *
+   * @param data Target velocity of the robot
+   */
+  void targetVelocityCallback(mira::ChannelRead<mira::Velocity2> data);
+
+  /**
    * @brief Callback executed when velocity command is received.
    *
    * @param msg Velocity command
@@ -300,6 +307,16 @@ protected:
     const uint32 & status, const mira::Time & timestamp);
 
   /**
+   * @brief Convert the MIRA target velocity to a ROS twist.
+   *
+   * @param velocity Target velocity from MIRA
+   * @param timestamp Timestamp of the velocity
+   * @return geometry_msgs::msg::TwistStamped Velocity for ROS, in the base frame
+   */
+  geometry_msgs::msg::TwistStamped miraToRosTargetVelocity(
+    const mira::Velocity2 & velocity, const mira::Time & timestamp);
+
+  /**
    * @brief Convert MIRA DriveStatus to ROS EmergencyStopStatus.
    *
    * @param status EmergencyStopStatus from MIRA
@@ -368,6 +385,8 @@ protected:
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<scitos2_msgs::msg::Mileage>> mileage_pub_;
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Odometry>> odometry_pub_;
   std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<scitos2_msgs::msg::RfidTag>> rfid_pub_;
+  std::shared_ptr<rclcpp_lifecycle::LifecyclePublisher<geometry_msgs::msg::TwistStamped>>
+  cmd_vel_applied_pub_;
 
   std::shared_ptr<rclcpp::Subscription<geometry_msgs::msg::TwistStamped>> cmd_vel_sub_;
 
