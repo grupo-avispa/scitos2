@@ -38,6 +38,7 @@
 // SCITOS2
 #include "scitos2_core/module.hpp"
 #include "scitos2_mira_utils/mira_authority.hpp"
+#include "scitos2_modules/drive_status_bits.hpp"
 #include "scitos2_msgs/msg/barrier_status.hpp"
 #include "scitos2_msgs/msg/bumper_status.hpp"
 #include "scitos2_msgs/msg/drive_status.hpp"

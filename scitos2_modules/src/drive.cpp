@@ -699,19 +699,41 @@ scitos2_msgs::msg::DriveStatus Drive::miraToRosDriveStatus(
     drive_status.header.frame_id = robot_base_frame_;
   }
   drive_status.header.stamp = rclcpp::Time(timestamp.toUnixNS());
-  drive_status.mode_normal = static_cast<bool>(status & 1);
-  drive_status.mode_forced_stopped = static_cast<bool>(status & (1 << 1));
-  drive_status.mode_freerun = static_cast<bool>(status & (1 << 2));
 
-  drive_status.emergency_stop_activated = static_cast<bool>(status & (1 << 7));
-  drive_status.emergency_stop_status = static_cast<bool>(status & (1 << 8));
-  drive_status.bumper_front_activated = static_cast<bool>(status & (1 << 9));
-  drive_status.bumper_front_status = static_cast<bool>(status & (1 << 10));
-  drive_status.bumper_rear_activated = static_cast<bool>(status & (1 << 11));
-  drive_status.bumper_rear_status = static_cast<bool>(status & (1 << 12));
-
-  drive_status.safety_field_rear_laser = static_cast<bool>(status & (1 << 26));
-  drive_status.safety_field_front_laser = static_cast<bool>(status & (1 << 27));
+  // The bit layout belongs to MIRA, see drive_status_bits.hpp
+  auto is_set = [status](DriveStatusBit bit) {return isDriveStatusBitSet(status, bit);};
+  drive_status.mode_normal = is_set(DriveStatusBit::MODE_NORMAL);
+  drive_status.mode_forced_stopped = is_set(DriveStatusBit::MODE_FORCED_STOPPED);
+  drive_status.mode_freerun = is_set(DriveStatusBit::MODE_FREERUN);
+  drive_status.mode_safe_drive = is_set(DriveStatusBit::MODE_SAFE_DRIVE);
+  drive_status.mode_bumper_escape = is_set(DriveStatusBit::MODE_BUMPER_ESCAPE);
+  drive_status.error_sifas_communication = is_set(DriveStatusBit::ERROR_SIFAS_COMMUNICATION);
+  drive_status.error_sifas_internal = is_set(DriveStatusBit::ERROR_SIFAS_INTERNAL);
+  drive_status.emergency_stop_activated = is_set(DriveStatusBit::EMERGENCY_STOP_ACTIVATED);
+  drive_status.emergency_stop_status = is_set(DriveStatusBit::EMERGENCY_STOP_STATUS);
+  drive_status.bumper_front_activated = is_set(DriveStatusBit::BUMPER_FRONT_ACTIVATED);
+  drive_status.bumper_front_status = is_set(DriveStatusBit::BUMPER_FRONT_STATUS);
+  drive_status.bumper_rear_activated = is_set(DriveStatusBit::BUMPER_REAR_ACTIVATED);
+  drive_status.bumper_rear_status = is_set(DriveStatusBit::BUMPER_REAR_STATUS);
+  drive_status.magnetic_proximity_sensor_activated = is_set(DriveStatusBit::MAGNETIC_PROXIMITY_SENSOR_ACTIVATED);
+  drive_status.magnetic_proximity_sensor_status = is_set(DriveStatusBit::MAGNETIC_PROXIMITY_SENSOR_STATUS);
+  drive_status.external_safety_ctrl_status = is_set(DriveStatusBit::EXTERNAL_SAFETY_CTRL_STATUS);
+  drive_status.error_battery_low = is_set(DriveStatusBit::ERROR_BATTERY_LOW);
+  drive_status.error_temperature_high = is_set(DriveStatusBit::ERROR_TEMPERATURE_HIGH);
+  drive_status.error_stall_mode = is_set(DriveStatusBit::ERROR_STALL_MODE);
+  drive_status.limited_pwm_left = is_set(DriveStatusBit::LIMITED_PWM_LEFT);
+  drive_status.limited_pwm_right = is_set(DriveStatusBit::LIMITED_PWM_RIGHT);
+  drive_status.error_rotation_too_high = is_set(DriveStatusBit::ERROR_ROTATION_TOO_HIGH);
+  drive_status.error_motor_acceleration = is_set(DriveStatusBit::ERROR_MOTOR_ACCELERATION);
+  drive_status.error_motor_left = is_set(DriveStatusBit::ERROR_MOTOR_LEFT);
+  drive_status.error_motor_right = is_set(DriveStatusBit::ERROR_MOTOR_RIGHT);
+  drive_status.safety_field_rear_laser = is_set(DriveStatusBit::SAFETY_FIELD_REAR_LASER);
+  drive_status.safety_field_front_laser = is_set(DriveStatusBit::SAFETY_FIELD_FRONT_LASER);
+  drive_status.error_firmare = is_set(DriveStatusBit::ERROR_FIRMARE);
+  drive_status.relay_active = is_set(DriveStatusBit::RELAY_ACTIVE);
+  drive_status.temperature_warning = is_set(DriveStatusBit::TEMPERATURE_WARNING);
+  drive_status.traction_loss = is_set(DriveStatusBit::TRACTION_LOSS);
+  drive_status.software_safe_stop = is_set(DriveStatusBit::SOFTWARE_SAFE_STOP);
 
   return drive_status;
 }
@@ -725,8 +747,10 @@ scitos2_msgs::msg::EmergencyStopStatus Drive::miraToRosEmergencyStopStatus(
     emergency_stop_status.header.frame_id = robot_base_frame_;
   }
   emergency_stop_status.header.stamp = rclcpp::Time(timestamp.toUnixNS());
-  emergency_stop_status.emergency_stop_activated = static_cast<bool>(status & (1 << 7));
-  emergency_stop_status.emergency_stop_status = static_cast<bool>(status & (1 << 8));
+  emergency_stop_status.emergency_stop_activated =
+    isDriveStatusBitSet(status, DriveStatusBit::EMERGENCY_STOP_ACTIVATED);
+  emergency_stop_status.emergency_stop_status =
+    isDriveStatusBitSet(status, DriveStatusBit::EMERGENCY_STOP_STATUS);
   return emergency_stop_status;
 }
 

@@ -36,4 +36,6 @@ bool safety_field_rear_laser        # Laser back: Safety field back laser active
 bool safety_field_front_laser       # Laser front: Safety field front laser active (needs firmware >= 1.0.3)
 bool error_firmare                  # Firmware error
 bool relay_active                   # Relay is active. Robot can't drive.
+bool temperature_warning           # Motor temperature above warning threshold (needs firmware >= 3.0.0)
+bool traction_loss                  # Traction loss (needs firmware >= 1.7.x)
 bool software_safe_stop

@@ -723,6 +723,35 @@ TEST(ScitosDriveTest, chargerStatus) {
   EXPECT_EQ(ros_status.bumper_rear_status, true);
   EXPECT_EQ(ros_status.safety_field_rear_laser, true);
   EXPECT_EQ(ros_status.safety_field_front_laser, true);
+  EXPECT_EQ(ros_status.mode_safe_drive, true);
+  EXPECT_EQ(ros_status.error_sifas_internal, true);
+  EXPECT_EQ(ros_status.error_motor_right, true);
+  EXPECT_EQ(ros_status.error_firmare, true);
+  EXPECT_EQ(ros_status.relay_active, true);
+  EXPECT_EQ(ros_status.temperature_warning, true);
+  EXPECT_EQ(ros_status.traction_loss, true);
+  EXPECT_EQ(ros_status.software_safe_stop, true);
+}
+
+TEST(ScitosDriveTest, driveStatusBitLayout) {
+  auto module = std::make_shared<DriveFixture>();
+  mira::Time time = mira::Time().now();
+
+  // The laser safety fields are bits 25 (rear) and 26 (front) in the struct of MetraLabs
+  auto status = module->miraToRosDriveStatus(1u << 25, time);
+  EXPECT_TRUE(status.safety_field_rear_laser);
+  EXPECT_FALSE(status.safety_field_front_laser);
+  status = module->miraToRosDriveStatus(1u << 26, time);
+  EXPECT_FALSE(status.safety_field_rear_laser);
+  EXPECT_TRUE(status.safety_field_front_laser);
+
+  // Each flag of the second half of the word is decoded on its own
+  status = module->miraToRosDriveStatus(1u << 16, time);
+  EXPECT_TRUE(status.error_battery_low);
+  EXPECT_FALSE(status.error_temperature_high);
+  status = module->miraToRosDriveStatus(1u << 31, time);
+  EXPECT_TRUE(status.software_safe_stop);
+  EXPECT_FALSE(status.traction_loss);
 }
 
 TEST(ScitosDriveTest, emergencyStopStatus) {
