@@ -56,6 +56,7 @@ find_package(diagnostic_updater REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
@@ -131,6 +132,24 @@ target_link_libraries(scitos2_drive
 ament_target_dependencies(scitos2_drive PUBLIC nav2_costmap_2d) # TODO(ajtudela): Fix this in kilted
 target_link_mira_libraries(scitos2_drive)
 
+add_library(scitos2_channel_bridge SHARED src/channel_bridge.cpp)
+target_include_directories(scitos2_channel_bridge PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+)
+target_link_libraries(scitos2_channel_bridge
+  PUBLIC
+  ${geometry_msgs_TARGETS}
+  rclcpp::rclcpp
+  scitos2_core::scitos2_core
+  scitos2_mira_utils::scitos2_mira_utils
+  ${std_msgs_TARGETS}
+  PRIVATE
+  pluginlib::pluginlib
+  tf2_geometry_msgs::tf2_geometry_msgs
+)
+target_link_mira_libraries(scitos2_channel_bridge)
+
 add_library(scitos2_ebc SHARED src/ebc.cpp)
 target_include_directories(scitos2_ebc PUBLIC
   "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
@@ -184,6 +203,7 @@ target_link_mira_libraries(scitos2_imu)
 # # Install ##
 # ############
 install(TARGETS
+  scitos2_channel_bridge
   scitos2_charger
   scitos2_display
   scitos2_drive
@@ -217,6 +237,7 @@ endif()
 # ##################################
 ament_export_include_directories(include/${PROJECT_NAME})
 ament_export_libraries(
+  scitos2_channel_bridge
   scitos2_charger
   scitos2_display
   scitos2_drive
@@ -235,6 +256,7 @@ ament_export_dependencies(
   scitos2_mira_utils
   scitos2_msgs
   sensor_msgs
+  std_msgs
   tf2
   tf2_geometry_msgs
   tf2_ros

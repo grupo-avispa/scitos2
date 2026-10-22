@@ -51,3 +51,12 @@ ament_add_gtest(test_inspector
 target_link_libraries(test_inspector
   scitos2_inspector
 )
+
+# Test for channel bridge
+ament_add_gtest(test_channel_bridge
+  test_channel_bridge.cpp
+  ENV RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+)
+target_link_libraries(test_channel_bridge
+  scitos2_channel_bridge
+)

@@ -42,6 +42,53 @@ The Inspector module gives access to any property and any method of the robot th
 
 	Milliseconds to wait for MIRA to answer a call before giving up.
 
+### ChannelBridge
+
+The ChannelBridge module forwards channels of MIRA to ROS topics with only parameters, so that exposing a new datum of the robot does not need any code. Add its name to `module_plugins` with `plugin: scitos2_modules::ChannelBridge`:
+
+```yaml
+bridge:
+  plugin: "scitos2_modules::ChannelBridge"
+  channels: ["speed_limiter", "target_velocity"]
+  speed_limiter:
+    mira_channel: "/robot/SpeedLimiterActive"
+    type: "bool"
+    ros_topic: "speed_limiter_active"
+  target_velocity:
+    mira_channel: "/robot/TargetVelocity"
+    type: "velocity2"
+    ros_topic: "target_velocity"
+    frame_id: "base_link"
+```
+
+The channel names of the robot can be listed with `mirainspect channel list` (see the `mira_port` parameter of `mira_framework`). A channel with a missing parameter or an unsupported type is reported and skipped.
+
+#### Parameters
+
+* **`channels`** (string array, default: [])
+
+	Names of the channels to bridge. Each one is configured with the parameters below under `<module>.<name>`.
+
+* **`<name>.mira_channel`** (string)
+
+	Channel of MIRA to bridge.
+
+* **`<name>.type`** (string)
+
+	Type of the channel and of the ROS message: `bool` ([std_msgs/Bool]), `float` ([std_msgs/Float32]), `uint8` ([std_msgs/UInt8]), `uint32` ([std_msgs/UInt32]), `velocity2` ([geometry_msgs/TwistStamped]), `pose2` ([geometry_msgs/PoseStamped]) or `point3f` ([geometry_msgs/PointStamped]).
+
+* **`<name>.ros_topic`** (string)
+
+	ROS topic to publish to.
+
+* **`<name>.frame_id`** (string, default: "base_link")
+
+	Frame of the messages that have a header.
+
+* **`mira_robot_resource`** (string, default: "/robot/Robot") and **`mira_rpc_timeout`** (int, default: 1000)
+
+	Shared by every module that talks to MIRA, see the Inspector.
+
 ### Diagnostics
 
 `Charger`, `Drive` and `IMU` report their own status in `/diagnostics`: the drive status flags, the battery, and whether data keeps arriving from MIRA.

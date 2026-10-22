@@ -1,4 +1,9 @@
 <class_libraries>
+    <library path="scitos2_channel_bridge">
+        <class type="scitos2_modules::ChannelBridge" base_class_type="scitos2_core::Module">
+            <description>Forwards channels of MIRA to ROS topics from parameters</description>
+        </class>
+    </library>
     <library path="scitos2_charger">
         <class type="scitos2_modules::Charger" base_class_type="scitos2_core::Module">
             <description>Charger module</description>
