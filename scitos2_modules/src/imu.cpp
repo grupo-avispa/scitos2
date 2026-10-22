@@ -184,11 +184,11 @@ void IMU::fillDiagnostics(diagnostic_updater::DiagnosticStatusWrapper & stat)
     samples = published_samples_;
   }
 
+  const bool stale = last_publish == std::chrono::steady_clock::time_point{} ||
+  std::chrono::steady_clock::now() - last_publish > kDataTimeout;
   if (!is_active_) {
     stat.summary(DiagnosticStatus::OK, "Module is not active");
-  } else if (last_publish == std::chrono::steady_clock::time_point{} ||
-    std::chrono::steady_clock::now() - last_publish > kDataTimeout)
-  {
+  } else if (stale) {
     stat.summary(DiagnosticStatus::ERROR, "No IMU data received from MIRA");
   } else {
     stat.summary(DiagnosticStatus::OK, "IMU OK");

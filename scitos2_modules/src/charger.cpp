@@ -175,9 +175,9 @@ void Charger::fillDiagnostics(diagnostic_updater::DiagnosticStatusWrapper & stat
 
   const auto now = std::chrono::steady_clock::now();
   const bool has_battery = battery_time != std::chrono::steady_clock::time_point{} &&
-    now - battery_time < kDataTimeout;
+  now - battery_time < kDataTimeout;
   const bool has_charger = charger_time != std::chrono::steady_clock::time_point{} &&
-    now - charger_time < kDataTimeout;
+  now - charger_time < kDataTimeout;
 
   if (!has_battery) {
     stat.summary(DiagnosticStatus::ERROR, "No battery data received from MIRA");

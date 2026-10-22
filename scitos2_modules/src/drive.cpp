@@ -771,11 +771,11 @@ void Drive::fillDiagnostics(diagnostic_updater::DiagnosticStatusWrapper & stat)
     status_time = last_status_time_;
   }
 
+  const bool stale = status_time == std::chrono::steady_clock::time_point{} ||
+  std::chrono::steady_clock::now() - status_time > kStatusTimeout;
   if (!is_active_) {
     stat.summary(DiagnosticStatus::OK, "Module is not active");
-  } else if (status_time == std::chrono::steady_clock::time_point{} ||
-    std::chrono::steady_clock::now() - status_time > kStatusTimeout)
-  {
+  } else if (stale) {
     stat.summary(DiagnosticStatus::ERROR, "No drive status received from MIRA");
   } else {
     summarizeDriveStatus(status, stat);
@@ -848,8 +848,10 @@ scitos2_msgs::msg::DriveStatus Drive::miraToRosDriveStatus(
   drive_status.bumper_front_status = is_set(DriveStatusBit::BUMPER_FRONT_STATUS);
   drive_status.bumper_rear_activated = is_set(DriveStatusBit::BUMPER_REAR_ACTIVATED);
   drive_status.bumper_rear_status = is_set(DriveStatusBit::BUMPER_REAR_STATUS);
-  drive_status.magnetic_proximity_sensor_activated = is_set(DriveStatusBit::MAGNETIC_PROXIMITY_SENSOR_ACTIVATED);
-  drive_status.magnetic_proximity_sensor_status = is_set(DriveStatusBit::MAGNETIC_PROXIMITY_SENSOR_STATUS);
+  drive_status.magnetic_proximity_sensor_activated =
+    is_set(DriveStatusBit::MAGNETIC_PROXIMITY_SENSOR_ACTIVATED);
+  drive_status.magnetic_proximity_sensor_status =
+    is_set(DriveStatusBit::MAGNETIC_PROXIMITY_SENSOR_STATUS);
   drive_status.external_safety_ctrl_status = is_set(DriveStatusBit::EXTERNAL_SAFETY_CTRL_STATUS);
   drive_status.error_battery_low = is_set(DriveStatusBit::ERROR_BATTERY_LOW);
   drive_status.error_temperature_high = is_set(DriveStatusBit::ERROR_TEMPERATURE_HIGH);
