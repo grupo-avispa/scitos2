@@ -200,8 +200,10 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
     "cmd_vel_applied", rclcpp::SystemDefaultsQoS());
 
   // Create MIRA subscribers
+  // The odometry is the fastest channel, so it gets its own thread: a slow callback of the
+  // authority (status, RFID...) must not delay it
   authority_->subscribe<mira::robot::Odometry2>(
-    "/robot/Odometry", std::bind(&Drive::odometryDataCallback, this, _1));
+    "/robot/Odometry", std::bind(&Drive::odometryDataCallback, this, _1), true);
   authority_->subscribe<bool>(
     "/robot/Bumper", std::bind(&Drive::bumperDataCallback, this, _1));
   authority_->subscribe<float>(

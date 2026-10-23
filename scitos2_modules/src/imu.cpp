@@ -52,10 +52,11 @@ void IMU::configure(
     imu_topic_, rclcpp::SystemDefaultsQoS());
 
   // Create MIRA subscribers
+  // Both callbacks share the message under mutex_, so they can run in their own threads
   authority_->subscribe<mira::Point3f>(
-    "/robot/Acceleration", std::bind(&IMU::accelerationDataCallback, this, _1));
+    "/robot/Acceleration", std::bind(&IMU::accelerationDataCallback, this, _1), true);
   authority_->subscribe<mira::Point3f>(
-    "/robot/Gyroscope", std::bind(&IMU::gyroscopeDataCallback, this, _1));
+    "/robot/Gyroscope", std::bind(&IMU::gyroscopeDataCallback, this, _1), true);
 
   RCLCPP_INFO(logger_, "Configured module : %s", plugin_name_.c_str());
 
