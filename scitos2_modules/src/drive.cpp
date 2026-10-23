@@ -480,7 +480,13 @@ void Drive::driveStatusCallback(mira::ChannelRead<uint32> data)
     last_status_time_ = std::chrono::steady_clock::now();
   }
 
-  emergency_stop_activated_ = emergency_stop_msg.emergency_stop_activated;
+  // Commands are not forwarded during the emergency stop, so the last velocity would stay
+  // in the robot: tell it to stop once, when the emergency starts
+  const bool was_activated = emergency_stop_activated_.exchange(
+    emergency_stop_msg.emergency_stop_activated);
+  if (!was_activated && emergency_stop_msg.emergency_stop_activated) {
+    authority_->callServiceAsync("setVelocity", mira::Velocity2(0.0, 0.0, 0.0));
+  }
 }
 
 void Drive::rfidStatusCallback(mira::ChannelRead<uint64> data)
