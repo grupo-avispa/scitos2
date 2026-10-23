@@ -190,7 +190,7 @@ rcl_interfaces::msg::SetParametersResult Display::dynamicParametersCallback(
 void Display::menuDataCallback(mira::ChannelRead<uint8> data)
 {
   scitos2_msgs::msg::MenuEntry msg;
-  msg.header.stamp = clock_->now();
+  msg.header.stamp = rclcpp::Time(data->timestamp.toUnixNS());
   msg.entry = data->value();
   display_data_pub_->publish(msg);
 }
