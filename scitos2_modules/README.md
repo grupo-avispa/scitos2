@@ -18,12 +18,6 @@ This package encapsulates MIRA authorities as modules, some of which expose the 
 
 The Inspector module gives access to any property and any method of the robot through generic services, to explore and tweak it from the command line without writing code. Add `inspector` to `module_plugins` with `plugin: scitos2_modules::Inspector`. The services give full access to the robot (`mira/call_json` can send velocity commands that skip the protections of `Drive`) to any node of the ROS network, so they are only created with `enabled: true`.
 
-#### Parameters
-
-* **`enabled`** (bool, default: false)
-
-	Create the services. With `false` the module does nothing.
-
 #### Services
 
 * **`mira/get_property`** ([scitos2_msgs/GetProperty])
@@ -39,6 +33,10 @@ The Inspector module gives access to any property and any method of the robot th
 	Calls a method of a MIRA service with the parameters as a JSON array, and returns the result as JSON, for example `{service: '/robot/Robot', method: 'setVelocity', params: '[0.0, 0.0, 0.0]'}`.
 
 #### Parameters
+
+* **`enabled`** (bool, default: false)
+
+	Create the services. With `false` the module does nothing.
 
 * **`mira_robot_resource`** (string, default: "/robot/Robot")
 
@@ -132,10 +130,6 @@ The Charger module monitors the state of the battery and the charging station.
 * **`design_capacity`** (double, default: 40.0)
 
 	Design capacity of the battery in Ah, for the battery model physically fitted to the robot. MIRA does not expose this value.
-
-* **`mira_drive_detect_timeout`** (int, default: 3000)
-
-	Maximum time in milliseconds to wait for the robot to expose the drive properties when `mira_drive_module` is `auto`. The resource exists before the robot has loaded its modules, so the detection is retried until this time runs out.
 
 * **`mira_robot_resource`** (string, default: "/robot/Robot")
 
@@ -304,6 +298,10 @@ The Drive module controls the robot's motors, handling velocity commands, odomet
 * **`mira_drive_module`** (string, default: "auto")
 
 	MIRA module that holds the drive properties (`MainControlUnit`, `MotorController`...). With `auto` it is detected from the robot when the module is activated.
+
+* **`mira_drive_detect_timeout`** (int, default: 3000)
+
+	Maximum time in milliseconds to wait for the robot to expose the drive properties when `mira_drive_module` is `auto`. The resource exists before the robot has loaded its modules, so the detection is retried until this time runs out.
 
 * **`mira_robot_resource`** (string, default: "/robot/Robot")
 
