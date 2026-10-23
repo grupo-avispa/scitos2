@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <exception>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "geometry_msgs/msg/point_stamped.hpp"
@@ -101,6 +102,7 @@ void ChannelBridge::cleanup()
   RCLCPP_INFO(
     logger_, "Cleaning up module : %s of type scitos2_module::ChannelBridge",
     plugin_name_.c_str());
+  stopSubscribing();
   publishers_.clear();
   pending_.clear();
   cleanupMira();
@@ -118,23 +120,11 @@ bool ChannelBridge::activate()
     return false;
   }
 
-  // Subscribing creates the channel if it does not exist, with the type of the bridge
-  for (const auto & pending : pending_) {
-    if (!authority_->waitForChannel(pending.channel, channel_timeout_)) {
-      RCLCPP_WARN(
-        logger_, "The MIRA channel %s does not exist after %ld ms, skipping it",
-        pending.channel.c_str(), static_cast<long>(channel_timeout_.count()));  // NOLINT
-      continue;
-    }
-    try {
-      pending.subscribe();
-    } catch (const std::exception & e) {
-      RCLCPP_ERROR(
-        logger_, "Unable to subscribe to the MIRA channel %s: %s", pending.channel.c_str(),
-        e.what());
-    }
-  }
-  pending_.clear();
+  // Subscribing creates the channel if it does not exist, with the type of the bridge, so it is
+  // done once the channel exists. Waiting here would delay the activation of the node
+  stopSubscribing();
+  stop_subscribing_ = false;
+  subscribe_thread_ = std::thread([this]() {subscribePending();});
   is_active_ = true;
   return true;
 }
@@ -145,10 +135,59 @@ bool ChannelBridge::deactivate()
     logger_, "Deactivating module : %s of type scitos2_module::ChannelBridge",
     plugin_name_.c_str());
   is_active_ = false;
+  stopSubscribing();
   for (const auto & publisher : publishers_) {
     publisher->on_deactivate();
   }
   return true;
+}
+
+void ChannelBridge::stopSubscribing()
+{
+  stop_subscribing_ = true;
+  if (subscribe_thread_.joinable()) {
+    subscribe_thread_.join();
+  }
+}
+
+void ChannelBridge::subscribePending()
+{
+  const auto slice = std::chrono::milliseconds(200);
+  for (auto & pending : pending_) {
+    if (pending.done) {
+      continue;
+    }
+    // Wait in slices so that the thread can be stopped
+    const auto deadline = std::chrono::steady_clock::now() + channel_timeout_;
+    bool exists = false;
+    while (!stop_subscribing_) {
+      if (authority_->waitForChannel(pending.channel, slice)) {
+        exists = true;
+        break;
+      }
+      if (std::chrono::steady_clock::now() >= deadline) {
+        break;
+      }
+    }
+    if (stop_subscribing_) {
+      return;
+    }
+    if (!exists) {
+      RCLCPP_WARN(
+        logger_, "The MIRA channel %s does not exist after %ld ms, skipping it",
+        pending.channel.c_str(), static_cast<long>(channel_timeout_.count()));  // NOLINT
+      continue;
+    }
+    try {
+      pending.subscribe();
+      pending.done = true;
+    } catch (const std::exception & e) {
+      RCLCPP_ERROR(
+        logger_, "Unable to subscribe to the MIRA channel %s: %s", pending.channel.c_str(),
+        e.what());
+      pending.done = true;
+    }
+  }
 }
 
 template<typename MiraT, typename RosT, typename Convert>

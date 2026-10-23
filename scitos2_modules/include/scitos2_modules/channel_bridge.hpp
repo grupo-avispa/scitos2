@@ -26,6 +26,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "rclcpp/rclcpp.hpp"
@@ -58,8 +59,8 @@ namespace scitos2_modules
  * (geometry_msgs/PointStamped). The stamped ones use `frame_id` as their frame, which is
  * `base_link` by default.
  *
- * The channels are subscribed to when the module is activated, and only once they exist in
- * MIRA: subscribing to a channel that does not exist yet would create it with the type of the
+ * The channels are subscribed to from a thread started on activation, and only once they exist
+ * in MIRA, so a channel that is slow to appear does not delay the activation of the node: subscribing to a channel that does not exist yet would create it with the type of the
  * bridge, and the module of the robot that owns it would then fail to initialize.
  */
 class ChannelBridge : public scitos2_mira_utils::MiraModule
@@ -73,7 +74,7 @@ public:
   /**
    * @brief Destructor for scitos2_modules::ChannelBridge
    */
-  ~ChannelBridge() override = default;
+  ~ChannelBridge() override {stopSubscribing();}
 
   /**
    * @brief Configure the module.
@@ -140,13 +141,26 @@ protected:
   {
     std::string channel;
     std::function<void()> subscribe;
+    bool done{false};
   };
 
   /** @brief Maximum time to wait for each channel to appear in MIRA. */
   std::chrono::milliseconds channel_timeout_{5000};
 
-  /** @brief Channels waiting to be subscribed to. */
+  /** @brief Channels waiting to be subscribed to. Only touched by the thread of subscribe. */
   std::vector<PendingSubscription> pending_;
+
+  /** @brief Waits for the channels and subscribes to them, without blocking the activation. */
+  std::thread subscribe_thread_;
+
+  /** @brief Asks subscribe_thread_ to finish. */
+  std::atomic<bool> stop_subscribing_{false};
+
+  /** @brief Wait for each pending channel and subscribe to it. */
+  void subscribePending();
+
+  /** @brief Stop and join subscribe_thread_. */
+  void stopSubscribing();
 
   /** @brief Publishers of the bridged channels, to activate and deactivate them together. */
   std::vector<std::shared_ptr<rclcpp_lifecycle::ManagedEntityInterface>> publishers_;
