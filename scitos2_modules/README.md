@@ -16,7 +16,13 @@ This package encapsulates MIRA authorities as modules, some of which expose the 
 
 ### Inspector
 
-The Inspector module gives access to any property and any method of the robot through generic services, to explore and tweak it from the command line without writing code. Add `inspector` to `module_plugins` with `plugin: scitos2_modules::Inspector`.
+The Inspector module gives access to any property and any method of the robot through generic services, to explore and tweak it from the command line without writing code. Add `inspector` to `module_plugins` with `plugin: scitos2_modules::Inspector`. The services give full access to the robot (`mira/call_json` can send velocity commands that skip the protections of `Drive`) to any node of the ROS network, so they are only created with `enabled: true`.
+
+#### Parameters
+
+* **`enabled`** (bool, default: false)
+
+	Create the services. With `false` the module does nothing.
 
 #### Services
 

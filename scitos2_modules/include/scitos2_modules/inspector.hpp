@@ -32,6 +32,9 @@ namespace scitos2_modules
  * @class scitos2_modules::Inspector
  * @brief Module that gives access to any property and any method of the robot through generic
  * ROS services, to explore and tweak it from the command line without writing code.
+ *
+ * The services give full access to the robot from the whole ROS network, so they are only
+ * created with the parameter `enabled` set to true.
  */
 class Inspector : public scitos2_mira_utils::MiraModule
 {
@@ -100,6 +103,9 @@ protected:
   void callJson(
     const std::shared_ptr<scitos2_msgs::srv::CallJson::Request> request,
     std::shared_ptr<scitos2_msgs::srv::CallJson::Response> response);
+
+  /** @brief Whether the services exist, from the parameter `enabled`. */
+  bool enabled_{false};
 
   /** @brief Whether the services answer: they are created at configure time. */
   bool is_active_{false};

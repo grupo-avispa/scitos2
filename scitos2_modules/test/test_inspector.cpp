@@ -69,6 +69,7 @@ TEST(ScitosInspectorTest, servicesAnswerWhileActive) {
   robot.start();
 
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testInspector");
+  node->declare_parameter("test.enabled", true);
   auto module = std::make_shared<InspectorFixture>();
   module->configure(node, "test");
 

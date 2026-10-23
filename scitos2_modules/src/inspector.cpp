@@ -28,6 +28,23 @@ void Inspector::configure(
 {
   auto node = configureMira(parent, name);
 
+  declare_parameter_if_not_declared(
+    node, plugin_name_ + ".enabled", rclcpp::ParameterValue(false),
+    rcl_interfaces::msg::ParameterDescriptor()
+    .set__description(
+      "Create the services. They give full access to the robot (including velocity commands "
+      "that skip the protections of the drive) to anything on the ROS network"));
+  node->get_parameter(plugin_name_ + ".enabled", enabled_);
+  if (!enabled_) {
+    RCLCPP_INFO(
+      logger_, "The module %s is disabled, set %s.enabled to true to create its services",
+      plugin_name_.c_str(), plugin_name_.c_str());
+    return;
+  }
+  RCLCPP_WARN(
+    logger_, "The module %s is enabled: any node of the ROS network can command the robot",
+    plugin_name_.c_str());
+
   get_property_service_ = node->create_service<scitos2_msgs::srv::GetProperty>(
     "mira/get_property", std::bind(&Inspector::getProperty, this, _1, _2));
   set_property_service_ = node->create_service<scitos2_msgs::srv::SetProperty>(
@@ -52,6 +69,9 @@ bool Inspector::activate()
 {
   RCLCPP_INFO(
     logger_, "Activating module : %s of type scitos2_module::Inspector", plugin_name_.c_str());
+  if (!enabled_) {
+    return true;
+  }
   if (!startMira()) {
     return false;
   }
