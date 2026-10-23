@@ -16,6 +16,8 @@
 // TF2
 #include <tf2/LinearMath/Quaternion.h>
 
+#include <json/JSON.h>
+
 #include <algorithm>
 #include <array>
 #include <string>
@@ -310,6 +312,7 @@ bool Drive::activate()
   // activation: the drive still works, just without the magnetic barrier configured.
   // The MotorController boards (e.g. the Morphia) have no magnetic barrier, so there is nothing
   // to switch off there
+  loadOdometryNoise();
   resolveDriveModule(drive_detect_timeout_);
   if (magnetic_barrier_enabled_ || drive_module_ != "MotorController") {
     if (!setDriveParam("RearLaser.Enabled", magnetic_barrier_enabled_ ? "true" : "false")) {
@@ -402,6 +405,7 @@ void Drive::odometryDataCallback(mira::ChannelRead<mira::robot::Odometry2> data)
   }
 
   auto odom_msg = miraToRosOdometry(data->value(), data->timestamp);
+  odometry_covariance_.update(odom_msg);
   odometry_pub_->publish(odom_msg);
 
   // Publish the TF
@@ -535,6 +539,33 @@ void Drive::velocityCommandCallback(const geometry_msgs::msg::TwistStamped & msg
   authority_->callServiceAsync("setVelocity", speed);
 }
 
+void Drive::loadOdometryNoise()
+{
+  std::string result;
+  std::string error;
+  if (!authority_->callJson(authority_->resource(), "getRobotModel", "", result, error)) {
+    RCLCPP_WARN(
+      logger_, "Unable to read the odometry noise from the robot model: %s", error.c_str());
+    return;
+  }
+
+  try {
+    mira::json::Value model;
+    mira::json::read(result, model);
+    OdometryCovariance::Noise noise;
+    noise.trans_trans = mira::json::getElement(model, "AlphaTransTrans").get_value<double>();
+    noise.trans_rot = mira::json::getElement(model, "AlphaTransRot").get_value<double>();
+    noise.rot_trans = mira::json::getElement(model, "AlphaRotTrans").get_value<double>();
+    noise.rot_rot = mira::json::getElement(model, "AlphaRotRot").get_value<double>();
+    odometry_covariance_.setNoise(noise);
+    RCLCPP_INFO(
+      logger_, "Odometry noise: trans/trans %.4f, trans/rot %.4f, rot/trans %.4f, rot/rot %.4f",
+      noise.trans_trans, noise.trans_rot, noise.rot_trans, noise.rot_rot);
+  } catch (const std::exception & e) {
+    RCLCPP_WARN(logger_, "Unable to parse the odometry noise of the robot model: %s", e.what());
+  }
+}
+
 bool Drive::isCommandStale(const builtin_interfaces::msg::Time & stamp) const
 {
   if (cmd_vel_max_age_ <= 0.0 || (stamp.sec == 0 && stamp.nanosec == 0)) {
@@ -662,6 +693,8 @@ bool Drive::resetOdometry(
   response->success = authority_->callService("resetOdometry");
   if (!response->success) {
     response->message = "MIRA service call failed";
+  } else {
+    odometry_covariance_.reset();
   }
   return response->success;
 }

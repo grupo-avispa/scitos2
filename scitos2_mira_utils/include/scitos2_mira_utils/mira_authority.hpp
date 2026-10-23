@@ -66,6 +66,15 @@ public:
   void setResource(const std::string & resource);
 
   /**
+   * @brief Get the MIRA resource whose services and properties are called.
+   * @return const std::string & The resource name
+   */
+  const std::string & resource() const
+  {
+    return resource_;
+  }
+
+  /**
    * @brief Check in the authority under a MIRA namespace with the given name.
    *
    * The default namespace keeps the authorities of ROS together (`/ros2/drive`, `/ros2/imu`...),

@@ -13,13 +13,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <fw/MicroUnit.h>
+
+#include <atomic>
+#include <chrono>
+#include <cmath>
 #include <memory>
 #include <stdexcept>
+#include <thread>
 
 #include "gtest/gtest.h"
 #include "rclcpp/rclcpp.hpp"
 #include "nav2_util/node_utils.hpp"
 #include "scitos2_modules/drive.hpp"
+#include "scitos2_modules/odometry_covariance.hpp"
 
 class DriveFixture : public scitos2_modules::Drive
 {
@@ -1373,6 +1380,47 @@ TEST(ScitosDriveTest, emptyFrameAndTopicNamesAreRejected) {
   module->deactivate();
   module->cleanup();
   rclcpp::shutdown();
+}
+
+TEST(OdometryCovarianceTest, floorGrowthAndReset) {
+  scitos2_modules::OdometryCovariance covariance;
+  scitos2_modules::OdometryCovariance::Noise noise;
+  noise.trans_trans = 0.1;
+  noise.rot_rot = 0.2;
+  covariance.setNoise(noise);
+
+  // Without motion only the floor is left, and the unobservable axes are ignored
+  nav_msgs::msg::Odometry odometry;
+  odometry.pose.pose.orientation.w = 1.0;
+  covariance.update(odometry);
+  EXPECT_DOUBLE_EQ(odometry.pose.covariance[0], 1e-4);
+  EXPECT_DOUBLE_EQ(odometry.pose.covariance[35], 1e-4);
+  EXPECT_GE(odometry.pose.covariance[14], 1e5);
+  EXPECT_DOUBLE_EQ(odometry.twist.covariance[0], 1e-4);
+
+  // Travelling 2 m adds (0.1 * 2)^2 to x and y, and nothing to the yaw
+  odometry.pose.pose.position.x = 2.0;
+  odometry.twist.twist.linear.x = 1.0;
+  covariance.update(odometry);
+  EXPECT_NEAR(odometry.pose.covariance[0], 0.04 + 1e-4, 1e-12);
+  EXPECT_NEAR(odometry.pose.covariance[7], 0.04 + 1e-4, 1e-12);
+  EXPECT_DOUBLE_EQ(odometry.pose.covariance[35], 1e-4);
+  EXPECT_NEAR(odometry.twist.covariance[0], 0.01 + 1e-4, 1e-12);
+
+  // Turning 90 degrees adds (0.2 * pi / 2)^2 to the yaw
+  odometry.pose.pose.orientation.z = std::sin(M_PI_4);
+  odometry.pose.pose.orientation.w = std::cos(M_PI_4);
+  odometry.twist.twist.linear.x = 0.0;
+  odometry.twist.twist.angular.z = 1.0;
+  covariance.update(odometry);
+  EXPECT_NEAR(odometry.pose.covariance[35], std::pow(0.2 * M_PI_2, 2) + 1e-4, 1e-9);
+  EXPECT_NEAR(odometry.twist.covariance[35], 0.04 + 1e-4, 1e-12);
+
+  // After a reset the accumulated variance is forgotten
+  covariance.reset();
+  covariance.update(odometry);
+  EXPECT_DOUBLE_EQ(odometry.pose.covariance[0], 1e-4);
+  EXPECT_DOUBLE_EQ(odometry.pose.covariance[35], 1e-4);
 }
 
 int main(int argc, char ** argv)

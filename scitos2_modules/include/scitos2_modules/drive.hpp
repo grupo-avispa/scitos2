@@ -44,6 +44,7 @@
 #include "scitos2_modules/drive_status_bits.hpp"
 #include "scitos2_msgs/msg/barrier_status.hpp"
 #include "scitos2_msgs/msg/bumper_status.hpp"
+#include "scitos2_modules/odometry_covariance.hpp"
 #include "scitos2_msgs/msg/drive_status.hpp"
 #include "scitos2_msgs/msg/emergency_stop_status.hpp"
 #include "scitos2_msgs/msg/mileage.hpp"
@@ -347,6 +348,12 @@ protected:
     const uint64 & status, const mira::Time & timestamp);
 
   /**
+   * @brief Read the noise coefficients of the odometry from the model of the robot. If they
+   * cannot be read the covariances only have their floor.
+   */
+  void loadOdometryNoise();
+
+  /**
    * @brief Whether a velocity command is too old to be sent to the robot.
    *
    * @param stamp Header stamp of the command. A command without stamp is never stale
@@ -395,6 +402,9 @@ protected:
   // (activation, services and parameter callbacks), so it does not need a lock
   std::string drive_module_{"auto"};
   std::chrono::milliseconds drive_detect_timeout_{3000};
+
+  // Covariances of the odometry from the noise of the robot model
+  OdometryCovariance odometry_covariance_;
 
   // Age in seconds from which a cmd_vel is discarded, 0 to keep every command
   double cmd_vel_max_age_{1.0};
