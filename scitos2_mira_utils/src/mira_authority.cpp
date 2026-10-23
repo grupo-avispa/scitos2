@@ -38,9 +38,9 @@ void MiraAuthority::setResource(const std::string & resource)
   resource_ = resource;
 }
 
-void MiraAuthority::checkin(const std::string & name)
+void MiraAuthority::checkin(const std::string & name, const std::string & mira_namespace)
 {
-  authority_->checkin("/", name);
+  authority_->checkin(mira_namespace, name);
   checked_in_ = true;
 }
 
@@ -88,6 +88,25 @@ bool MiraAuthority::waitForChannel(
     return false;
   }
   return authority_->waitForChannel(channel, mira::Duration::milliseconds(timeout.count()));
+}
+
+void MiraAuthority::checkAsyncResult(const std::string & service_name)
+{
+  if (!has_pending_rpc_) {
+    return;
+  }
+  if (!pending_rpc_.timedWait(mira::Duration::seconds(0))) {
+    RCLCPP_WARN_THROTTLE(
+      logger_, throttle_clock_, 5000,
+      "The previous call to the MIRA service '%s' was not answered yet, dropping it",
+      service_name.c_str());
+    return;
+  }
+  try {
+    pending_rpc_.get();
+  } catch (mira::XRPC & e) {
+    RCLCPP_WARN(logger_, "The previous call to the MIRA service failed: %s", e.what());
+  }
 }
 
 bool MiraAuthority::callService(const std::string & service_name)

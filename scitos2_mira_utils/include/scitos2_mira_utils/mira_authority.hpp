@@ -23,9 +23,11 @@
 #include <chrono>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <string>
 
+#include "rclcpp/clock.hpp"
 #include "rclcpp/logger.hpp"
 #include "rclcpp/logging.hpp"
 
@@ -64,10 +66,15 @@ public:
   void setResource(const std::string & resource);
 
   /**
-   * @brief Check in the authority under "/" with the given name.
+   * @brief Check in the authority under a MIRA namespace with the given name.
+   *
+   * The default namespace keeps the authorities of ROS together (`/ros2/drive`, `/ros2/imu`...),
+   * apart from the units of the robot, and recognizable in `miracenter`.
+   *
    * @param name The name of the authority (typically the plugin name)
+   * @param mira_namespace The MIRA namespace of the authority
    */
-  void checkin(const std::string & name);
+  void checkin(const std::string & name, const std::string & mira_namespace = "/ros2");
 
   /**
    * @brief Start the authority. Must be called before any service/parameter call can succeed.
@@ -118,11 +125,15 @@ public:
    * @tparam T The type of the channel data
    * @param channel The name of the channel
    * @param callback The callback to invoke when new data arrives
+   * @param independent_thread Run the callback in its own thread, so that a slow callback of
+   * the authority does not delay it. The callback must then protect the state it shares
    */
   template<typename T>
-  void subscribe(const std::string & channel, std::function<void(mira::ChannelRead<T>)> callback)
+  void subscribe(
+    const std::string & channel, std::function<void(mira::ChannelRead<T>)> callback,
+    bool independent_thread = false)
   {
-    authority_->subscribe<T>(channel, callback);
+    authority_->subscribe<T>(channel, callback, independent_thread);
   }
 
   /**
@@ -176,6 +187,42 @@ public:
   }
 
   /**
+   * @brief Call a MIRA service without waiting for the answer.
+   *
+   * The call is kept until the next one. If the previous call has not been answered by then it is
+   * dropped, so a stream of commands (e.g. velocities) never accumulates behind a slow robot, and
+   * the caller is never blocked. The error of a previous call is reported on the next one.
+   *
+   * @tparam T The type of the request payload
+   * @param service_name The name of the service
+   * @param request The request to send
+   * @return bool If the call was sent
+   */
+  template<typename T>
+  bool callServiceAsync(const std::string & service_name, const T & request)
+  {
+    if (!isReady()) {
+      RCLCPP_ERROR_ONCE(
+        logger_, "MIRA authority is not valid or resource '%s' does not exist",
+        resource_.c_str());
+      return false;
+    }
+
+    std::lock_guard<std::mutex> lock(async_mutex_);
+    try {
+      checkAsyncResult(service_name);
+      pending_rpc_ = authority_->callService<void>(resource_, service_name, request);
+      has_pending_rpc_ = true;
+    } catch (mira::XRPC & e) {
+      RCLCPP_WARN(
+        logger_, "MIRA RPC error caught when calling the service '%s': %s",
+        service_name.c_str(), e.what());
+      return false;
+    }
+    return true;
+  }
+
+  /**
    * @brief Set a MIRA parameter.
    *
    * @param param_name The name of the parameter
@@ -216,9 +263,21 @@ public:
     std::string & result, std::string & error);
 
 protected:
+  /**
+   * @brief Report the error of the previous asynchronous call, if it finished with one, and
+   * warn if it was never answered. The caller must hold async_mutex_.
+   *
+   * @param service_name The name of the service of the new call
+   */
+  void checkAsyncResult(const std::string & service_name);
+
   std::shared_ptr<mira::Authority> authority_;
   std::string resource_{"/robot/Robot"};
   mira::Duration timeout_{mira::Duration::seconds(1)};
+  std::mutex async_mutex_;
+  mira::RPCFuture<void> pending_rpc_;
+  bool has_pending_rpc_{false};
+  rclcpp::Clock throttle_clock_{RCL_STEADY_TIME};
   bool checked_in_{false};
   bool started_{false};
   rclcpp::Logger logger_;
