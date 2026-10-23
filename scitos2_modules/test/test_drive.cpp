@@ -1382,6 +1382,110 @@ TEST(ScitosDriveTest, emptyFrameAndTopicNamesAreRejected) {
   rclcpp::shutdown();
 }
 
+/**
+ * @brief Robot that records the velocities it is told to set.
+ */
+class FakeVelocityRobot : public mira::MicroUnit
+{
+public:
+  FakeVelocityRobot() {}
+
+  template<typename Reflector>
+  void reflect(Reflector & r)
+  {
+    MIRA_REFLECT_BASE(r, mira::MicroUnit);
+    r.method(
+      "setVelocity", &FakeVelocityRobot::setVelocity, this, "Set the velocity", "v", "Velocity");
+  }
+
+  void setVelocity(mira::Velocity2 velocity)
+  {
+    last_x_ = velocity.x();
+    ++calls_;
+  }
+
+  std::atomic<double> last_x_{-1.0};
+  std::atomic<int> calls_{0};
+};
+
+/**
+ * @brief Wait until a condition holds or a timeout expires.
+ */
+template<typename Condition>
+bool waitUntil(Condition condition, std::chrono::milliseconds timeout)
+{
+  const auto start = std::chrono::steady_clock::now();
+  while (!condition() && std::chrono::steady_clock::now() - start < timeout) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+  return condition();
+}
+
+TEST(ScitosDriveTest, velocityCommandsReachTheRobotUnlessStaleOrEmergency) {
+  rclcpp::init(0, nullptr);
+  FakeVelocityRobot robot;
+  robot.checkin("/robot", "Robot");
+  robot.publishService(robot);
+  robot.start();
+  mira::Authority authority("/", "test_drive_velocity_commands");
+  authority.start();
+  auto status_publisher = authority.publish<uint32>("/robot/DriveStatusPlain");
+
+  auto drive_node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testDriveCommands");
+  auto module = std::make_shared<DriveFixture>();
+  module->configure(drive_node, "test");
+  module->activate();
+  auto drive_thread = std::thread([&]() {rclcpp::spin(drive_node->get_node_base_interface());});
+
+  auto pub_node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("testDriveCommandsPub");
+  pub_node->configure();
+  pub_node->activate();
+  auto vel_pub = pub_node->create_publisher<geometry_msgs::msg::TwistStamped>("cmd_vel", 10);
+  vel_pub->on_activate();
+  ASSERT_TRUE(waitUntil([&]() {return vel_pub->get_subscription_count() > 0;},
+    std::chrono::seconds(5)));
+
+  // A fresh command is sent to the robot
+  geometry_msgs::msg::TwistStamped command;
+  command.header.stamp = drive_node->get_clock()->now();
+  command.twist.linear.x = 0.3;
+  vel_pub->publish(command);
+  ASSERT_TRUE(waitUntil([&]() {return robot.calls_ >= 1;}, std::chrono::seconds(5)));
+  EXPECT_NEAR(robot.last_x_, 0.3, 1e-6);
+
+  // One older than cmd_vel_max_age is discarded
+  const int calls = robot.calls_;
+  command.header.stamp = drive_node->get_clock()->now() - rclcpp::Duration::from_seconds(5.0);
+  command.twist.linear.x = 0.5;
+  vel_pub->publish(command);
+  std::this_thread::sleep_for(std::chrono::milliseconds(300));
+  EXPECT_EQ(robot.calls_, calls);
+
+  // One without stamp is never stale
+  command.header.stamp = builtin_interfaces::msg::Time();
+  vel_pub->publish(command);
+  ASSERT_TRUE(waitUntil([&]() {return robot.calls_ > calls;}, std::chrono::seconds(5)));
+  EXPECT_NEAR(robot.last_x_, 0.5, 1e-6);
+
+  // The emergency stop sends a zero velocity, once, and blocks the commands afterwards
+  auto writer = status_publisher.write();
+  writer->value() = 1u << 7;
+  writer.finish();
+  ASSERT_TRUE(waitUntil([&]() {return robot.last_x_ == 0.0;}, std::chrono::seconds(5)));
+  const int calls_after_stop = robot.calls_;
+  command.twist.linear.x = 0.4;
+  vel_pub->publish(command);
+  std::this_thread::sleep_for(std::chrono::milliseconds(300));
+  EXPECT_EQ(robot.calls_, calls_after_stop);
+
+  module->deactivate();
+  pub_node->deactivate();
+  module->cleanup();
+  pub_node->cleanup();
+  rclcpp::shutdown();
+  drive_thread.join();
+}
+
 TEST(OdometryCovarianceTest, floorGrowthAndReset) {
   scitos2_modules::OdometryCovariance covariance;
   scitos2_modules::OdometryCovariance::Noise noise;
