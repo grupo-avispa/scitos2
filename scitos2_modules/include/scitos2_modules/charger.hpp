@@ -90,6 +90,14 @@ public:
 
 protected:
   /**
+   * @brief Convert the name of a battery chemistry to a BatteryState technology value.
+   *
+   * @param technology Name of the chemistry (e.g. "LIFE")
+   * @return uint8_t BatteryState::POWER_SUPPLY_TECHNOLOGY_* value, UNKNOWN if the name is wrong
+   */
+  static uint8_t parseTechnology(const std::string & technology);
+
+  /**
    * @brief Callback for battery data.
    *
    * @param data Battery data
@@ -154,6 +162,8 @@ protected:
   // Design capacity of the battery in Ah. Depends on the physical battery model fitted to
   // the robot, there is no way to query it from MIRA.
   double design_capacity_{40.0};
+  // Chemistry of the battery as a BatteryState::POWER_SUPPLY_TECHNOLOGY_* value
+  uint8_t power_supply_technology_{sensor_msgs::msg::BatteryState::POWER_SUPPLY_TECHNOLOGY_LIFE};
 
   // Time without data from MIRA after which the diagnostics report an error
   static constexpr std::chrono::seconds kDataTimeout{5};

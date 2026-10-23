@@ -131,6 +131,10 @@ The Charger module monitors the state of the battery and the charging station.
 
 	Design capacity of the battery in Ah, for the battery model physically fitted to the robot. MIRA does not expose this value.
 
+* **`power_supply_technology`** (string, default: "LIFE")
+
+	Chemistry of the battery reported in `battery`: `LIFE`, `LION`, `LIPO`, `NIMH`, `NICD`, `LIMN` or `UNKNOWN`.
+
 * **`mira_robot_resource`** (string, default: "/robot/Robot")
 
 	The MIRA resource that exposes the robot's services and properties.

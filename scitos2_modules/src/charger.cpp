@@ -17,6 +17,8 @@
 #include <algorithm>
 #include <chrono>
 #include <limits>
+#include <map>
+#include <string>
 
 #include "scitos2_modules/charger.hpp"
 
@@ -25,6 +27,27 @@ namespace scitos2_modules
 
 using std::placeholders::_1;
 using std::placeholders::_2;
+
+uint8_t Charger::parseTechnology(const std::string & technology)
+{
+  using sensor_msgs::msg::BatteryState;
+  static const std::map<std::string, uint8_t> technologies = {
+    {"LIFE", BatteryState::POWER_SUPPLY_TECHNOLOGY_LIFE},
+    {"LION", BatteryState::POWER_SUPPLY_TECHNOLOGY_LION},
+    {"LIPO", BatteryState::POWER_SUPPLY_TECHNOLOGY_LIPO},
+    {"NIMH", BatteryState::POWER_SUPPLY_TECHNOLOGY_NIMH},
+    {"NICD", BatteryState::POWER_SUPPLY_TECHNOLOGY_NICD},
+    {"LIMN", BatteryState::POWER_SUPPLY_TECHNOLOGY_LIMN},
+    {"UNKNOWN", BatteryState::POWER_SUPPLY_TECHNOLOGY_UNKNOWN}};
+  const auto found = technologies.find(technology);
+  if (found == technologies.end()) {
+    RCLCPP_WARN(
+      rclcpp::get_logger("Charger"),
+      "Unknown power_supply_technology '%s', using UNKNOWN", technology.c_str());
+    return BatteryState::POWER_SUPPLY_TECHNOLOGY_UNKNOWN;
+  }
+  return found->second;
+}
 
 void Charger::configure(
   const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std::string name)
@@ -49,6 +72,15 @@ void Charger::configure(
     rclcpp::ParameterValue(design_capacity_), rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Design capacity of the battery in Ah, for the fitted battery model"));
   node->get_parameter(plugin_name_ + ".design_capacity", design_capacity_);
+
+  std::string technology = "LIFE";
+  declare_parameter_if_not_declared(
+    node, plugin_name_ + ".power_supply_technology",
+    rclcpp::ParameterValue(technology), rcl_interfaces::msg::ParameterDescriptor()
+    .set__description(
+      "Chemistry of the battery: LIFE, LION, LIPO, NIMH, NICD, LIMN or UNKNOWN"));
+  node->get_parameter(plugin_name_ + ".power_supply_technology", technology);
+  power_supply_technology_ = parseTechnology(technology);
 
   // Create ROS publishers
   battery_pub_ = node->create_publisher<sensor_msgs::msg::BatteryState>(
@@ -225,7 +257,7 @@ sensor_msgs::msg::BatteryState Charger::miraToRosBatteryState(
   }
 
   battery.power_supply_health = sensor_msgs::msg::BatteryState::POWER_SUPPLY_HEALTH_UNKNOWN;
-  battery.power_supply_technology = sensor_msgs::msg::BatteryState::POWER_SUPPLY_TECHNOLOGY_LIFE;
+  battery.power_supply_technology = power_supply_technology_;
   battery.present = (state.cellVoltage).empty() ? false : true;
   battery.cell_voltage = state.cellVoltage;
   battery.cell_temperature.resize(
