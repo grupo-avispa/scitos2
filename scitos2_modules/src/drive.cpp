@@ -295,9 +295,13 @@ bool Drive::activate()
 
   // MIRA parameters can only be written once the authority has started. Not fatal to
   // activation: the drive still works, just without the magnetic barrier configured.
+  // The MotorController boards (e.g. the Morphia) have no magnetic barrier, so there is nothing
+  // to switch off there
   resolveDriveModule(drive_detect_timeout_);
-  if (!setDriveParam("RearLaser.Enabled", magnetic_barrier_enabled_ ? "true" : "false")) {
-    RCLCPP_ERROR(logger_, "Failed to set the magnetic_barrier_enabled MIRA parameter");
+  if (magnetic_barrier_enabled_ || drive_module_ != "MotorController") {
+    if (!setDriveParam("RearLaser.Enabled", magnetic_barrier_enabled_ ? "true" : "false")) {
+      RCLCPP_ERROR(logger_, "Failed to set the magnetic_barrier_enabled MIRA parameter");
+    }
   }
 
   return true;
