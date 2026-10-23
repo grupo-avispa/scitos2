@@ -303,6 +303,10 @@ The Drive module controls the robot's motors, handling velocity commands, odomet
 
 	MIRA module that holds the drive properties (`MainControlUnit`, `MotorController`...). With `auto` it is detected from the robot when the module is activated.
 
+* **`cmd_vel_max_age`** (double, default: 1.0)
+
+	Seconds after which a `cmd_vel` is discarded, comparing its header stamp with the clock. `0` keeps every command. A command without stamp is never discarded.
+
 * **`mira_drive_detect_timeout`** (int, default: 3000)
 
 	Maximum time in milliseconds to wait for the robot to expose the drive properties when `mira_drive_module` is `auto`. The resource exists before the robot has loaded its modules, so the detection is retried until this time runs out.

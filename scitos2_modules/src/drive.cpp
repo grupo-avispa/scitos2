@@ -133,6 +133,17 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
     logger_, "The parameter magnetic_barrier_enabled is set to: [%s]",
     magnetic_barrier_enabled_ ? "true" : "false");
 
+  double cmd_vel_max_age = cmd_vel_max_age_;
+  declare_parameter_if_not_declared(
+    node, plugin_name_ + ".cmd_vel_max_age", rclcpp::ParameterValue(cmd_vel_max_age),
+    rcl_interfaces::msg::ParameterDescriptor()
+    .set__description(
+      "Seconds after which a cmd_vel is discarded, using its header stamp. "
+      "0 disables it, and commands without a stamp are never discarded"));
+  node->get_parameter(plugin_name_ + ".cmd_vel_max_age", cmd_vel_max_age);
+  cmd_vel_max_age_ = std::max(cmd_vel_max_age, 0.0);
+  RCLCPP_INFO(logger_, "The parameter cmd_vel_max_age is set to: [%.2f]", cmd_vel_max_age_);
+
   declare_parameter_if_not_declared(
     node, plugin_name_ + ".publish_tf",
     rclcpp::ParameterValue(true), rcl_interfaces::msg::ParameterDescriptor()
@@ -503,12 +514,28 @@ void Drive::targetVelocityCallback(mira::ChannelRead<mira::Velocity2> data)
 
 void Drive::velocityCommandCallback(const geometry_msgs::msg::TwistStamped & msg)
 {
-  if (!emergency_stop_activated_ && is_active_) {
-    // Never wait for the robot here: a slow answer would block the executor, and an old
-    // velocity is worthless once there is a newer one
-    mira::Velocity2 speed(msg.twist.linear.x, 0, msg.twist.angular.z);
-    authority_->callServiceAsync("setVelocity", speed);
+  if (emergency_stop_activated_ || !is_active_) {
+    return;
   }
+  if (isCommandStale(msg.header.stamp)) {
+    RCLCPP_WARN_THROTTLE(
+      logger_, *clock_, 2000, "Discarding a cmd_vel older than %.2f s", cmd_vel_max_age_);
+    return;
+  }
+
+  // Never wait for the robot here: a slow answer would block the executor, and an old
+  // velocity is worthless once there is a newer one
+  mira::Velocity2 speed(msg.twist.linear.x, 0, msg.twist.angular.z);
+  authority_->callServiceAsync("setVelocity", speed);
+}
+
+bool Drive::isCommandStale(const builtin_interfaces::msg::Time & stamp) const
+{
+  if (cmd_vel_max_age_ <= 0.0 || (stamp.sec == 0 && stamp.nanosec == 0)) {
+    return false;
+  }
+  const auto age = clock_->now() - rclcpp::Time(stamp, clock_->get_clock_type());
+  return age.seconds() > cmd_vel_max_age_;
 }
 
 bool Drive::resolveDriveModule(const std::chrono::milliseconds & timeout)

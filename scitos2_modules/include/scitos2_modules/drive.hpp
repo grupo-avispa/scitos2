@@ -33,6 +33,7 @@
 #include "diagnostic_updater/diagnostic_status_wrapper.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rcl_interfaces/msg/set_parameters_result.hpp"
+#include "builtin_interfaces/msg/time.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "tf2_ros/transform_broadcaster.h"
@@ -346,6 +347,14 @@ protected:
     const uint64 & status, const mira::Time & timestamp);
 
   /**
+   * @brief Whether a velocity command is too old to be sent to the robot.
+   *
+   * @param stamp Header stamp of the command. A command without stamp is never stale
+   * @return bool True if it is older than cmd_vel_max_age_
+   */
+  bool isCommandStale(const builtin_interfaces::msg::Time & stamp) const;
+
+  /**
    * @brief Find out which MIRA module holds the drive properties when the parameter
    * mira_drive_module is 'auto'. The result is kept once found.
    *
@@ -386,6 +395,9 @@ protected:
   // (activation, services and parameter callbacks), so it does not need a lock
   std::string drive_module_{"auto"};
   std::chrono::milliseconds drive_detect_timeout_{3000};
+
+  // Age in seconds from which a cmd_vel is discarded, 0 to keep every command
+  double cmd_vel_max_age_{1.0};
 
   // Plugin related
   rclcpp::Clock::SharedPtr clock_;
