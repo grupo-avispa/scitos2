@@ -74,7 +74,10 @@ public:
   /**
    * @brief Destructor for scitos2_modules::ChannelBridge
    */
-  ~ChannelBridge() override {stopSubscribing();}
+  ~ChannelBridge() override
+  {
+    stopSubscribing();
+  }
 
   /**
    * @brief Configure the module.
