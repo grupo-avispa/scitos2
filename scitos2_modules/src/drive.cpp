@@ -20,6 +20,7 @@
 #include <array>
 #include <string>
 #include <chrono>
+#include <thread>
 #include <utility>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
@@ -90,6 +91,16 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
   node->get_parameter(plugin_name_ + ".mira_drive_module", drive_module_);
   RCLCPP_INFO(
     logger_, "The parameter mira_drive_module is set to: [%s]", drive_module_.c_str());
+
+  int detect_timeout = 10000;
+  declare_parameter_if_not_declared(
+    node, plugin_name_ + ".mira_drive_detect_timeout",
+    rclcpp::ParameterValue(detect_timeout), rcl_interfaces::msg::ParameterDescriptor()
+    .set__description(
+      "Maximum time in ms to wait for the robot to expose the drive properties when "
+      "mira_drive_module is 'auto'"));
+  node->get_parameter(plugin_name_ + ".mira_drive_detect_timeout", detect_timeout);
+  drive_detect_timeout_ = std::chrono::milliseconds(std::max(detect_timeout, 0));
 
   // Declare and read parameters
   declare_parameter_if_not_declared(
@@ -284,6 +295,7 @@ bool Drive::activate()
 
   // MIRA parameters can only be written once the authority has started. Not fatal to
   // activation: the drive still works, just without the magnetic barrier configured.
+  resolveDriveModule(drive_detect_timeout_);
   if (!setDriveParam("RearLaser.Enabled", magnetic_barrier_enabled_ ? "true" : "false")) {
     RCLCPP_ERROR(logger_, "Failed to set the magnetic_barrier_enabled MIRA parameter");
   }
@@ -489,7 +501,7 @@ void Drive::velocityCommandCallback(const geometry_msgs::msg::TwistStamped & msg
   }
 }
 
-bool Drive::resolveDriveModule()
+bool Drive::resolveDriveModule(const std::chrono::milliseconds & timeout)
 {
   if (drive_module_ != "auto") {
     return true;
@@ -499,12 +511,22 @@ bool Drive::resolveDriveModule()
   static const std::array<std::pair<std::string, std::string>, 2> candidates = {{
     std::make_pair("MotorController", "MotorController.Force"),
     std::make_pair("MainControlUnit", "MainControlUnit.RearLaser.Enabled")}};
-  for (const auto & [module, probe] : candidates) {
-    if (!authority_->getParam(probe).empty()) {
-      drive_module_ = module;
-      RCLCPP_INFO(logger_, "Detected the MIRA drive module: [%s]", drive_module_.c_str());
-      return true;
+
+  // The resource may be up before the robot has loaded its modules, so the properties
+  // appear a moment later. Without a reachable resource there is nothing to wait for
+  const auto deadline = std::chrono::steady_clock::now() + timeout;
+  while (true) {
+    for (const auto & [module, probe] : candidates) {
+      if (!authority_->getParam(probe).empty()) {
+        drive_module_ = module;
+        RCLCPP_INFO(logger_, "Detected the MIRA drive module: [%s]", drive_module_.c_str());
+        return true;
+      }
     }
+    if (!authority_->isReady() || std::chrono::steady_clock::now() >= deadline) {
+      break;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
   }
 
   RCLCPP_WARN(logger_, "Unable to detect the MIRA drive module, the property was not written");

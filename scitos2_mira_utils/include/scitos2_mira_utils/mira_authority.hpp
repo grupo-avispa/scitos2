@@ -98,6 +98,12 @@ public:
   bool waitForResource(const std::chrono::milliseconds & timeout);
 
   /**
+   * @brief Whether the authority is valid and the configured resource exists.
+   * @return bool If a service/parameter call is expected to succeed
+   */
+  bool isReady() const;
+
+  /**
    * @brief Subscribe to a MIRA channel.
    *
    * @tparam T The type of the channel data
@@ -201,12 +207,6 @@ public:
     std::string & result, std::string & error);
 
 protected:
-  /**
-   * @brief Whether the authority is valid and the configured resource exists.
-   * @return bool If a service/parameter call is expected to succeed
-   */
-  bool isReady() const;
-
   std::shared_ptr<mira::Authority> authority_;
   std::string resource_{"/robot/Robot"};
   mira::Duration timeout_{mira::Duration::seconds(1)};

@@ -349,9 +349,13 @@ protected:
    * @brief Find out which MIRA module holds the drive properties when the parameter
    * mira_drive_module is 'auto'. The result is kept once found.
    *
+   * The resource can exist before the robot has loaded its modules, so while it is reachable
+   * the probes are repeated until the timeout runs out.
+   *
+   * @param timeout The maximum time to keep probing the robot
    * @return bool True if the module is known, false if the robot did not answer
    */
-  bool resolveDriveModule();
+  bool resolveDriveModule(const std::chrono::milliseconds & timeout = std::chrono::milliseconds(0));
 
   /**
    * @brief Set a property of the MIRA drive module.
@@ -381,6 +385,7 @@ protected:
   // MIRA module with the drive properties. It is only used from the ROS executor thread
   // (activation, services and parameter callbacks), so it does not need a lock
   std::string drive_module_{"auto"};
+  std::chrono::milliseconds drive_detect_timeout_{10000};
 
   // Plugin related
   rclcpp::Clock::SharedPtr clock_;
