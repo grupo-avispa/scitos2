@@ -504,8 +504,10 @@ void Drive::targetVelocityCallback(mira::ChannelRead<mira::Velocity2> data)
 void Drive::velocityCommandCallback(const geometry_msgs::msg::TwistStamped & msg)
 {
   if (!emergency_stop_activated_ && is_active_) {
+    // Never wait for the robot here: a slow answer would block the executor, and an old
+    // velocity is worthless once there is a newer one
     mira::Velocity2 speed(msg.twist.linear.x, 0, msg.twist.angular.z);
-    authority_->callService("setVelocity", std::optional<mira::Velocity2>(speed));
+    authority_->callServiceAsync("setVelocity", speed);
   }
 }
 
