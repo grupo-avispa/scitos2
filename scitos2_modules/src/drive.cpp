@@ -484,6 +484,8 @@ void Drive::rfidStatusCallback(mira::ChannelRead<uint64> data)
   }
 
   scitos2_msgs::msg::RfidTag tag_msg;
+  tag_msg.header.stamp = rclcpp::Time(data->timestamp.toUnixNS());
+  tag_msg.header.frame_id = robot_base_frame_;
   tag_msg.tag = data->value();
   rfid_pub_->publish(tag_msg);
 }
