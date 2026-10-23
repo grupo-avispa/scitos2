@@ -92,7 +92,7 @@ void Drive::configure(const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, s
   RCLCPP_INFO(
     logger_, "The parameter mira_drive_module is set to: [%s]", drive_module_.c_str());
 
-  int detect_timeout = 10000;
+  int detect_timeout = 3000;
   declare_parameter_if_not_declared(
     node, plugin_name_ + ".mira_drive_detect_timeout",
     rclcpp::ParameterValue(detect_timeout), rcl_interfaces::msg::ParameterDescriptor()

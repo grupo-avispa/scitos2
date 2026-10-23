@@ -385,7 +385,7 @@ protected:
   // MIRA module with the drive properties. It is only used from the ROS executor thread
   // (activation, services and parameter callbacks), so it does not need a lock
   std::string drive_module_{"auto"};
-  std::chrono::milliseconds drive_detect_timeout_{10000};
+  std::chrono::milliseconds drive_detect_timeout_{3000};
 
   // Plugin related
   rclcpp::Clock::SharedPtr clock_;

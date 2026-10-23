@@ -127,7 +127,7 @@ The Charger module monitors the state of the battery and the charging station.
 
 	Design capacity of the battery in Ah, for the battery model physically fitted to the robot. MIRA does not expose this value.
 
-* **`mira_drive_detect_timeout`** (int, default: 10000)
+* **`mira_drive_detect_timeout`** (int, default: 3000)
 
 	Maximum time in milliseconds to wait for the robot to expose the drive properties when `mira_drive_module` is `auto`. The resource exists before the robot has loaded its modules, so the detection is retried until this time runs out.
 
