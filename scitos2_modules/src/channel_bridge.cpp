@@ -15,6 +15,8 @@
 
 #include "scitos2_modules/channel_bridge.hpp"
 
+#include <algorithm>
+#include <exception>
 #include <string>
 #include <vector>
 
@@ -35,6 +37,14 @@ void ChannelBridge::configure(
   const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent, std::string name)
 {
   auto node = configureMira(parent, name);
+
+  int channel_timeout = 5000;
+  declare_parameter_if_not_declared(
+    node, plugin_name_ + ".mira_channel_timeout", rclcpp::ParameterValue(channel_timeout),
+    rcl_interfaces::msg::ParameterDescriptor()
+    .set__description("Maximum time in ms to wait for each channel to exist in MIRA"));
+  node->get_parameter(plugin_name_ + ".mira_channel_timeout", channel_timeout);
+  channel_timeout_ = std::chrono::milliseconds(std::max(channel_timeout, 0));
 
   std::vector<std::string> channels;
   declare_parameter_if_not_declared(
@@ -92,6 +102,7 @@ void ChannelBridge::cleanup()
     logger_, "Cleaning up module : %s of type scitos2_module::ChannelBridge",
     plugin_name_.c_str());
   publishers_.clear();
+  pending_.clear();
   cleanupMira();
 }
 
@@ -106,6 +117,24 @@ bool ChannelBridge::activate()
   if (!startMira()) {
     return false;
   }
+
+  // Subscribing creates the channel if it does not exist, with the type of the bridge
+  for (const auto & pending : pending_) {
+    if (!authority_->waitForChannel(pending.channel, channel_timeout_)) {
+      RCLCPP_WARN(
+        logger_, "The MIRA channel %s does not exist after %ld ms, skipping it",
+        pending.channel.c_str(), static_cast<long>(channel_timeout_.count()));  // NOLINT
+      continue;
+    }
+    try {
+      pending.subscribe();
+    } catch (const std::exception & e) {
+      RCLCPP_ERROR(
+        logger_, "Unable to subscribe to the MIRA channel %s: %s", pending.channel.c_str(),
+        e.what());
+    }
+  }
+  pending_.clear();
   is_active_ = true;
   return true;
 }
@@ -129,15 +158,18 @@ void ChannelBridge::bridge(
 {
   auto publisher = node->create_publisher<RosT>(topic, rclcpp::SystemDefaultsQoS());
   publishers_.push_back(publisher);
-  authority_->subscribe<MiraT>(
-    channel, [this, publisher, frame_id, convert](mira::ChannelRead<MiraT> data) {
-      if (!is_active_) {
-        return;
-      }
-      RosT msg;
-      convert(data->value(), rclcpp::Time(data->timestamp.toUnixNS()), frame_id, msg);
-      publisher->publish(msg);
-    });
+  pending_.push_back(
+    {channel, [this, channel, publisher, frame_id, convert]() {
+        authority_->subscribe<MiraT>(
+          channel, [this, publisher, frame_id, convert](mira::ChannelRead<MiraT> data) {
+            if (!is_active_) {
+              return;
+            }
+            RosT msg;
+            convert(data->value(), rclcpp::Time(data->timestamp.toUnixNS()), frame_id, msg);
+            publisher->publish(msg);
+          });
+      }});
 }
 
 bool ChannelBridge::bridgeByType(

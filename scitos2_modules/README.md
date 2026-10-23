@@ -61,13 +61,17 @@ bridge:
     frame_id: "base_link"
 ```
 
-The channel names of the robot can be listed with `mirainspect channel list` (see the `mira_port` parameter of `mira_framework`). A channel with a missing parameter or an unsupported type is reported and skipped.
+The channel names of the robot can be listed with `mirainspect channel list` (see the `mira_port` parameter of `mira_framework`). A channel with a missing parameter or an unsupported type is reported and skipped. The channels are subscribed to when the module is activated and only once they exist in MIRA (a channel that does not appear within `mira_channel_timeout` is skipped): subscribing to a channel that does not exist yet would create it with the type given here, and the module of the robot that owns it would fail to initialize.
 
 #### Parameters
 
 * **`channels`** (string array, default: [])
 
 	Names of the channels to bridge. Each one is configured with the parameters below under `<module>.<name>`.
+
+* **`mira_channel_timeout`** (int, default: 5000)
+
+	Maximum time in milliseconds to wait for each channel to exist in MIRA before skipping it.
 
 * **`<name>.mira_channel`** (string)
 

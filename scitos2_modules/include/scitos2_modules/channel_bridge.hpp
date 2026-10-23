@@ -22,6 +22,8 @@
 #include <transform/Velocity.h>
 
 #include <atomic>
+#include <chrono>
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -55,6 +57,10 @@ namespace scitos2_modules
  * (geometry_msgs/TwistStamped), `pose2` (geometry_msgs/PoseStamped) and `point3f`
  * (geometry_msgs/PointStamped). The stamped ones use `frame_id` as their frame, which is
  * `base_link` by default.
+ *
+ * The channels are subscribed to when the module is activated, and only once they exist in
+ * MIRA: subscribing to a channel that does not exist yet would create it with the type of the
+ * bridge, and the module of the robot that owns it would then fail to initialize.
  */
 class ChannelBridge : public scitos2_mira_utils::MiraModule
 {
@@ -128,6 +134,19 @@ protected:
 
   /** @brief Whether the data of MIRA is forwarded. */
   std::atomic<bool> is_active_{false};
+
+  /** @brief Subscription of a bridged channel, made once the channel exists in MIRA. */
+  struct PendingSubscription
+  {
+    std::string channel;
+    std::function<void()> subscribe;
+  };
+
+  /** @brief Maximum time to wait for each channel to appear in MIRA. */
+  std::chrono::milliseconds channel_timeout_{5000};
+
+  /** @brief Channels waiting to be subscribed to. */
+  std::vector<PendingSubscription> pending_;
 
   /** @brief Publishers of the bridged channels, to activate and deactivate them together. */
   std::vector<std::shared_ptr<rclcpp_lifecycle::ManagedEntityInterface>> publishers_;

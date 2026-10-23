@@ -104,6 +104,15 @@ public:
   bool isReady() const;
 
   /**
+   * @brief Wait for a channel to be published in MIRA, without creating it.
+   *
+   * @param channel The name of the channel
+   * @param timeout The maximum time to wait
+   * @return bool True if the channel exists, false if the time ran out
+   */
+  bool waitForChannel(const std::string & channel, const std::chrono::milliseconds & timeout);
+
+  /**
    * @brief Subscribe to a MIRA channel.
    *
    * @tparam T The type of the channel data

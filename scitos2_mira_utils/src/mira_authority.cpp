@@ -81,6 +81,15 @@ bool MiraAuthority::waitForResource(const std::chrono::milliseconds & timeout)
   return true;
 }
 
+bool MiraAuthority::waitForChannel(
+  const std::string & channel, const std::chrono::milliseconds & timeout)
+{
+  if (!authority_) {
+    return false;
+  }
+  return authority_->waitForChannel(channel, mira::Duration::milliseconds(timeout.count()));
+}
+
 bool MiraAuthority::callService(const std::string & service_name)
 {
   if (!isReady()) {
