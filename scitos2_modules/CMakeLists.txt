@@ -50,22 +50,23 @@ endif()
 # ###############################################
 # # Find ament macros and libraries
 find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(nav2_costmap_2d REQUIRED)
 find_package(diagnostic_updater REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package(nav2_costmap_2d REQUIRED)
+find_package(nav2_ros_common REQUIRED)
+find_package(pluginlib REQUIRED)
+find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(tf2 REQUIRED)
-find_package(tf2_geometry_msgs REQUIRED)
-find_package(tf2_ros REQUIRED)
-find_package(visualization_msgs REQUIRED)
 find_package(scitos2_msgs REQUIRED)
 find_package(scitos2_core REQUIRED)
 find_package(scitos2_common REQUIRED)
 find_package(scitos2_mira_utils REQUIRED)
-find_package(pluginlib REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(visualization_msgs REQUIRED)
 
 find_mira_path()
 
@@ -126,10 +127,11 @@ target_link_libraries(scitos2_drive
   tf2_ros::tf2_ros
   ${visualization_msgs_TARGETS}
   PRIVATE
+  nav2_costmap_2d::nav2_costmap_2d_core
+  nav2_ros_common::nav2_ros_common
   pluginlib::pluginlib
   tf2_geometry_msgs::tf2_geometry_msgs
 )
-ament_target_dependencies(scitos2_drive PUBLIC nav2_costmap_2d) # TODO(ajtudela): Fix this in kilted
 target_link_mira_libraries(scitos2_drive)
 
 add_library(scitos2_channel_bridge SHARED src/channel_bridge.cpp)
@@ -249,6 +251,7 @@ ament_export_dependencies(
   diagnostic_updater
   geometry_msgs
   nav2_costmap_2d
+  nav2_ros_common
   nav_msgs
   pluginlib
   rclcpp

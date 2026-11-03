@@ -22,6 +22,7 @@ ament_add_gtest(test_drive
   ENV RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 )
 target_link_libraries(test_drive
+  nav2_ros_common::nav2_ros_common
   scitos2_drive
 )
 

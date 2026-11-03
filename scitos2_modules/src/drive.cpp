@@ -14,7 +14,7 @@
 // limitations under the License.
 
 // TF2
-#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Quaternion.hpp>
 
 #include <json/JSON.h>
 
