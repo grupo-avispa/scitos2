@@ -27,7 +27,7 @@
 
 // ROS
 #include "diagnostic_msgs/msg/diagnostic_array.hpp"
-#include "nav2_util/lifecycle_node.hpp"
+#include "nav2_ros_common/lifecycle_node.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "pluginlib/class_loader.hpp"
 
@@ -44,7 +44,7 @@ namespace scitos2_mira
  * @brief Main class that handles the MIRA framework and the modules.
  *
  */
-class MiraFramework : public nav2_util::LifecycleNode
+class MiraFramework : public nav2::LifecycleNode
 {
 public:
   using ModuleMap = std::unordered_map<std::string, scitos2_core::Module::Ptr>;
@@ -93,7 +93,7 @@ protected:
    * @throw pluginlib::PluginlibException When failed to initialize module
    * plugin
    */
-  nav2_util::CallbackReturn on_configure(const rclcpp_lifecycle::State & state) override;
+  nav2::CallbackReturn on_configure(const rclcpp_lifecycle::State & state) override;
 
   /**
    * @brief Activates the modules.
@@ -101,7 +101,7 @@ protected:
    * @param state LifeCycle Node's state
    * @return Success or Failure
    */
-  nav2_util::CallbackReturn on_activate(const rclcpp_lifecycle::State & state) override;
+  nav2::CallbackReturn on_activate(const rclcpp_lifecycle::State & state) override;
 
   /**
    * @brief Deactivates the modules.
@@ -109,7 +109,7 @@ protected:
    * @param state LifeCycle Node's state
    * @return Success or Failure
    */
-  nav2_util::CallbackReturn on_deactivate(const rclcpp_lifecycle::State & state) override;
+  nav2::CallbackReturn on_deactivate(const rclcpp_lifecycle::State & state) override;
 
   /**
    * @brief Calls clean up states and resets member variables.
@@ -117,7 +117,7 @@ protected:
    * @param state LifeCycle Node's state
    * @return Success or Failure
    */
-  nav2_util::CallbackReturn on_cleanup(const rclcpp_lifecycle::State & state) override;
+  nav2::CallbackReturn on_cleanup(const rclcpp_lifecycle::State & state) override;
 
   /**
    * @brief Called when in Shutdown state.
@@ -125,7 +125,7 @@ protected:
    * @param state LifeCycle Node's state
    * @return Success or Failure
    */
-  nav2_util::CallbackReturn on_shutdown(const rclcpp_lifecycle::State & state) override;
+  nav2::CallbackReturn on_shutdown(const rclcpp_lifecycle::State & state) override;
 
   /**
    * @brief Wait until the MIRA robot resource exists, up to the configured timeout.
@@ -137,6 +137,11 @@ protected:
    * @brief Create a diagnostics message.
    */
   diagnostic_msgs::msg::DiagnosticArray createDiagnostics();
+
+  /**
+   * @brief Load a module plugin by type name. Virtual to allow overriding in tests.
+   */
+  virtual scitos2_core::Module::Ptr loadModule(const std::string & type);
 
   rclcpp_lifecycle::LifecyclePublisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diag_pub_;
   rclcpp::TimerBase::SharedPtr timer_;

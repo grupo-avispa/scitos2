@@ -27,8 +27,8 @@
 #include "diagnostic_msgs/msg/diagnostic_array.hpp"
 #include "diagnostic_msgs/msg/diagnostic_status.hpp"
 #include "lifecycle_msgs/msg/state.hpp"
-#include "nav2_util/lifecycle_node.hpp"
-#include "nav2_util/node_utils.hpp"
+#include "nav2_ros_common/lifecycle_node.hpp"
+#include "nav2_ros_common/node_utils.hpp"
 #include "scitos2_mira/mira_framework.hpp"
 #include "scitos2_core/module.hpp"
 
@@ -39,7 +39,7 @@ public:
   : scitos2_mira::MiraFramework(rclcpp::NodeOptions())
   {
     // There is no robot in the tests, so do not wait for it when activating
-    nav2_util::declare_parameter_if_not_declared(
+    nav2::declare_parameter_if_not_declared(
       this, "mira_resource_timeout", rclcpp::ParameterValue(0));
   }
 
@@ -60,6 +60,8 @@ public:
   {
     return scitos2_mira::MiraFramework::createDiagnostics();
   }
+
+  scitos2_core::Module::Ptr loadModule(const std::string & type) override;
 };
 
 class DummyModule : public scitos2_core::Module
@@ -98,17 +100,7 @@ private:
   Behavior behavior_;
 };
 
-// Mocked class loader
-void onPluginDeletion(scitos2_core::Module * obj)
-{
-  if (nullptr != obj) {
-    delete (obj);
-  }
-}
-
-template<>
-pluginlib::UniquePtr<scitos2_core::Module> pluginlib::ClassLoader<scitos2_core::Module>::
-createUniqueInstance(const std::string & lookup_name)
+scitos2_core::Module::Ptr MiraFrameworkFixture::loadModule(const std::string & type)
 {
   using Behavior = DummyModule::Behavior;
   const std::map<std::string, Behavior> mocked = {
@@ -116,26 +108,11 @@ createUniqueInstance(const std::string & lookup_name)
     {"fail_activate", Behavior::FAIL_ACTIVATE},
     {"throw_activate", Behavior::THROW_ACTIVATE},
     {"fail_deactivate", Behavior::FAIL_DEACTIVATE}};
-  auto behavior = mocked.find(lookup_name);
-  if (behavior == mocked.end()) {
-    // original method body
-    if (!isClassLoaded(lookup_name)) {
-      loadLibraryForClass(lookup_name);
-    }
-    try {
-      std::string class_type = getClassType(lookup_name);
-      pluginlib::UniquePtr<scitos2_core::Module> obj =
-        lowlevel_class_loader_.createUniqueInstance<scitos2_core::Module>(class_type);
-      return obj;
-    } catch (const class_loader::CreateClassException & ex) {
-      throw pluginlib::CreateClassException(ex.what());
-    }
+  auto behavior = mocked.find(type);
+  if (behavior != mocked.end()) {
+    return scitos2_core::Module::Ptr(new DummyModule(behavior->second));
   }
-
-  // mocked plugin creation
-  return std::unique_ptr<scitos2_core::Module,
-           class_loader::ClassLoader::DeleterType<scitos2_core::Module>>(
-    new DummyModule(behavior->second), onPluginDeletion);
+  return scitos2_mira::MiraFramework::loadModule(type);
 }
 
 namespace
@@ -160,7 +137,7 @@ std::string scitosConfig()
 void setParameter(const std::string & name, const rclcpp::ParameterValue & value)
 {
   auto node = sharedNode();
-  nav2_util::declare_parameter_if_not_declared(node, name, value);
+  nav2::declare_parameter_if_not_declared(node, name, value);
   node->set_parameter(rclcpp::Parameter(name, value));
 }
 

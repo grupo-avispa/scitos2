@@ -51,7 +51,7 @@ endif()
 # # Find ament macros and libraries
 find_package(ament_cmake REQUIRED)
 find_package(diagnostic_msgs REQUIRED)
-find_package(nav2_util REQUIRED)
+find_package(nav2_ros_common REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_components REQUIRED)
@@ -78,6 +78,7 @@ target_include_directories(${library_name} PUBLIC
 target_link_libraries(${library_name}
   PUBLIC
   ${diagnostic_msgs_TARGETS}
+  nav2_ros_common::nav2_ros_common
   pluginlib::pluginlib
   rclcpp::rclcpp
   scitos2_core::scitos2_core
@@ -85,8 +86,6 @@ target_link_libraries(${library_name}
   PRIVATE
   rclcpp_components::component
 )
-
-ament_target_dependencies(${library_name} PUBLIC nav2_util) # TODO(ajtudela): Fix this in kilted
 target_link_mira_libraries(${library_name})
 
 # Add executable
@@ -144,7 +143,7 @@ ament_export_include_directories(include/${PROJECT_NAME})
 ament_export_libraries(${library_name})
 ament_export_dependencies(
   diagnostic_msgs
-  nav2_util
+  nav2_ros_common
   pluginlib
   rclcpp
   rclcpp_components

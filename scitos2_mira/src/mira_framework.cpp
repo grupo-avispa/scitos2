@@ -20,7 +20,7 @@
 
 // ROS
 #include "lifecycle_msgs/msg/state.hpp"
-#include "nav2_util/node_utils.hpp"
+#include "nav2_ros_common/node_utils.hpp"
 
 #include "scitos2_mira/mira_framework.hpp"
 
@@ -28,7 +28,7 @@ namespace scitos2_mira
 {
 
 MiraFramework::MiraFramework(const rclcpp::NodeOptions & options)
-: nav2_util::LifecycleNode("scitos_mira", "", options),
+: nav2::LifecycleNode("scitos_mira", "", options),
   loaded_(false),
   module_loader_("scitos2_core", "scitos2_core::Module"),
   default_ids_{"drive"},
@@ -43,29 +43,29 @@ MiraFramework::MiraFramework(const rclcpp::NodeOptions & options)
   std::vector<std::string> known_frameworks, variables;
   std::string save_processed_config;
   int log_level = -1;
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     this, "mira_port", rclcpp::ParameterValue(0),
     rcl_interfaces::msg::ParameterDescriptor()
     .set__description(
       "Port where the MIRA framework listens, so that miracenter or mirainspect can connect to "
       "the robot while ROS is running. 0 disables it"));
   this->get_parameter("mira_port", port);
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     this, "mira_known_frameworks", rclcpp::ParameterValue(std::vector<std::string>()),
     rcl_interfaces::msg::ParameterDescriptor()
     .set__description("MIRA frameworks to connect to, as host:port"));
   this->get_parameter("mira_known_frameworks", known_frameworks);
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     this, "mira_variables", rclcpp::ParameterValue(std::vector<std::string>()),
     rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Variables of the MIRA configuration, as name=value"));
   this->get_parameter("mira_variables", variables);
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     this, "save_processed_config", rclcpp::ParameterValue(""),
     rcl_interfaces::msg::ParameterDescriptor()
     .set__description("File where MIRA saves the configuration once its variables are resolved"));
   this->get_parameter("save_processed_config", save_processed_config);
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     this, "mira_log_level", rclcpp::ParameterValue(-1),
     rcl_interfaces::msg::ParameterDescriptor()
     .set__description(
@@ -138,7 +138,7 @@ MiraFramework::~MiraFramework()
   timer_.reset();
 }
 
-nav2_util::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::State & state)
+nav2::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::State & state)
 {
   auto node = shared_from_this();
 
@@ -146,7 +146,7 @@ nav2_util::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::St
 
   // Load the configuration of the robot
   std::string config;
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     this, "scitos_config", rclcpp::ParameterValue("/opt/SCITOS/SCITOSDriver.xml"),
     rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Configuration of the robot in XML format"));
@@ -162,31 +162,31 @@ nav2_util::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::St
           get_logger(), "Failed to load scitos config '%s'. Exception: %s",
           config.c_str(), ex.what());
         on_cleanup(state);
-        return nav2_util::CallbackReturn::FAILURE;
+        return nav2::CallbackReturn::FAILURE;
       }
     } else {
       RCLCPP_ERROR(get_logger(), "Can't read parameter 'scitos_config'");
       on_cleanup(state);
-      return nav2_util::CallbackReturn::FAILURE;
+      return nav2::CallbackReturn::FAILURE;
     }
   } else {
     // The framework outlives a cleanup (it is only terminated on shutdown), so it is reused
     RCLCPP_WARN(get_logger(), "Already loaded scitos config");
   }
 
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     this, "mira_robot_resource", rclcpp::ParameterValue("/robot/Robot"),
     rcl_interfaces::msg::ParameterDescriptor()
     .set__description("The MIRA resource to wait for before activating the modules"));
   this->get_parameter("mira_robot_resource", robot_resource_);
 
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     this, "mira_resource_timeout", rclcpp::ParameterValue(5000),
     rcl_interfaces::msg::ParameterDescriptor()
     .set__description("Milliseconds to wait for the MIRA robot resource when activating"));
   this->get_parameter("mira_resource_timeout", resource_timeout_);
 
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     this, "module_plugins",
     rclcpp::ParameterValue(default_ids_),
     rcl_interfaces::msg::ParameterDescriptor()
@@ -204,7 +204,7 @@ nav2_util::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::St
 
   if (module_ids_ == default_ids_) {
     for (size_t i = 0; i != default_ids_.size(); ++i) {
-      nav2_util::declare_parameter_if_not_declared(
+      nav2::declare_parameter_if_not_declared(
         this, default_ids_[i] + ".plugin",
         rclcpp::ParameterValue(default_types_[i]),
         rcl_interfaces::msg::ParameterDescriptor()
@@ -217,9 +217,8 @@ nav2_util::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::St
   // Create MIRA modules
   for (size_t i = 0; i != module_ids_.size(); i++) {
     try {
-      module_types_[i] = nav2_util::get_plugin_type_param(node, module_ids_[i]);
-      scitos2_core::Module::Ptr module =
-        module_loader_.createUniqueInstance(module_types_[i]);
+      module_types_[i] = nav2::get_plugin_type_param(node, module_ids_[i]);
+      scitos2_core::Module::Ptr module = loadModule(module_types_[i]);
       RCLCPP_INFO(
         get_logger(), "Created module : %s of type %s",
         module_ids_[i].c_str(), module_types_[i].c_str());
@@ -228,7 +227,7 @@ nav2_util::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::St
     } catch (const pluginlib::PluginlibException & ex) {
       RCLCPP_FATAL(get_logger(), "Failed to create module. Exception: %s", ex.what());
       on_cleanup(state);
-      return nav2_util::CallbackReturn::FAILURE;
+      return nav2::CallbackReturn::FAILURE;
     }
   }
 
@@ -243,10 +242,10 @@ nav2_util::CallbackReturn MiraFramework::on_configure(const rclcpp_lifecycle::St
   diag_pub_ = this->create_publisher<diagnostic_msgs::msg::DiagnosticArray>(
     "/diagnostics", rclcpp::SystemDefaultsQoS());
 
-  return nav2_util::CallbackReturn::SUCCESS;
+  return nav2::CallbackReturn::SUCCESS;
 }
 
-nav2_util::CallbackReturn MiraFramework::on_activate(const rclcpp_lifecycle::State & state)
+nav2::CallbackReturn MiraFramework::on_activate(const rclcpp_lifecycle::State & state)
 {
   RCLCPP_INFO(get_logger(), "Activating");
 
@@ -258,7 +257,7 @@ nav2_util::CallbackReturn MiraFramework::on_activate(const rclcpp_lifecycle::Sta
     } catch (const mira::Exception & ex) {
       RCLCPP_ERROR(get_logger(), "Failed to start MIRA framework. Exception: %s", ex.what());
       on_deactivate(state);
-      return nav2_util::CallbackReturn::FAILURE;
+      return nav2::CallbackReturn::FAILURE;
     }
   }
 
@@ -273,12 +272,12 @@ nav2_util::CallbackReturn MiraFramework::on_activate(const rclcpp_lifecycle::Sta
       if (!it->second->activate()) {
         RCLCPP_ERROR(get_logger(), "Failed to activate module '%s'", it->first.c_str());
         on_deactivate(state);
-        return nav2_util::CallbackReturn::FAILURE;
+        return nav2::CallbackReturn::FAILURE;
       }
     } catch (const std::exception & ex) {
       RCLCPP_ERROR(get_logger(), "Failed to activate module. Exception: %s", ex.what());
       on_deactivate(state);
-      return nav2_util::CallbackReturn::FAILURE;
+      return nav2::CallbackReturn::FAILURE;
     }
   }
 
@@ -292,10 +291,10 @@ nav2_util::CallbackReturn MiraFramework::on_activate(const rclcpp_lifecycle::Sta
   // Create bond connection
   createBond();
 
-  return nav2_util::CallbackReturn::SUCCESS;
+  return nav2::CallbackReturn::SUCCESS;
 }
 
-nav2_util::CallbackReturn MiraFramework::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
+nav2::CallbackReturn MiraFramework::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
 {
   RCLCPP_INFO(get_logger(), "Deactivating");
 
@@ -319,10 +318,10 @@ nav2_util::CallbackReturn MiraFramework::on_deactivate(const rclcpp_lifecycle::S
   // Destroy bond connection
   destroyBond();
 
-  return success ? nav2_util::CallbackReturn::SUCCESS : nav2_util::CallbackReturn::FAILURE;
+  return success ? nav2::CallbackReturn::SUCCESS : nav2::CallbackReturn::FAILURE;
 }
 
-nav2_util::CallbackReturn MiraFramework::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
+nav2::CallbackReturn MiraFramework::on_cleanup(const rclcpp_lifecycle::State & /*state*/)
 {
   RCLCPP_INFO(get_logger(), "Cleaning up");
 
@@ -336,10 +335,10 @@ nav2_util::CallbackReturn MiraFramework::on_cleanup(const rclcpp_lifecycle::Stat
   diag_pub_.reset();
   timer_.reset();
 
-  return nav2_util::CallbackReturn::SUCCESS;
+  return nav2::CallbackReturn::SUCCESS;
 }
 
-nav2_util::CallbackReturn MiraFramework::on_shutdown(const rclcpp_lifecycle::State &)
+nav2::CallbackReturn MiraFramework::on_shutdown(const rclcpp_lifecycle::State &)
 {
   RCLCPP_INFO(get_logger(), "Shutting down");
 
@@ -347,10 +346,15 @@ nav2_util::CallbackReturn MiraFramework::on_shutdown(const rclcpp_lifecycle::Sta
     framework_->requestTermination();
   } catch (const mira::Exception & ex) {
     RCLCPP_ERROR(get_logger(), "Failed to request termination. Exception: %s", ex.what());
-    return nav2_util::CallbackReturn::FAILURE;
+    return nav2::CallbackReturn::FAILURE;
   }
 
-  return nav2_util::CallbackReturn::SUCCESS;
+  return nav2::CallbackReturn::SUCCESS;
+}
+
+scitos2_core::Module::Ptr MiraFramework::loadModule(const std::string & type)
+{
+  return module_loader_.createUniqueInstance(type);
 }
 
 void MiraFramework::waitForRobotResource()
