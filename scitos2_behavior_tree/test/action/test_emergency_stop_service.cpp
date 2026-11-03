@@ -22,7 +22,7 @@
 
 #include "behaviortree_cpp/bt_factory.h"
 
-#include "nav2_behavior_tree/utils/test_service.hpp"
+#include "nav2_behavior_tree/test/utils/test_service.hpp"
 #include "scitos2_behavior_tree/action/emergency_stop_service.hpp"
 
 class EmergencyStopService : public TestService<scitos2_msgs::srv::EmergencyStop>
@@ -31,16 +31,6 @@ public:
   EmergencyStopService()
   : TestService("emergency_stop")
   {}
-
-protected:
-  void handle_service(
-    const std::shared_ptr<rmw_request_id_t> request_header,
-    const std::shared_ptr<scitos2_msgs::srv::EmergencyStop::Request> request,
-    const std::shared_ptr<scitos2_msgs::srv::EmergencyStop::Response> response) override
-  {
-    TestService::handle_service(request_header, request, response);
-    response->success = true;
-  }
 };
 
 class EmergencyStopServiceTestFixture : public ::testing::Test
@@ -56,18 +46,13 @@ public:
     // Create the blackboard that will be shared by all of the nodes in the tree
     config_->blackboard = BT::Blackboard::create();
     // Put items on the blackboard
-    config_->blackboard->set(
-      "node",
-      node_);
+    config_->blackboard->set("node", node_);
     config_->blackboard->set<std::chrono::milliseconds>(
-      "server_timeout",
-      std::chrono::milliseconds(20));
+      "server_timeout", std::chrono::milliseconds(20));
     config_->blackboard->set<std::chrono::milliseconds>(
-      "bt_loop_duration",
-      std::chrono::milliseconds(10));
+      "bt_loop_duration", std::chrono::milliseconds(10));
     config_->blackboard->set<std::chrono::milliseconds>(
-      "wait_for_service_timeout",
-      std::chrono::milliseconds(1000));
+      "wait_for_service_timeout", std::chrono::milliseconds(1000));
 
     factory_->registerNodeType<scitos2_behavior_tree::EmergencyStopService>("EmergencyStop");
   }

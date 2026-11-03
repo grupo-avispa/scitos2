@@ -3,10 +3,8 @@ ament_add_gtest(test_scitos2_action_emergency_stop_service
   test_emergency_stop_service.cpp
 )
 target_link_libraries(test_scitos2_action_emergency_stop_service
+  behaviortree_cpp::behaviortree_cpp
   scitos2_emergency_stop_service_bt_node
-)
-ament_target_dependencies(test_scitos2_action_emergency_stop_service
-  behaviortree_cpp
 )
 
 # Test for the reset motor stop service
@@ -14,8 +12,6 @@ ament_add_gtest(test_scitos2_action_reset_motor_stop_service
   test_reset_motor_stop_service.cpp
 )
 target_link_libraries(test_scitos2_action_reset_motor_stop_service
+  behaviortree_cpp::behaviortree_cpp
   scitos2_reset_motor_stop_service_bt_node
-)
-ament_target_dependencies(test_scitos2_action_reset_motor_stop_service
-  behaviortree_cpp
 )

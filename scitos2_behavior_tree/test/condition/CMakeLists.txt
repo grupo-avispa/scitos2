@@ -10,12 +10,10 @@ ament_add_gtest(test_scitos2_condition_is_bumper_activated
 )
 target_link_libraries(test_scitos2_condition_is_bumper_activated
   ${geometry_msgs_TARGETS}
+  nav2_behavior_tree::nav2_behavior_tree
   scitos2_is_bumper_activated_condition_bt_node
   ${scitos2_msgs_TARGETS}
   rclcpp_action::rclcpp_action
   ${tf2_msgs_TARGETS}
   tf2_ros::tf2_ros
 )
-ament_target_dependencies(test_scitos2_condition_is_bumper_activated
-  nav2_behavior_tree
-) # TODO(ajtudela): Fix this in kilted
