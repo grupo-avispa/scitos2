@@ -23,7 +23,7 @@
 
 #include "gtest/gtest.h"
 #include "rclcpp/rclcpp.hpp"
-#include "ament_index_cpp/get_package_share_directory.hpp"
+#include "ament_index_cpp/get_package_share_path.hpp"
 #include "diagnostic_msgs/msg/diagnostic_array.hpp"
 #include "diagnostic_msgs/msg/diagnostic_status.hpp"
 #include "lifecycle_msgs/msg/state.hpp"
@@ -130,8 +130,8 @@ std::shared_ptr<MiraFrameworkFixture> sharedNode()
 
 std::string scitosConfig()
 {
-  return ament_index_cpp::get_package_share_directory("scitos2_mira") +
-         "/test/scitos_config.xml";
+  return (ament_index_cpp::get_package_share_path("scitos2_mira") / "test" /
+         "scitos_config.xml").string();
 }
 
 void setParameter(const std::string & name, const rclcpp::ParameterValue & value)
