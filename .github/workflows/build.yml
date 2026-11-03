@@ -5,7 +5,7 @@ name: Build
 
 on:
   push:
-    branches: [jazzy, humble]
+    branches: [lyrical, jazzy, humble]
   workflow_dispatch:
 
 env:
@@ -15,9 +15,9 @@ env:
 
 jobs:
   install-mira:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     container:
-      image: ros:jazzy
+      image: ros:lyrical
     steps:
       - name: Set MIRA_PATH
         run: echo "MIRA_PATH=$GITHUB_WORKSPACE/mira" >> "$GITHUB_ENV"
@@ -31,8 +31,8 @@ jobs:
           packages: git g++ cmake subversion doxygen libxml2-dev libssl-dev
             libsqlite3-dev libboost-all-dev libogre-1.9-dev libsvn-dev
             libopencv-dev binutils-dev libiberty-dev libcurl4-gnutls-dev
-            libproc2-dev libqwt-qt5-dev libqt5webkit5-dev libqwtmathml-qt5-dev
-            libqt5opengl5-dev libqt5svg5-dev qt*5-dev qttools5-dev-tools unzip
+            libproc2-dev qt6-base-dev qt6-5compat-dev qt6-svg-dev qt6-tools-dev
+            qt6-webengine-dev libgl-dev unzip
       - name: Refresh shared library cache
         run: sudo ldconfig
       - name: Cache MIRA
@@ -40,18 +40,18 @@ jobs:
         uses: actions/cache@v6.1.0
         with:
           path: ${{ env.MIRA_PATH }}
-          key: mira-${{ runner.os }}-ubuntu-24.04
+          key: mira-${{ runner.os }}-ubuntu-26.04
       - name: Install MIRA
         if: steps.cache-mira.outputs.cache-hit != 'true'
         run: |
           curl -o mira-installer-binary.sh ${{ env.MIRA_URL }}/mira-installer-binary.sh
           chmod +x mira-installer-binary.sh
-          ./mira-installer-binary.sh -s ubuntu-2404lts-x64 -d ${{ env.MIRA_PATH }}
+          ./mira-installer-binary.sh -s ubuntu-2604lts-x64 -d ${{ env.MIRA_PATH }}
 
   install-scitos2:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     container:
-      image: ros:jazzy
+      image: ros:lyrical
     needs: install-mira
     steps:
       - name: Set MIRA_PATH
@@ -68,7 +68,7 @@ jobs:
         uses: actions/cache@v6.1.0
         with:
           path: ${{ env.MIRA_PATH }}
-          key: mira-${{ runner.os }}-ubuntu-24.04
+          key: mira-${{ runner.os }}-ubuntu-26.04
       - name: Build packages
         env:
           MIRA_PATH: ${{ env.MIRA_PATH }}
@@ -83,7 +83,7 @@ jobs:
             scitos2_mira
             scitos2_modules
             scitos2_msgs
-          target-ros2-distro: jazzy
+          target-ros2-distro: lyrical
           colcon-defaults: |
             {
               "build": {

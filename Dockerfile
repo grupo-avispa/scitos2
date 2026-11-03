@@ -1,10 +1,10 @@
-ARG BASE_IMAGE="jazzy-ros-core-noble"
+ARG BASE_IMAGE="lyrical-ros-core-resolute"
 ARG MIRA_WS=/opt/mira
 ARG OVERLAY_WS=/opt/overlay_ws
-ARG SYSTEM=ubuntu-2404lts-x64
+ARG SYSTEM=ubuntu-2604lts-x64
 
 # Install MIRA
-FROM ubuntu:24.04 AS mira-base
+FROM ubuntu:26.04 AS mira-base
 ARG DEBIAN_FRONTEND=noninteractive
 ARG MIRA_WS
 ARG SYSTEM
@@ -15,8 +15,7 @@ RUN apt update && apt install --no-install-recommends -y \
     libogre-1.9-dev libsvn-dev \
     libopencv-dev binutils-dev \
     libiberty-dev libcurl4-gnutls-dev libproc2-dev \
-    libqwt-qt5-dev libqt5webkit5-dev libqwtmathml-qt5-dev \
-    libqt5opengl5-dev libqt5svg5-dev qt*5-dev qttools5-dev-tools && \
+    qt6-base-dev qt6-5compat-dev qt6-svg-dev qt6-tools-dev qt6-webengine-dev libgl-dev && \
     rm -rf /var/lib/apt/lists/*
 RUN curl -o mira-installer-binary.sh https://www.mira-project.org/downloads/mira-installer-binary.sh
 RUN chmod +x mira-installer-binary.sh
