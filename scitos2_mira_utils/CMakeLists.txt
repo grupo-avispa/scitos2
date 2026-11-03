@@ -76,6 +76,7 @@ target_link_libraries(scitos2_mira_utils PUBLIC
   scitos2_core::scitos2_core
 )
 target_link_mira_libraries(scitos2_mira_utils)
+target_compile_options(scitos2_mira_utils PUBLIC -std=gnu++17)
 
 # ############
 # # Install ##
