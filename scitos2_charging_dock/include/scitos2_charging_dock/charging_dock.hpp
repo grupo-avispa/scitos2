@@ -24,12 +24,13 @@
 #include <vector>
 
 #include "geometry_msgs/msg/pose_stamped.hpp"
+#include "nav2_ros_common/lifecycle_node.hpp"
 #include "opennav_docking_core/charging_dock.hpp"
 #include "opennav_docking/pose_filter.hpp"
 #include "scitos2_charging_dock/perception.hpp"
 #include "sensor_msgs/msg/battery_state.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
-#include "tf2_ros/buffer.h"
+#include "tf2_ros/buffer.hpp"
 
 namespace scitos2_charging_dock
 {
@@ -37,6 +38,8 @@ namespace scitos2_charging_dock
 class ChargingDock : public opennav_docking_core::ChargingDock
 {
 public:
+  using DockDirection = opennav_docking_core::DockDirection;
+
   /**
    * @brief Constructor
    */
@@ -49,24 +52,24 @@ public:
    * @param  name The name of this planner
    * @param  tf A pointer to a TF buffer
    */
-  virtual void configure(
-    const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
-    const std::string & name, std::shared_ptr<tf2_ros::Buffer> tf);
+  void configure(
+    const nav2::LifecycleNode::WeakPtr & parent,
+    const std::string & name, std::shared_ptr<tf2_ros::Buffer> tf) override;
 
   /**
    * @brief Method to cleanup resources used on shutdown.
    */
-  virtual void cleanup() {}
+  void cleanup() override {}
 
   /**
    * @brief Method to active Behavior and any threads involved in execution.
    */
-  virtual void activate() {}
+  void activate() override {}
 
   /**
    * @brief Method to deactive Behavior and any threads involved in execution.
    */
-  virtual void deactivate() {}
+  void deactivate() override {}
 
   /**
    * @brief Method to obtain the dock's staging pose. This method should likely
@@ -76,41 +79,51 @@ public:
    * @param frame Dock's frame of pose
    * @return PoseStamped of staging pose in the specified frame
    */
-  virtual geometry_msgs::msg::PoseStamped getStagingPose(
-    const geometry_msgs::msg::Pose & pose, const std::string & frame);
+  geometry_msgs::msg::PoseStamped getStagingPose(
+    const geometry_msgs::msg::Pose & pose, const std::string & frame) override;
 
   /**
    * @brief Method to obtain the refined pose of the dock, based on sensor
    * @param pose The initial estimate of the dock pose.
    */
-  virtual bool getRefinedPose(geometry_msgs::msg::PoseStamped & pose, std::string id);
+  bool getRefinedPose(geometry_msgs::msg::PoseStamped & pose, std::string id) override;
 
   /**
    * @copydoc opennav_docking_core::ChargingDock::isCharging
    */
-  virtual bool isCharging();
+  bool isCharging() override;
 
   /**
    * @copydoc opennav_docking_core::ChargingDock::isDocked
    */
-  virtual bool isDocked();
+  bool isDocked() override;
 
   /**
    * @copydoc opennav_docking_core::ChargingDock::disableCharging
    */
-  virtual bool disableCharging();
+  bool disableCharging() override;
 
   /**
    * @brief Similar to isCharging() but called when undocking.
    */
-  virtual bool hasStoppedCharging();
+  bool hasStoppedCharging() override;
+
+  /**
+   * @brief Start external detection process (service call + subscribe).
+   */
+  bool startDetectionProcess() override;
+
+  /**
+   * @brief Stop external detection process.
+   */
+  bool stopDetectionProcess() override;
 
 protected:
   // Subscribe to a scan topic
-  rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;
-  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr dock_pose_pub_;
-  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr filtered_dock_pose_pub_;
-  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr staging_pose_pub_;
+  nav2::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;
+  nav2::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr dock_pose_pub_;
+  nav2::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr filtered_dock_pose_pub_;
+  nav2::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr staging_pose_pub_;
   // It will contain latest message. Written from the scan subscription callback and read
   // from getRefinedPose(), which may run on a different thread: guard with scan_mutex_.
   sensor_msgs::msg::LaserScan scan_;
@@ -119,7 +132,7 @@ protected:
   geometry_msgs::msg::PoseStamped dock_pose_;
 
   // Subscribe to battery message, used to determine if charging
-  rclcpp::Subscription<sensor_msgs::msg::BatteryState>::SharedPtr battery_sub_;
+  nav2::Subscription<sensor_msgs::msg::BatteryState>::SharedPtr battery_sub_;
   std::atomic<bool> is_charging_{false};
 
   // An external reference (sensor_msgs::LaserScan) is used to detect dock
@@ -140,7 +153,7 @@ protected:
   // Perception
   std::unique_ptr<Perception> perception_;
 
-  rclcpp_lifecycle::LifecycleNode::SharedPtr node_;
+  nav2::LifecycleNode::SharedPtr node_;
   std::shared_ptr<tf2_ros::Buffer> tf2_buffer_;
 };
 

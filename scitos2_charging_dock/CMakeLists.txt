@@ -52,6 +52,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(angles REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(nav2_ros_common REQUIRED)
 find_package(nav2_util REQUIRED)
 find_package(opennav_docking_core REQUIRED)
 find_package(opennav_docking REQUIRED)
@@ -82,12 +83,12 @@ target_include_directories(segmentation PUBLIC
 target_link_libraries(segmentation
   PUBLIC
   ${geometry_msgs_TARGETS}
+  nav2_ros_common::nav2_ros_common
   pcl_ros::pcl_ros_tf
   rclcpp::rclcpp
   rclcpp_lifecycle::rclcpp_lifecycle
   ${sensor_msgs_TARGETS}
 )
-ament_target_dependencies(segmentation PUBLIC nav2_util) # TODO(ajtudela): Fix this in kilted
 
 # Add dock selector library: pure decision logic (which candidate is the dock), with no
 # ROS node, TF or PCL/ICP dependency, so it can be unit tested on its own
@@ -115,19 +116,17 @@ target_link_libraries(perception
   PUBLIC
   dock_selector
   ${geometry_msgs_TARGETS}
+  ${PCL_LIBRARIES}
   rclcpp::rclcpp
   segmentation
   ${sensor_msgs_TARGETS}
   tf2_ros::tf2_ros
   PRIVATE
+  nav2_ros_common::nav2_ros_common
   pcl_ros::pcl_ros_tf
+  pcl_conversions::pcl_conversions
   ${tf2_geometry_msgs_TARGETS}
 )
-ament_target_dependencies(perception
-  PUBLIC
-  nav2_util
-  pcl_conversions
-) # TODO(ajtudela): Fix this in kilted
 
 # Add charging dock library
 add_library(${library_name} SHARED src/charging_dock.cpp)
@@ -139,20 +138,19 @@ target_link_libraries(${library_name}
   PUBLIC
   ${geometry_msgs_TARGETS}
   perception
+  opennav_docking_core::opennav_docking_core
+  opennav_docking::pose_filter
   rclcpp_lifecycle::rclcpp_lifecycle
   ${scitos2_msgs_TARGETS}
   ${sensor_msgs_TARGETS}
   tf2_ros::tf2_ros
   PRIVATE
+  angles::angles
+  nav2_ros_common::nav2_ros_common
+  nav2_util::nav2_util_core
   pluginlib::pluginlib
   ${tf2_geometry_msgs_TARGETS}
 )
-ament_target_dependencies(${library_name}
-  PUBLIC
-  nav2_util
-  opennav_docking_core
-  opennav_docking # Pose filter
-) # TODO(ajtudela): Fix this in kilted
 
 pluginlib_export_plugin_description_file(opennav_docking_core plugins.xml)
 
@@ -164,6 +162,7 @@ target_include_directories(dock_saver_core PUBLIC
 )
 target_link_libraries(dock_saver_core
   PUBLIC
+  nav2_ros_common::nav2_ros_common
   segmentation
   rclcpp::rclcpp
   ${scitos2_msgs_TARGETS}
@@ -172,7 +171,6 @@ target_link_libraries(dock_saver_core
   ${sensor_msgs_TARGETS}
   rclcpp_components::component
 )
-ament_target_dependencies(dock_saver_core PUBLIC nav2_util) # TODO(ajtudela): Fix this in kilted
 
 # Add dock saver executable
 add_executable(${dock_saver_executable} src/main_saver.cpp)
@@ -239,7 +237,7 @@ ament_export_libraries(
 ament_export_dependencies(
   angles
   geometry_msgs
-  nav2_util
+  nav2_ros_common
   opennav_docking_core
   opennav_docking
   pcl_ros

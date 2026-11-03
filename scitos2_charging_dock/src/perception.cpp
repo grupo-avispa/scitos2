@@ -13,20 +13,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// C++
+#include <algorithm>
+
 // PCL
 #include <pcl/common/eigen.h>
 #include <pcl/registration/icp.h>
 
-// C++
-#include <algorithm>
-
 // TF
-#include "tf2/transform_datatypes.h"
+#include "tf2/transform_datatypes.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 
 // ROS
 #include "geometry_msgs/msg/transform_stamped.hpp"
-#include "nav2_util/node_utils.hpp"
+#include "nav2_ros_common/node_utils.hpp"
 #include "pcl_conversions/pcl_conversions.h"
 #include "pcl_ros/transforms.hpp"
 #include "rclcpp/rclcpp.hpp"
@@ -45,27 +45,27 @@ Perception::Perception(
   clock_ = node->get_clock();
   tf_buffer_ = tf;
 
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".perception.icp_min_score", rclcpp::ParameterValue(0.01));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".perception.icp_max_iter", rclcpp::ParameterValue(300));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".perception.icp_max_corr_dis", rclcpp::ParameterValue(0.25));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".perception.icp_max_trans_eps", rclcpp::ParameterValue(0.000000001));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".perception.icp_max_eucl_fit_eps", rclcpp::ParameterValue(0.000000001));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".perception.enable_debug", rclcpp::ParameterValue(false));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".perception.dock_template", rclcpp::ParameterValue(""));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".perception.use_first_detection", rclcpp::ParameterValue(false));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".perception.max_yaw_error", rclcpp::ParameterValue(M_PI_2));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".perception.width_tolerance_min", rclcpp::ParameterValue(0.5));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".perception.width_tolerance_max", rclcpp::ParameterValue(1.25));
 
   node->get_parameter(name_ + ".perception.icp_min_score", icp_min_score_);

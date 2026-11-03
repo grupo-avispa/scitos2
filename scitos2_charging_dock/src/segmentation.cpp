@@ -18,7 +18,7 @@
 #include "pcl/io/pcd_io.h"
 #include "pcl_conversions/pcl_conversions.h"
 #include "rclcpp/rclcpp.hpp"
-#include "nav2_util/node_utils.hpp"
+#include "nav2_ros_common/node_utils.hpp"
 #include "scitos2_charging_dock/segmentation.hpp"
 
 namespace scitos2_charging_dock
@@ -29,19 +29,19 @@ Segmentation::Segmentation(
 {
   name_ = name;
 
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".segmentation.distance_threshold", rclcpp::ParameterValue(0.04));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".segmentation.min_points", rclcpp::ParameterValue(25));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".segmentation.max_points", rclcpp::ParameterValue(400));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".segmentation.min_distance", rclcpp::ParameterValue(0.0));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".segmentation.max_distance", rclcpp::ParameterValue(2.0));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".segmentation.min_width", rclcpp::ParameterValue(0.3));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, name_ + ".segmentation.max_width", rclcpp::ParameterValue(1.0));
 
   node->get_parameter(name_ + ".segmentation.distance_threshold", distance_threshold_);

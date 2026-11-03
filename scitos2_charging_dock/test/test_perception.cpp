@@ -14,10 +14,10 @@
 // limitations under the License.
 
 #include "gtest/gtest.h"
-#include "ament_index_cpp/get_package_share_directory.hpp"
-#include "nav2_util/node_utils.hpp"
+#include "ament_index_cpp/get_package_share_path.hpp"
+#include "nav2_ros_common/node_utils.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "tf2/LinearMath/Transform.h"
+#include "tf2/LinearMath/Transform.hpp"
 #include "scitos2_charging_dock/perception.hpp"
 
 class PerceptionFixture : public scitos2_charging_dock::Perception
@@ -253,7 +253,7 @@ TEST(ScitosDockingPerception, refineAllClustersPoses) {
   auto tf_buffer = std::make_shared<tf2_ros::Buffer>(node->get_clock());
 
   // Set debug mode
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "test.perception.enable_debug", rclcpp::ParameterValue(true));
   node->configure();
 
@@ -308,17 +308,17 @@ TEST(ScitosDockingPerception, getDockPose) {
   auto tf_buffer = std::make_shared<tf2_ros::Buffer>(node->get_clock());
 
   // Set the dock template
-  std::string pkg = ament_index_cpp::get_package_share_directory("scitos2_charging_dock");
-  std::string path = pkg + "/test/dock_test.pcd";
-  nav2_util::declare_parameter_if_not_declared(
+  std::string pkg_path = ament_index_cpp::get_package_share_path("scitos2_charging_dock").string();
+  std::string path = pkg_path + "/test/dock_test.pcd";
+  nav2::declare_parameter_if_not_declared(
     node, "test.perception.dock_template", rclcpp::ParameterValue(path));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "test.segmentation.distance_threshold", rclcpp::ParameterValue(0.5));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "test.segmentation.min_points", rclcpp::ParameterValue(0));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "test.segmentation.min_width", rclcpp::ParameterValue(0.0));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "test.segmentation.min_distance", rclcpp::ParameterValue(0.0));
   node->configure();
 
@@ -406,17 +406,17 @@ TEST(ScitosDockingPerception, enableDebugAtRuntimeDoesNotCrash) {
   auto node = std::make_shared<rclcpp_lifecycle::LifecycleNode>("perception_test");
   auto tf_buffer = std::make_shared<tf2_ros::Buffer>(node->get_clock());
 
-  std::string pkg = ament_index_cpp::get_package_share_directory("scitos2_charging_dock");
+  std::string pkg = ament_index_cpp::get_package_share_path("scitos2_charging_dock").string();
   std::string path = pkg + "/test/dock_test.pcd";
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "test.perception.dock_template", rclcpp::ParameterValue(path));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "test.segmentation.distance_threshold", rclcpp::ParameterValue(0.5));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "test.segmentation.min_points", rclcpp::ParameterValue(0));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "test.segmentation.min_width", rclcpp::ParameterValue(0.0));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node, "test.segmentation.min_distance", rclcpp::ParameterValue(0.0));
   node->configure();
   node->activate();

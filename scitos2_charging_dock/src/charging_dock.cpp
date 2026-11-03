@@ -16,17 +16,18 @@
 
 #include <cmath>
 
-#include "nav2_util/node_utils.hpp"
+#include "nav2_ros_common/node_utils.hpp"
+#include "opennav_docking/utils.hpp"
 #include "scitos2_charging_dock/charging_dock.hpp"
 #include "scitos2_charging_dock/segmentation.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
-#include "tf2/utils.h"
+#include "tf2/utils.hpp"
 
 namespace scitos2_charging_dock
 {
 
 void ChargingDock::configure(
-  const rclcpp_lifecycle::LifecycleNode::WeakPtr & parent,
+  const nav2::LifecycleNode::WeakPtr & parent,
   const std::string & name, std::shared_ptr<tf2_ros::Buffer> tf)
 {
   name_ = name;
@@ -38,29 +39,29 @@ void ChargingDock::configure(
   }
 
   // Parameters for optional external detection of dock pose
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node_, name + ".external_detection_timeout", rclcpp::ParameterValue(1.0));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node_, name + ".external_detection_translation_x", rclcpp::ParameterValue(-0.20));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node_, name + ".external_detection_translation_y", rclcpp::ParameterValue(0.0));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node_, name + ".external_detection_rotation_yaw", rclcpp::ParameterValue(0.0));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node_, name + ".external_detection_rotation_pitch", rclcpp::ParameterValue(1.57));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node_, name + ".external_detection_rotation_roll", rclcpp::ParameterValue(-1.57));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node_, name + ".filter_coef", rclcpp::ParameterValue(0.1));
 
   // This is how close robot should get to pose
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node_, name + ".docking_threshold", rclcpp::ParameterValue(0.05));
 
   // Staging pose configuration
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node_, name + ".staging_x_offset", rclcpp::ParameterValue(-0.7));
-  nav2_util::declare_parameter_if_not_declared(
+  nav2::declare_parameter_if_not_declared(
     node_, name + ".staging_yaw_offset", rclcpp::ParameterValue(0.0));
 
   node_->get_parameter(name + ".external_detection_timeout", external_detection_timeout_);
@@ -79,6 +80,8 @@ void ChargingDock::configure(
   node_->get_parameter(name + ".staging_x_offset", staging_x_offset_);
   node_->get_parameter(name + ".staging_yaw_offset", staging_yaw_offset_);
 
+  dock_direction_ = opennav_docking_core::DockDirection::FORWARD;
+
   // Setup perception
   perception_ = std::make_unique<Perception>(node_, name, tf2_buffer_);
 
@@ -88,25 +91,24 @@ void ChargingDock::configure(
   filter_ = std::make_unique<opennav_docking::PoseFilter>(filter_coef, external_detection_timeout_);
 
   battery_sub_ = node_->create_subscription<sensor_msgs::msg::BatteryState>(
-    "battery", 1,
-    [this](
-      const sensor_msgs::msg::BatteryState::SharedPtr state) {
+    "battery",
+    [this](const sensor_msgs::msg::BatteryState::SharedPtr state) {
       is_charging_ =
       (state->power_supply_status == sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_CHARGING);
     });
 
   dock_pose_.header.stamp = rclcpp::Time(0);
   scan_sub_ = node_->create_subscription<sensor_msgs::msg::LaserScan>(
-    "scan", rclcpp::SensorDataQoS(),
+    "scan",
     [this](const sensor_msgs::msg::LaserScan::SharedPtr scan) {
       std::lock_guard<std::mutex> lock(scan_mutex_);
       scan_ = *scan;
-    });
+    }, nav2::qos::SensorDataQoS());
 
-  dock_pose_pub_ = node_->create_publisher<geometry_msgs::msg::PoseStamped>("dock_pose", 1);
+  dock_pose_pub_ = node_->create_publisher<geometry_msgs::msg::PoseStamped>("dock_pose");
   filtered_dock_pose_pub_ = node_->create_publisher<geometry_msgs::msg::PoseStamped>(
-    "filtered_dock_pose", 1);
-  staging_pose_pub_ = node_->create_publisher<geometry_msgs::msg::PoseStamped>("staging_pose", 1);
+    "filtered_dock_pose");
+  staging_pose_pub_ = node_->create_publisher<geometry_msgs::msg::PoseStamped>("staging_pose");
 }
 
 geometry_msgs::msg::PoseStamped ChargingDock::getStagingPose(
@@ -218,6 +220,17 @@ bool ChargingDock::hasStoppedCharging()
 {
   return !isCharging();
 }
+
+bool ChargingDock::startDetectionProcess()
+{
+  return true;
+}
+
+bool ChargingDock::stopDetectionProcess()
+{
+  return true;
+}
+
 
 }  // namespace scitos2_charging_dock
 
