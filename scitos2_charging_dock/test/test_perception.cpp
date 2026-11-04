@@ -147,11 +147,12 @@ TEST(ScitosDockingPerception, createPointcloudMsg) {
   EXPECT_EQ(msg.fields[0].name, "x");
   EXPECT_EQ(msg.fields[1].name, "y");
   EXPECT_EQ(msg.fields[2].name, "z");
-  EXPECT_EQ(msg.point_step, 16);
-  EXPECT_EQ(msg.row_step, 64);
+  // PCL pads PointXYZ to 16 bytes in older releases and packs it to 12 in newer ones
+  EXPECT_TRUE(msg.point_step == 12 || msg.point_step == 16);
+  EXPECT_EQ(msg.row_step, msg.point_step * 4);
   EXPECT_EQ(msg.is_dense, true);
   EXPECT_EQ(msg.is_bigendian, false);
-  EXPECT_EQ(msg.data.size(), 64);
+  EXPECT_EQ(msg.data.size(), msg.point_step * 4);
 }
 
 TEST(ScitosDockingPerception, eigenToTransform) {
