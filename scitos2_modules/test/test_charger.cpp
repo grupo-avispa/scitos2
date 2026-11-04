@@ -299,7 +299,7 @@ TEST(ScitosChargerTest, batteryStateFull) {
   battery_state.powerSupplyPresent = false;
 
   // Convert to ROS BatteryState
-  auto battery = module->miraToRosBatteryState(battery_state, mira::Time());
+  auto battery = module->miraToRosBatteryState(battery_state, mira::Time().now());
 
   // Check the conversion
   EXPECT_DOUBLE_EQ(battery.voltage, battery_state.voltage);
@@ -325,7 +325,7 @@ TEST(ScitosChargerTest, batteryStateNotCharging) {
   battery_state.powerSupplyPresent = true;
 
   // Convert to ROS BatteryState
-  auto battery = module->miraToRosBatteryState(battery_state, mira::Time());
+  auto battery = module->miraToRosBatteryState(battery_state, mira::Time().now());
 
   // Check the conversion
   EXPECT_DOUBLE_EQ(battery.voltage, battery_state.voltage);
@@ -351,7 +351,7 @@ TEST(ScitosChargerTest, batteryStateDischarging) {
   battery_state.powerSupplyPresent = false;
 
   // Convert to ROS BatteryState
-  auto battery = module->miraToRosBatteryState(battery_state, mira::Time());
+  auto battery = module->miraToRosBatteryState(battery_state, mira::Time().now());
 
   // Check the conversion
   EXPECT_DOUBLE_EQ(battery.voltage, battery_state.voltage);
@@ -377,7 +377,7 @@ TEST(ScitosChargerTest, batteryStateUnknown) {
   battery_state.powerSupplyPresent = false;
 
   // Convert to ROS BatteryState
-  auto battery = module->miraToRosBatteryState(battery_state, mira::Time());
+  auto battery = module->miraToRosBatteryState(battery_state, mira::Time().now());
 
   // Check the conversion
   EXPECT_DOUBLE_EQ(battery.voltage, battery_state.voltage);
