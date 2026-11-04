@@ -23,6 +23,7 @@
 #include "behaviortree_cpp/bt_factory.h"
 
 #include "nav2_behavior_tree/test/utils/test_service.hpp"
+#include "nav2_ros_common/lifecycle_node.hpp"
 #include "scitos2_behavior_tree/action/reset_motor_stop_service.hpp"
 
 class ResetMotorStopService : public TestService<scitos2_msgs::srv::ResetMotorStop>
@@ -38,7 +39,7 @@ class ResetMotorStopServiceTestFixture : public ::testing::Test
 public:
   static void SetUpTestCase()
   {
-    node_ = std::make_shared<rclcpp::Node>("reset_motor_stop_test_fixture");
+    node_ = std::make_shared<nav2::LifecycleNode>("reset_motor_stop_test_fixture");
     factory_ = std::make_shared<BT::BehaviorTreeFactory>();
 
     config_ = new BT::NodeConfiguration();
@@ -78,13 +79,13 @@ public:
   static std::shared_ptr<ResetMotorStopService> server_;
 
 protected:
-  static rclcpp::Node::SharedPtr node_;
+  static nav2::LifecycleNode::SharedPtr node_;
   static BT::NodeConfiguration * config_;
   static std::shared_ptr<BT::BehaviorTreeFactory> factory_;
   static std::shared_ptr<BT::Tree> tree_;
 };
 
-rclcpp::Node::SharedPtr ResetMotorStopServiceTestFixture::node_ = nullptr;
+nav2::LifecycleNode::SharedPtr ResetMotorStopServiceTestFixture::node_ = nullptr;
 std::shared_ptr<ResetMotorStopService> ResetMotorStopServiceTestFixture::server_ = nullptr;
 BT::NodeConfiguration * ResetMotorStopServiceTestFixture::config_ = nullptr;
 std::shared_ptr<BT::BehaviorTreeFactory> ResetMotorStopServiceTestFixture::factory_ = nullptr;

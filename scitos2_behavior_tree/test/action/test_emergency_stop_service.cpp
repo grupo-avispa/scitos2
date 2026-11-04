@@ -23,6 +23,7 @@
 #include "behaviortree_cpp/bt_factory.h"
 
 #include "nav2_behavior_tree/test/utils/test_service.hpp"
+#include "nav2_ros_common/lifecycle_node.hpp"
 #include "scitos2_behavior_tree/action/emergency_stop_service.hpp"
 
 class EmergencyStopService : public TestService<scitos2_msgs::srv::EmergencyStop>
@@ -38,7 +39,7 @@ class EmergencyStopServiceTestFixture : public ::testing::Test
 public:
   static void SetUpTestCase()
   {
-    node_ = std::make_shared<rclcpp::Node>("emergency_stop_test_fixture");
+    node_ = std::make_shared<nav2::LifecycleNode>("emergency_stop_test_fixture");
     factory_ = std::make_shared<BT::BehaviorTreeFactory>();
 
     config_ = new BT::NodeConfiguration();
@@ -78,13 +79,13 @@ public:
   static std::shared_ptr<EmergencyStopService> server_;
 
 protected:
-  static rclcpp::Node::SharedPtr node_;
+  static nav2::LifecycleNode::SharedPtr node_;
   static BT::NodeConfiguration * config_;
   static std::shared_ptr<BT::BehaviorTreeFactory> factory_;
   static std::shared_ptr<BT::Tree> tree_;
 };
 
-rclcpp::Node::SharedPtr EmergencyStopServiceTestFixture::node_ = nullptr;
+nav2::LifecycleNode::SharedPtr EmergencyStopServiceTestFixture::node_ = nullptr;
 std::shared_ptr<EmergencyStopService> EmergencyStopServiceTestFixture::server_ = nullptr;
 BT::NodeConfiguration * EmergencyStopServiceTestFixture::config_ = nullptr;
 std::shared_ptr<BT::BehaviorTreeFactory> EmergencyStopServiceTestFixture::factory_ = nullptr;
