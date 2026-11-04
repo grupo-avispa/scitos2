@@ -13,24 +13,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// TF2
-#include <tf2/LinearMath/Quaternion.hpp>
+#include "scitos2_modules/drive.hpp"
 
 #include <json/JSON.h>
 
 #include <algorithm>
 #include <array>
-#include <string>
 #include <chrono>
+#include <string>
 #include <thread>
 #include <utility>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
-// ROS
 #include "geometry_msgs/msg/quaternion.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "nav2_costmap_2d/footprint.hpp"
-#include "scitos2_modules/drive.hpp"
+#include "tf2/LinearMath/Quaternion.hpp"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 
 namespace scitos2_modules
 {

@@ -13,25 +13,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// C++
-#include <algorithm>
+#include "scitos2_charging_dock/perception.hpp"
 
-// PCL
 #include <pcl/common/eigen.h>
 #include <pcl/registration/icp.h>
 
-// TF
-#include "tf2/transform_datatypes.hpp"
-#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+#include <algorithm>
 
-// ROS
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "nav2_ros_common/node_utils.hpp"
 #include "pcl_conversions/pcl_conversions.h"
 #include "pcl_ros/transforms.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "scitos2_charging_dock/dock_selector.hpp"
-#include "scitos2_charging_dock/perception.hpp"
+#include "tf2/transform_datatypes.hpp"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 
 namespace scitos2_charging_dock
 {
