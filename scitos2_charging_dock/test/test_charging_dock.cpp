@@ -14,6 +14,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <chrono>
+#include <functional>
+#include <thread>
+
 #include "gtest/gtest.h"
 #include "nav2_ros_common/lifecycle_node.hpp"
 #include "nav2_ros_common/node_utils.hpp"
@@ -25,6 +29,32 @@
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include "tf2/utils.hpp"
 #include "scitos2_charging_dock/charging_dock.hpp"
+
+namespace
+{
+
+/**
+ * @brief Spin the executor until a condition holds or the timeout expires.
+ *
+ * Publishers and subscribers of the same process still go through DDS discovery, so a message
+ * published right after configuring the dock may be dropped; polling avoids fixed sleeps.
+ */
+bool spinUntil(
+  rclcpp::executors::SingleThreadedExecutor & executor, const std::function<bool()> & condition,
+  std::chrono::milliseconds timeout = std::chrono::seconds(5))
+{
+  const auto deadline = std::chrono::steady_clock::now() + timeout;
+  while (std::chrono::steady_clock::now() < deadline) {
+    executor.spin_some();
+    if (condition()) {
+      return true;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+  return condition();
+}
+
+}  // namespace
 
 TEST(ScitosChargingDock, objectLifecycle)
 {
@@ -72,10 +102,9 @@ TEST(ScitosChargingDock, batteryState)
   // Charging
   sensor_msgs::msg::BatteryState msg2;
   msg2.power_supply_status = sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_CHARGING;
+  ASSERT_TRUE(spinUntil(*executor, [&]() {return pub->get_subscription_count() > 0;}));
   pub->publish(msg2);
-  rclcpp::Rate r1(2);
-  r1.sleep();
-  executor->spin_some();
+  EXPECT_TRUE(spinUntil(*executor, [&]() {return dock->isCharging();}));
 
   EXPECT_TRUE(dock->isCharging());
   EXPECT_FALSE(dock->hasStoppedCharging());
@@ -188,14 +217,14 @@ TEST(ScitosChargingDock, refinedPoseTest)
   scan.ranges = {0.9055, 1.0, 0.9055};
   scan.range_min = 0.9055;
   scan.range_max = 1.0;
+  ASSERT_TRUE(spinUntil(*executor, [&]() {return pub->get_subscription_count() > 0;}));
   pub->publish(std::move(scan));
-  executor->spin_some();
-
+  pose.header.frame_id = "my_frame";
   // Just expect that the pose is refined
   // The actual values are not important for this test
   // as they depend on the perception module and its already tested
-  pose.header.frame_id = "my_frame";
-  EXPECT_TRUE(dock->getRefinedPose(pose, ""));
+  EXPECT_TRUE(spinUntil(*executor, [&]() {return dock->getRefinedPose(pose, "");}));
+
   EXPECT_FALSE(dock->isDocked());
 
   dock->deactivate();
