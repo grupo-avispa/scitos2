@@ -42,6 +42,7 @@ docking_server:
       docking_threshold: 0.05
       staging_x_offset: -0.75
       staging_yaw_offset: 0.0
+      dock_direction: "forward"
       external_detection_timeout: 5.0
       external_detection_translation_x: -0.20
       external_detection_translation_y: 0.0

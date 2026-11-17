@@ -62,6 +62,10 @@ A **save_dock** service is provided to save the current pointcloud of the chargi
 
 	Staging pose angle relative to dock pose (rad).
 
+* **`dock_direction`** (string, default: "forward", options: "forward" or "backward")
+
+	Whether the robot is docking with the dock forward or backward in motion. Any other value is rejected at configuration time with an error.
+
 * **`external_detection_timeout`** (double, default: 1.0)
 
 	Timeout at which if the newest detection update does not meet to fail.

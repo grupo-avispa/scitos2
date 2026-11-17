@@ -80,7 +80,15 @@ void ChargingDock::configure(
   node_->get_parameter(name + ".staging_x_offset", staging_x_offset_);
   node_->get_parameter(name + ".staging_yaw_offset", staging_yaw_offset_);
 
-  dock_direction_ = opennav_docking_core::DockDirection::FORWARD;
+  // Direction of docking: whether the robot approaches the dock moving forward or backward
+  std::string dock_direction;
+  nav2::declare_parameter_if_not_declared(
+    node_, name + ".dock_direction", rclcpp::ParameterValue(std::string("forward")));
+  node_->get_parameter(name + ".dock_direction", dock_direction);
+  dock_direction_ = utils::getDockDirectionFromString(dock_direction);
+  if (dock_direction_ == opennav_docking_core::DockDirection::UNKNOWN) {
+    throw std::runtime_error{"Dock direction is not valid. Valid options are: forward or backward"};
+  }
 
   // Setup perception
   perception_ = std::make_unique<Perception>(node_, name, tf2_buffer_);
